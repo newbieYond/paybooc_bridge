@@ -206,6 +206,7 @@
     function appBridgeCallbackListener(result) {
         console.log("appBridgeCallbackListener result=" + JSON.stringify(result, null, 4))
         showStyledJSON(result, 'outputcallback')
+        alert(JSON.stringify(result, null, 4))
     }
 
     // MARK: - Back Event
