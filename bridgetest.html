@@ -205,7 +205,7 @@
     // MARK: - 콜백 처리
     function appBridgeCallbackListener(result) {
         console.log("appBridgeCallbackListener result=" + JSON.stringify(result, null, 4))
-        alert("callback: " + result.callback + "\nresultCode: " + result.resultCode + "\nparams : " + JSON.stringify(JSON.parse(result.params), null, 4))
+        showStyledJSON(result, 'outputcallback')
     }
 
     // MARK: - Back Event
