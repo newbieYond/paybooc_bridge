@@ -1,94 +1,124 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>JSON 표시 예제</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .result {
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+            padding: 20px;
+            min-height: 100px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .json-display {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            margin-top: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #4a5568;
+        }
+        .json-key { color: #66d9ef; }
+        .json-string { color: #a6e22e; }
+        .json-number { color: #fd971f; }
+        /* 스크롤바 스타일링 */
+        .result::-webkit-scrollbar,
+        .json-display::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .result::-webkit-scrollbar-track,
+        .json-display::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .result::-webkit-scrollbar-thumb,
+        .json-display::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        .result::-webkit-scrollbar-thumb:hover,
+        .json-display::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* pre 태그 스타일 개선 */
+        pre {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+    </style>
 </head>
-
 <body>
     <div class="container">
         <h1>동적 버튼 생성 예제</h1>
+        
         <div id="buttonContainer" class="button-container">
             <!-- 버튼들이 여기에 동적으로 생성됩니다 -->
         </div>
-
+        
         <div class="result">
-            <h3>실행 결과:</h3>
+            <h3>요청:</h3>
             <div id="output">버튼을 클릭해보세요!</div>
+            <h3>콜백:</h3>
+            <div id="outputcallback">버튼을 클릭해보세요!</div>
         </div>
     </div>
 </body>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        padding: 20px;
-        background-color: #f5f5f5;
-    }
 
-    .container {
-        max-width: 800px;
-        margin: 0 auto;
-        background: white;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    h1 {
-        color: #333;
-        text-align: center;
-        margin-bottom: 30px;
-    }
-
-    .button-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-        justify-content: center;
-    }
-
-    .dynamic-btn {
-        padding: 12px 24px;
-        font-size: 16px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        background: linear-gradient(45deg, #007bff, #0056b3);
-        color: white;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    }
-
-    .dynamic-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    }
-
-    .dynamic-btn:active {
-        transform: translateY(0);
-    }
-
-    .result {
-        margin-top: 30px;
-        padding: 20px;
-        background-color: #f8f9fa;
-        border-radius: 6px;
-        border-left: 4px solid #007bff;
-        min-height: 50px;
-    }
-
-    .result h3 {
-        margin-top: 0;
-        color: #333;
-    }
-
-    #output {
-        color: #666;
-        font-size: 14px;
-    }
-</style>
 <script>
     // 버튼 동적 생성 함수
     function createButtons() {
@@ -100,7 +130,7 @@
             item.items.forEach((item) => {
                 const btn = document.createElement('button');
                 btn.textContent = itemName + " - " + item.buttonText;
-                btn.className = 'dynamic-btn';
+                btn.className = 'btn';
                 btn.onclick = item.onClick
                 container.appendChild(btn);
             })
@@ -151,17 +181,15 @@
     }
 
     function payboocBridgeHandler(command) {
+        showStyledJSON(command, 'output')
         if (isIOS()) {
             // IOS
-            document.getElementById('output').innerHTML = `<strong>메시지:</strong> ${JSON.stringify(command)}`;
             webkit.messageHandlers.payboocBridge.postMessage(JSON.stringify(command)) // ios
 
         } else if (isAndroid()) {
             // Android
-            document.getElementById('output').innerHTML = `<strong>메시지:</strong> ${JSON.stringify(command)}`;
             window.payboocBridge.postMessage(JSON.stringify(command)) // android
         } else {
-            document.getElementById('output').innerHTML = `<strong>페이북앱에서 열기:</strong> ${JSON.stringify(command)}`;
             window.location = "ispmobile://callWebView=" + encodeURIComponent("https://cdpn.io/pen/debug/XJbbPmL?authentication_hash=LQkExWpmWJPA")
         }
     }
@@ -425,6 +453,15 @@
         }
 
     ])
+
+    // 스타일이 적용된 JSON
+    function showStyledJSON(obj, id) {
+        document.getElementById(id).innerHTML = 
+            '<strong>요청 브릿지:</strong>' +
+            '<div class="json-display">' + 
+            JSON.stringify(obj, null, 2) + 
+            '</div>';
+    }
 </script>
 
 </html>
