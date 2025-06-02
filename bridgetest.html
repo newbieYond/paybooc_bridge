@@ -293,6 +293,15 @@
         }
     }
 
+    // 스타일이 적용된 JSON
+    function showStyledJSON(obj, id) {
+        document.getElementById(id).innerHTML =
+            '<strong>요청 브릿지:</strong>' +
+            '<div class="json-display">' +
+            JSON.stringify(obj, null, 2) +
+            '</div>';
+    }
+
     function isIOS() {
         return window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.payboocBridge
     }
@@ -338,9 +347,25 @@
 
     // MARK: - 07. Comm
     plugin("07. Comm", [
+    ])
+    
+    // MARK: - 07. Comm
+    plugin("07. Comm", [
         {
             viewType: "button",
-            buttonText: "showToastMessage",
+            buttonText: "카드리스트 조회 (getCardList)",
+            onClick: function () {
+                var command = {
+                    category: "Comm",
+                    api: "getCardList",
+                    params: JSON.stringify({})
+                }
+                pluginService.postCommand(command)
+            },
+        },
+        {
+            viewType: "button",
+            buttonText: "토스트 노출 (showToastMessage)",
             onClick: function () {
                 var command = {
                     category: "Comm",
@@ -355,7 +380,7 @@
         },
         {
             viewType: "button",
-            buttonText: "setOverseaQR - C (중국 본토)",
+            buttonText: "해외결제설정-중국본토 (setOverseaQR-C)",
             onClick: function () {
                 var command = {
                     category: "Comm",
@@ -369,7 +394,7 @@
         },
         {
             viewType: "button",
-            buttonText: "setOverseaQR - N (중국 외)",
+            buttonText: "해외결제설정-중국 외 (setOverseaQR-N)",
             onClick: function () {
                 var command = {
                     category: "Comm",
@@ -383,7 +408,7 @@
         },
         {
             viewType: "button",
-            buttonText: "setOverseaQR - M (말레이시아)",
+            buttonText: "해외결제설정-말레이시아 (setOverseaQR-M)",
             onClick: function () {
                 var command = {
                     category: "Comm",
@@ -397,7 +422,7 @@
         },
         {
             viewType: "button",
-            buttonText: "setOverseaQR - T (태국)",
+            buttonText: "해외결제설정-태국 (setOverseaQR-T)",
             onClick: function () {
                 var command = {
                     category: "Comm",
@@ -411,7 +436,7 @@
         },
         {
             viewType: "button",
-            buttonText: "setOverseaQR - 국내",
+            buttonText: "해외결제설정-국내 (setOverseaQR-초기화)",
             onClick: function () {
                 var command = {
                     category: "Comm",
@@ -425,7 +450,7 @@
         },
         {
             viewType: "button",
-            buttonText: "getOverseaQR",
+            buttonText: "해외결제설정 확인",
             onClick: function () {
                 var command = {
                     category: "Comm",
@@ -441,7 +466,7 @@
     plugin("08. Permission", [
         {
             viewType: "button",
-            buttonText: "checkPermission(location)",
+            buttonText: "위치 권한확인 - checkPermission(location)",
             onClick: function () {
                 var command = {
                     category: "Permission",
@@ -455,7 +480,7 @@
         },
         {
             viewType: "button",
-            buttonText: "requestPermission(location)",
+            buttonText: "위치권한 요청 - requestPermission(location)",
             onClick: function () {
                 var command = {
                     category: "Permission",
@@ -469,7 +494,7 @@
         },
         {
             viewType: "button",
-            buttonText: "checkPermission(osPush)",
+            buttonText: "알림권한 확인 - checkPermission(osPush)",
             onClick: function () {
                 var command = {
                     category: "Permission",
@@ -483,7 +508,7 @@
         },
         {
             viewType: "button",
-            buttonText: "requestPermission(osPush)",
+            buttonText: "일림권한 요청 - requestPermission(osPush)",
             onClick: function () {
                 var command = {
                     category: "Permission",
@@ -497,7 +522,7 @@
         },
         {
             viewType: "button",
-            buttonText: "checkPermission(tracking)",
+            buttonText: "추적허용 확인 - checkPermission(tracking)",
             onClick: function () {
                 var command = {
                     category: "Permission",
@@ -511,7 +536,7 @@
         },
         {
             viewType: "button",
-            buttonText: "requestPermission(tracking)",
+            buttonText: "추적허용 요청 - requestPermission(tracking)",
             onClick: function () {
                 var command = {
                     category: "Permission",
@@ -525,7 +550,7 @@
         },
         {
             viewType: "button",
-            buttonText: "checkPermission(camera)",
+            buttonText: "촬영권한 확인 - checkPermission(camera)",
             onClick: function () {
                 var command = {
                     category: "Permission",
@@ -539,7 +564,7 @@
         },
         {
             viewType: "button",
-            buttonText: "requestPermission(camera)",
+            buttonText: "촬영권한 요청 - requestPermission(camera)",
             onClick: function () {
                 var command = {
                     category: "Permission",
@@ -551,17 +576,6 @@
                 pluginService.postCommand(command)
             },
         }
-
     ])
-
-    // 스타일이 적용된 JSON
-    function showStyledJSON(obj, id) {
-        document.getElementById(id).innerHTML =
-            '<strong>요청 브릿지:</strong>' +
-            '<div class="json-display">' +
-            JSON.stringify(obj, null, 2) +
-            '</div>';
-    }
 </script>
-
 </html>
