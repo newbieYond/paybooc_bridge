@@ -169,7 +169,51 @@
             max-height: 0;
             padding: 0 20px;
         }
+
+        /* 입력 필드 스타일 */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .input-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .input-field {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .input-field label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .input-field input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .input-field input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
     </style>
+
 </head>
 
 <body>
@@ -179,7 +223,6 @@
         <div id="buttonContainer" class="button-container">
             <!-- 버튼들이 여기에 동적으로 생성됩니다 -->
         </div>
-
         <div class="result">
             <h3>요청:</h3>
             <div id="output">버튼을 클릭해보세요!</div>
@@ -188,21 +231,26 @@
         </div>
     </div>
 </body>
-
 <script>
+    // 내일 날짜를 YYYYMMDD 형식으로 반환하는 함수
+    function getTomorrowDate() {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const year = tomorrow.getFullYear();
+        const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+        const day = String(tomorrow.getDate()).padStart(2, '0');
+        return year + month + day;
+    }
     // 버튼 동적 생성 함수
     function createButtons() {
         const container = document.getElementById('buttonContainer');
         container.innerHTML = ''; // 기존 버튼들 제거
-
         pluginService.getItems().forEach((item) => {
             const itemName = item.name;
-
             // 카테고리 컨테이너 생성
             const categoryDiv = document.createElement('div');
             categoryDiv.className = 'category';
             categoryDiv.setAttribute('data-category', itemName);
-
             // 카테고리 헤더 생성
             const headerDiv = document.createElement('div');
             headerDiv.className = 'category-header';
@@ -210,37 +258,66 @@
             <span class="category-title">${itemName}</span>
             <span class="toggle-icon">▼</span>
         `;
-
             // 카테고리 콘텐츠 생성
             const contentDiv = document.createElement('div');
             contentDiv.className = 'category-content';
-
             // 버튼들 생성
             item.items.forEach((buttonItem) => {
-                const btn = document.createElement('button');
-                btn.textContent = buttonItem.buttonText; // 카테고리명 제거
-                btn.className = 'btn';
-                btn.onclick = buttonItem.onClick;
-                contentDiv.appendChild(btn);
+                // 입력 필드가 있는 경우
+                if (buttonItem.inputs && buttonItem.inputs.length > 0) {
+                    // 입력 그룹 컨테이너 생성
+                    const inputGroupDiv = document.createElement('div');
+                    inputGroupDiv.className = 'input-group';
+                    // 입력 컨테이너 생성
+                    const inputContainerDiv = document.createElement('div');
+                    inputContainerDiv.className = 'input-container';
+                    // 각 입력 필드 생성
+                    const inputElements = {};
+                    buttonItem.inputs.forEach((inputConfig) => {
+                        const inputFieldDiv = document.createElement('div');
+                        inputFieldDiv.className = 'input-field';
+                        const label = document.createElement('label');
+                        label.textContent = inputConfig.label;
+                        inputFieldDiv.appendChild(label);
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.placeholder = inputConfig.placeholder || '';
+                        input.value = inputConfig.defaultValue || '';
+                        inputFieldDiv.appendChild(input);
+                        inputElements[inputConfig.key] = input;
+                        inputContainerDiv.appendChild(inputFieldDiv);
+                    });
+                    // 버튼 생성
+                    const btn = document.createElement('button');
+                    btn.textContent = buttonItem.buttonText;
+                    btn.className = 'btn';
+                    btn.onclick = () => buttonItem.onClick(inputElements);
+                    inputContainerDiv.appendChild(btn);
+                    inputGroupDiv.appendChild(inputContainerDiv);
+                    contentDiv.appendChild(inputGroupDiv);
+                } else {
+                    // 일반 버튼
+                    const btn = document.createElement('button');
+                    btn.textContent = buttonItem.buttonText;
+                    btn.className = 'btn';
+                    btn.onclick = buttonItem.onClick;
+                    contentDiv.appendChild(btn);
+                }
             });
-
             // 토글 기능 추가
             headerDiv.addEventListener('click', function () {
                 categoryDiv.classList.toggle('collapsed');
             });
-
             // 요소들 조립
             categoryDiv.appendChild(headerDiv);
             categoryDiv.appendChild(contentDiv);
             container.appendChild(categoryDiv);
         });
     }
-
     // 페이지 로드시 버튼 생성
     document.addEventListener('DOMContentLoaded', function () {
         createButtons();
     });
-
     const pluginService = (function () {
         const callbacks = {}
         const items = []
@@ -267,7 +344,6 @@
             }
         })
     })()
-
     const commIfScript = {
         onBackPressed: function () {
             var command = {
@@ -278,13 +354,11 @@
             payboocBridgeHandler(command)
         }
     }
-
     function payboocBridgeHandler(command) {
         showStyledJSON(command, 'output')
         if (isIOS()) {
             // IOS
             webkit.messageHandlers.payboocBridge.postMessage(JSON.stringify(command)) // ios
-
         } else if (isAndroid()) {
             // Android
             window.payboocBridge.postMessage(JSON.stringify(command)) // android
@@ -292,7 +366,6 @@
             window.location = "https://link.paybooc.co.kr/bridgetest"
         }
     }
-
     // 스타일이 적용된 JSON
     function showStyledJSON(obj, id) {
         document.getElementById(id).innerHTML =
@@ -301,22 +374,18 @@
             JSON.stringify(obj, null, 2) +
             '</div>';
     }
-
     function isIOS() {
         return window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.payboocBridge
     }
-
     function isAndroid() {
         return window.payboocBridge
     }
-
     // MARK: - 콜백 처리
     function appBridgeCallbackListener(result) {
         console.log("appBridgeCallbackListener result=" + JSON.stringify(result, null, 4))
         showStyledJSON(result, 'outputcallback')
         alert(JSON.stringify(result, null, 4))
     }
-
     // MARK: - Back Event
     function appEventListener(params) {
         if (params.event == "back") {
@@ -328,7 +397,6 @@
             payboocBridgeHandler(command)
         }
     }
-
     // MARK: - webviewReady
     function webviewReady() {
         var command = {
@@ -339,14 +407,11 @@
         pluginService.postCommand(command)
     }
     webviewReady()
-
     // MARK: - 브릿지 함수들 추가
     function plugin(name, items) {
         pluginService.addItem({ "name": name, "items": items })
     }
-
-    // MARK: - 07. Comm
-    plugin("07. Comm", [
+    plugin("01. Comm", [
         {
             viewType: "button",
             buttonText: "카드리스트 조회 (getCardList)",
@@ -457,9 +522,7 @@
             },
         }
     ])
-
-    // MARK: - 08. Permission
-    plugin("08. Permission", [
+    plugin("02. Permission", [
         {
             viewType: "button",
             buttonText: "위치 권한확인 - checkPermission(location)",
@@ -573,5 +636,68 @@
             },
         }
     ])
+    plugin("03. Storage", [
+        {
+            viewType: "button",
+            buttonText: "스토리지 저장 - setNativeStorage",
+            inputs: [
+                {
+                    key: "key",
+                    label: "Key",
+                    placeholder: "저장할 키를 입력하세요"
+                },
+                {
+                    key: "value",
+                    label: "Value",
+                    placeholder: "저장할 값을 입력하세요"
+                }
+            ],
+            onClick: function (inputElements) {
+                const key = inputElements.key.value.trim();
+                const value = inputElements.value.value.trim();
+                if (!key || !value) {
+                    alert("Key와 Value를 모두 입력해주세요.");
+                    return;
+                }
+                var command = {
+                    category: "Storage",
+                    api: "setNativeStorage",
+                    params: JSON.stringify({
+                        "key": key,
+                        "value": value,
+                        "expireTs": getTomorrowDate()
+                    })
+                }
+                pluginService.postCommand(command)
+            },
+        },
+        {
+            viewType: "button",
+            buttonText: "스토리지 조회 - getNativeStorage",
+            inputs: [
+                {
+                    key: "key",
+                    label: "Key",
+                    placeholder: "조회할 키를 입력하세요"
+                }
+            ],
+            onClick: function (inputElements) {
+                const key = inputElements.key.value.trim();
+                if (!key) {
+                    alert("Key를 입력해주세요.");
+                    return;
+                }
+                var command = {
+                    category: "Storage",
+                    api: "getNativeStorage",
+                    params: JSON.stringify({
+                        "key": key
+                    })
+                }
+                pluginService.postCommand(command)
+            },
+        }
+    ])
 </script>
+
 </html>
