@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,10 +11,21 @@
             margin: 0;
             padding: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            /* 배경을 고정시켜 스크롤해도 보이게 함 */
             color: white;
             min-height: 100vh;
+            overflow: hidden;
+            /* 스크롤 방지 */
+            box-sizing: border-box;
+            /* 패딩을 포함한 크기 계산 */
         }
-        
+
+        html {
+            overflow: hidden;
+            /* html에도 스크롤 방지 적용 */
+        }
+
         .container {
             max-width: 800px;
             margin: 0 auto;
@@ -23,14 +35,14 @@
             backdrop-filter: blur(10px);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
-        
+
         h1 {
             text-align: center;
             margin-bottom: 30px;
             font-size: 2.5em;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
-        
+
         .info-box {
             background: rgba(255, 255, 255, 0.2);
             padding: 20px;
@@ -38,7 +50,7 @@
             margin: 20px 0;
             border-left: 4px solid #ffd700;
         }
-        
+
         .status {
             position: fixed;
             top: 20px;
@@ -52,9 +64,10 @@
         }
     </style>
 </head>
+
 <body>
     <div class="status">Eruda 디버거 활성화됨</div>
-    
+
     <div class="container">
         <h1>🔧 Eruda 디버거 테스트</h1>
         <div class="info-box">
@@ -68,23 +81,24 @@
     <script>
         // Eruda 초기화 및 자동 표시
         eruda.init();
-        
+
         // 페이지 로드 후 잠깐 후에 eruda 패널을 자동으로 열기
         setTimeout(() => {
             eruda.show();
         }, 1000);
-        
+
         // 페이지 로드 시 초기 메시지
         window.addEventListener('load', () => {
             console.log('🎉 Eruda 디버거 테스트 페이지가 로드되었습니다!');
             console.log('📱 모바일 디버깅을 위한 완벽한 도구입니다.');
             console.log('🔧 우측 하단의 eruda 버튼을 클릭하여 개발자 도구를 열어보세요!');
         });
-        
+
         // 에러 이벤트 리스너
         window.addEventListener('error', (event) => {
             console.error('전역 에러 감지:', event.error);
         });
     </script>
 </body>
+
 </html>
