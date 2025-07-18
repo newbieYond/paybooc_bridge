@@ -39,58 +39,6 @@
             border-left: 4px solid #ffd700;
         }
         
-        .feature-list {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .feature-list li {
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            position: relative;
-            padding-left: 30px;
-        }
-        
-        .feature-list li:before {
-            content: "✓";
-            position: absolute;
-            left: 0;
-            color: #ffd700;
-            font-weight: bold;
-        }
-        
-        .test-section {
-            margin: 30px 0;
-        }
-        
-        .test-button {
-            background: #ffd700;
-            color: #333;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            margin: 10px;
-            transition: all 0.3s ease;
-        }
-        
-        .test-button:hover {
-            background: #ffed4a;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
-        }
-        
-        .console-output {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            font-family: 'Courier New', monospace;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
         .status {
             position: fixed;
             top: 20px;
@@ -109,39 +57,6 @@
     
     <div class="container">
         <h1>🔧 Eruda 디버거 테스트</h1>
-        
-        <div class="info-box">
-            <h3>💡 사용 방법</h3>
-            <p>이 페이지에는 eruda 디버거가 자동으로 로드되어 있습니다. 화면 우측 하단의 eruda 버튼을 클릭하여 개발자 도구를 열어보세요!</p>
-        </div>
-        
-        <div class="info-box">
-            <h3>🚀 Eruda 기능</h3>
-            <ul class="feature-list">
-                <li>Console - 콘솔 로그 확인</li>
-                <li>Elements - DOM 요소 검사</li>
-                <li>Network - 네트워크 요청 모니터링</li>
-                <li>Resources - 리소스 및 스토리지 관리</li>
-                <li>Sources - 소스 코드 확인</li>
-                <li>Info - 디바이스 정보</li>
-                <li>Snippets - 코드 스니펫 실행</li>
-                <li>Settings - 설정 관리</li>
-            </ul>
-        </div>
-        
-        <div class="test-section">
-            <h3>🧪 테스트 기능</h3>
-            <button class="test-button" onclick="testConsole()">콘솔 테스트</button>
-            <button class="test-button" onclick="testError()">에러 테스트</button>
-            <button class="test-button" onclick="testNetwork()">네트워크 테스트</button>
-            <button class="test-button" onclick="testLocalStorage()">로컬 스토리지 테스트</button>
-            <button class="test-button" onclick="testPerformance()">성능 테스트</button>
-        </div>
-        
-        <div class="console-output" id="output">
-            <div>콘솔 출력이 여기에 표시됩니다...</div>
-        </div>
-        
         <div class="info-box">
             <h3>📱 모바일 디버깅</h3>
             <p>이 도구는 특히 모바일 브라우저에서 유용합니다. 모바일 디바이스에서 이 페이지를 열어보세요!</p>
@@ -158,71 +73,6 @@
         setTimeout(() => {
             eruda.show();
         }, 1000);
-        
-        // 테스트 함수들
-        function testConsole() {
-            console.log('🟢 일반 로그 테스트');
-            console.info('🔵 정보 로그 테스트');
-            console.warn('🟡 경고 로그 테스트');
-            console.debug('🟣 디버그 로그 테스트');
-            
-            const output = document.getElementById('output');
-            output.innerHTML += '<div>✅ 콘솔 테스트 완료 - eruda 콘솔 탭을 확인하세요!</div>';
-        }
-        
-        function testError() {
-            console.error('🔴 에러 테스트');
-            try {
-                throw new Error('의도적인 테스트 에러');
-            } catch (e) {
-                console.error(e);
-            }
-            
-            const output = document.getElementById('output');
-            output.innerHTML += '<div>❌ 에러 테스트 완료 - eruda 콘솔 탭을 확인하세요!</div>';
-        }
-        
-        function testNetwork() {
-            fetch('https://jsonplaceholder.typicode.com/posts/1')
-                .then(response => response.json())
-                .then(data => {
-                    console.log('네트워크 테스트 응답:', data);
-                    const output = document.getElementById('output');
-                    output.innerHTML += '<div>🌐 네트워크 테스트 완료 - eruda Network 탭을 확인하세요!</div>';
-                })
-                .catch(error => {
-                    console.error('네트워크 에러:', error);
-                });
-        }
-        
-        function testLocalStorage() {
-            localStorage.setItem('eruda_test', 'Hello Eruda!');
-            localStorage.setItem('test_number', '12345');
-            localStorage.setItem('test_object', JSON.stringify({name: 'test', value: 'data'}));
-            
-            console.log('로컬 스토리지 테스트 데이터 저장됨');
-            const output = document.getElementById('output');
-            output.innerHTML += '<div>💾 로컬 스토리지 테스트 완료 - eruda Resources 탭을 확인하세요!</div>';
-        }
-        
-        function testPerformance() {
-            const start = performance.now();
-            
-            // 간단한 성능 테스트
-            let sum = 0;
-            for (let i = 0; i < 1000000; i++) {
-                sum += i;
-            }
-            
-            const end = performance.now();
-            const duration = end - start;
-            
-            console.log(`성능 테스트 완료: ${duration}ms`);
-            console.log(`계산 결과: ${sum}`);
-            
-            const output = document.getElementById('output');
-            output.innerHTML += `<div>⚡ 성능 테스트 완료 (${duration.toFixed(2)}ms) - eruda 콘솔을 확인하세요!</div>`;
-        }
         
         // 페이지 로드 시 초기 메시지
         window.addEventListener('load', () => {
