@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NaviBridge</title>
+    <script src="https://dev-cdn.paybooc.co.kr/static/js/comm/app_scheme.js"></script>
+    <script src="https://dev-cdn.paybooc.co.kr/static/js/comm/common.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .category {
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: white;
+            overflow: hidden;
+        }
+        .category-header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 15px;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .category-header:hover {
+            background-color: #45a049;
+        }
+        .category-title {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .toggle-icon {
+            font-size: 14px;
+            transition: transform 0.3s ease;
+        }
+        .category.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+        .category-content {
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .category.collapsed .category-content {
+            max-height: 0;
+        }
+        .button-grid {
+            padding: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .nav-button {
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .nav-button:hover {
+            background-color: #007B9A;
+        }
+        .nav-button:active {
+            background-color: #006B8A;
+        }
+    </style>
+</head>
+<body>
+    <h1>NaviBridge 테스트 페이지</h1>
+    
+    <div class="category" id="category1">
+        <div class="category-header" onclick="toggleCategory('category1')">
+            <span class="category-title">페이북 메인</span>
+            <span class="toggle-icon">▼</span>
+        </div>
+        <div class="category-content">
+            <div class="button-grid">
+                <button class="nav-button" onclick="com.goNext('P0201PG001N', {}, '', 'new', 'N', '', '')">페이북 메인 홈 - P0201PG001N</button>
+                <button class="nav-button" onclick="com.goNext('P0601PG001W', {}, '', 'new', 'N', '', '')">페이북 혜택탭 - P0601PG001W</button>
+                <button class="nav-button" onclick="com.goNext('P0721PG006W', {}, '', 'new', 'N', '', '')">페이북 더부자 탭1 - P0721PG006W</button>
+                <button class="nav-button" onclick="com.goNext('P0725PG001W', {}, '', 'new', 'N', '', '')">페이북 더부자 탭2 - P0725PG001W</button>
+                <button class="nav-button" onclick="com.goNext('P0801PG001R', {}, '', 'new', 'N', '', '')">페이북 금융 탭1 - P0801PG001R</button>
+                <button class="nav-button" onclick="com.goNext('P0802PG001R', {}, '', 'new', 'N', '', '')">페이북 금융 탭2 - P0802PG001R</button>
+                <button class="nav-button" onclick="com.goNext('P0803PG001R', {}, '', 'new', 'N', '', '')">페이북 금융 탭3 - P0803PG001R</button>
+                <button class="nav-button" onclick="com.goNext('P0804PG001R', {}, '', 'new', 'N', '', '')">페이북 금융 탭4 - P0804PG001R</button>
+                <button class="nav-button" onclick="com.goNext('P0805PG001R', {}, '', 'new', 'N', '', '')">페이북 금융 탭5 - P0805PG001R</button>
+                <button class="nav-button" onclick="com.goNext('P0204PG001N', {}, '', 'new', 'N', '', '')">페이북 메인 더보기 - P0204PG001N</button>
+                <button class="nav-button" onclick="com.goNext('P0205PG001N', {}, '', 'new', 'N', '', '')">페이북 검색 진입 - P0205PG001N</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="category collapsed" id="category2">
+        <div class="category-header" onclick="toggleCategory('category2')">
+            <span class="category-title">기타</span>
+            <span class="toggle-icon">▼</span>
+        </div>
+        <div class="category-content">
+            <div class="button-grid">
+                <button class="nav-button" onclick="com.goNext('P0006PG020N', {}, '', 'new', 'N', '', '')">화면테마설정 - P0006PG020N</button>
+                <button class="nav-button" onclick="com.goNext('P0309PG001N', {}, '', 'new', 'N', '', '')">해외결제설정 - P0309PG001N</button>
+                <button class="nav-button" onclick="com.goNext('P0302PG001N', {}, '', 'new', 'N', '', '')">카드관리 - P0302PG001N</button>
+                <button class="nav-button" onclick="com.goNext('P0909PG001N', {}, '', 'new', 'N', '', '')">카드사용등록 - P0909PG001N</button>
+                <button class="nav-button" onclick="com.goNext('P1206PG001N', {}, '', 'new', 'N', '', '')">디지털ARS설정 - P1206PG001N</button>
+                <button class="nav-button" onclick="com.goNext('P0006PG001N', {}, '', 'new', 'N', '', '')">더보기>설정 - P0006PG001N</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function toggleCategory(categoryId) {
+            const category = document.getElementById(categoryId);
+            category.classList.toggle('collapsed');
+        }
+    </script>
+</body>
+</html>
