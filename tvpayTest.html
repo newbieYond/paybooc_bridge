@@ -57,7 +57,7 @@ com.startTvpay = function(qrData) {
     }
 
     var param = { "qrData": qrData }
-    var message = { "category": "COMM", "api": "startTvpay", "params": JSON.stringify(param) }
+    var message = { "category": "NAVI", "api": "startTvpay", "params": JSON.stringify(param) }
 
     if (com.isAndroid()) {
         window.payboocBridge.postMessage(JSON.stringify(message)) // Android
