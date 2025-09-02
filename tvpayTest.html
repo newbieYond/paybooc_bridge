@@ -77,5 +77,15 @@ function executeTvpay() {
     
     com.startTvpay(qrData);
 }
+
+function callbackTvpay(result) {
+    alert(result)
+    if (result) {
+        // 정상 완료 callbackTvpay(true)
+    } else {
+        // 실패 callbackTvpay(false)
+    }
+}
+
 </script>
 </html>
