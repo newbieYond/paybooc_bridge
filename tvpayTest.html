@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div>
+        <label for="qrInput">QR 데이터 입력:</label>
+        <input type="text" id="qrInput" placeholder="QR 데이터를 입력하세요">
+        <button onclick="executeTvpay()">TV Pay 실행</button>
+    </div>
+</body>
+<script>
+var com = {};
+com.agent = navigator.userAgent.toLowerCase();
+
+// 안드로이드 여부
+com.isAndroid = function () {
+	return this.agent.match(/android/i) == null ? false : true;
+} 
+
+// iOS 여부
+com.isIos = function () {
+	return this.agent.match(/iphone|ipad|ipod/i) == null ? false : true;
+}
+
+// 페이북 인앱 웹브라우저 여부
+com.isInApp = function () {
+	return this.agent.match(/paybooc/i) == null ? false : true;
+}
+
+// 페이북 앱 서버버전
+com.getAppVersion = function () {
+	if ( com.isInApp() === true ) {
+		return com.extractVersion(/paybooc\/(.*)\(/, 1);
+	} else {
+		return '';
+	}
+}
+
+com.extractVersion = function(expr, pos) {
+	var match = com.agent.match(expr);
+	return match && match.length >= pos && parseInt(match[pos], 10);
+}
+
+com.startTvpay = function(qrData) {
+    if (!com.isInApp()) {
+        // 페이북 인앱 웹뷰가 아님
+        return
+    }
+
+    if (com.getAppVersion() < 7070) {
+        // 실행불가 버전
+        return
+    }
+
+    var param = { "qrData": qrData }
+    var message = { "category": "COMM", "api": "startTvpay", "params": JSON.stringify(param) }
+
+    if (com.isAndroid()) {
+        window.payboocBridge.postMessage(JSON.stringify(message)) // Android
+    } else if (com.isIos()) {
+        window.webkit.messageHandlers.payboocBridge.postMessage(JSON.stringify(message)) //iOS
+    }
+}
+
+function executeTvpay() {
+    var qrInput = document.getElementById('qrInput');
+    var qrData = qrInput.value;
+    
+    if (qrData.trim() === '') {
+        alert('QR 데이터를 입력해주세요.');
+        return;
+    }
+    
+    com.startTvpay(qrData);
+}
+</script>
+</html>
