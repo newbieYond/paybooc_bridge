@@ -694,6 +694,27 @@
             },
         }
     ])
+    plugin("04. AD", [
+    {
+        viewType: "button",
+        buttonText: "구글 애드몹 init - initAdmobSDK",
+        onClick: function () {
+            var command = {
+                category: "AD",
+                api: "initAdmobSDK",
+                params: JSON.stringify({})
+            }
+            pluginService.postCommand(command)
+        }
+    },
+    {
+        viewType: "button",
+        buttonText: "구글 애드몹 테스트페이지 이동",
+        onClick: function () {
+            window.location = "https://google.github.io/webview-ads/test/#api-for-ads-tests"
+        }
+    }
+    ])
 </script>
 
 </html>
