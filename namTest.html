@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAM (Native Ad Manager) Test Page</title>
+
+    <!-- AdPopcorn SSP SDK -->
+    <script async src="https://ssp.igaw.io/sdk/apsspads.js"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .config-section {
+            margin-bottom: 20px;
+        }
+
+        .config-section label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .config-section input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .checkbox-group {
+            margin: 10px 0;
+        }
+
+        .checkbox-group label {
+            display: inline-block;
+            margin-right: 15px;
+            font-weight: normal;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 5px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .ad-container {
+            min-height: 250px;
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fafafa;
+            margin: 20px 0;
+        }
+
+        .log-container {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 4px;
+            border-left: 3px solid #4CAF50;
+            padding-left: 8px;
+        }
+
+        .log-entry.error {
+            border-left-color: #f44336;
+            color: #f44336;
+        }
+
+        .log-entry.warning {
+            border-left-color: #ff9800;
+            color: #ff9800;
+        }
+
+        .timestamp {
+            color: #999;
+            font-size: 11px;
+        }
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            display: inline-block;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status.ready {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status.loading {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status.success {
+            background-color: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .status.error {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>NAM (Native Ad Manager) Test Page</h1>
+
+        <div class="config-section">
+            <label for="pubId">App Key (pubId):</label>
+            <input type="text" id="pubId" value="309704999" placeholder="Enter your AdPopcorn App Key">
+        </div>
+
+        <div class="config-section">
+            <label for="plcmtId">Placement ID (plcmtId):</label>
+            <input type="text" id="plcmtId" value="DfJlZXo7aceHq2T" placeholder="Enter your Placement ID">
+        </div>
+
+        <div class="config-section">
+            <label for="adCode">Ad Unit Code (div id):</label>
+            <input type="text" id="adCode" value="div-1" placeholder="Ad container div id">
+        </div>
+
+        <div class="config-section">
+            <label for="backgroundColor">Background Color:</label>
+            <input type="text" id="backgroundColor" value="#F3F3F3" placeholder="#F3F3F3">
+        </div>
+
+        <div class="config-section checkbox-group">
+            <label>
+                <input type="checkbox" id="namEnabled" checked>
+                Enable NAM Passback
+            </label>
+            <label>
+                <input type="checkbox" id="namAdDedup" checked>
+                NAM Ad Deduplication
+            </label>
+            <label>
+                <input type="checkbox" id="noBorder">
+                Remove Border
+            </label>
+            <label>
+                <input type="checkbox" id="noPrivacy">
+                Remove Privacy Mark
+            </label>
+        </div>
+
+        <div>
+            <button id="loadAdBtn" onclick="loadAd()">Load Ad</button>
+            <button onclick="clearLogs()">Clear Logs</button>
+            <span id="statusIndicator" class="status ready">Ready</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Ad Preview (300x250)</h2>
+        <div class="ad-container">
+            <div id="div-1"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Event Logs</h2>
+        <div class="log-container" id="logContainer">
+            <div class="log-entry">
+                <span class="timestamp">[Ready]</span> Waiting for ad request...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Logging utility
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const timestamp = new Date().toLocaleTimeString('ko-KR');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLogs() {
+            const logContainer = document.getElementById('logContainer');
+            logContainer.innerHTML = '<div class="log-entry"><span class="timestamp">[Cleared]</span> Logs cleared.</div>';
+        }
+
+        function setStatus(status, text) {
+            const statusEl = document.getElementById('statusIndicator');
+            statusEl.className = `status ${status}`;
+            statusEl.textContent = text;
+        }
+
+        // Initialize AdPopcorn SSP
+        window.apsspads = window.apsspads || { cmd: [] };
+
+        // Ad loading function
+        function loadAd() {
+            const pubId = document.getElementById('pubId').value;
+            const plcmtId = document.getElementById('plcmtId').value;
+            const adCode = document.getElementById('adCode').value;
+            const backgroundColor = document.getElementById('backgroundColor').value;
+            const namEnabled = document.getElementById('namEnabled').checked;
+            const namAdDedup = document.getElementById('namAdDedup').checked;
+            const noBorder = document.getElementById('noBorder').checked;
+            const noPrivacy = document.getElementById('noPrivacy').checked;
+
+            if (!pubId || !plcmtId || !adCode) {
+                addLog('Error: Please fill in all required fields (App Key, Placement ID, Ad Code)', 'error');
+                setStatus('error', 'Configuration Error');
+                return;
+            }
+
+            // Clear previous ad
+            const adContainer = document.getElementById(adCode);
+            if (adContainer) {
+                adContainer.innerHTML = '';
+            }
+
+            addLog(`Loading ad with configuration:`, 'info');
+            addLog(`- App Key: ${pubId}`, 'info');
+            addLog(`- Placement ID: ${plcmtId}`, 'info');
+            addLog(`- Ad Code: ${adCode}`, 'info');
+            addLog(`- NAM Enabled: ${namEnabled}`, 'info');
+            addLog(`- NAM Ad Dedup: ${namAdDedup}`, 'info');
+
+            setStatus('loading', 'Loading Ad...');
+
+            // Configure and request ad
+            apsspads.cmd.push(function() {
+                try {
+                    // Set configuration
+                    const config = {
+                        pubId: pubId,
+                        nam: namEnabled,
+                        namAdDedup: namAdDedup,
+                        backgroundColor: backgroundColor,
+                        noBorder: noBorder,
+                        noPrivacy: noPrivacy
+                    };
+
+                    addLog('Setting SDK configuration...', 'info');
+                    apsspads.setConfig(config);
+
+                    // Define ad unit
+                    addLog('Defining ad unit...', 'info');
+                    apsspads.defineAdUnits({
+                        code: adCode,
+                        plcmtId: plcmtId,
+                        size: [300, 250]
+                    });
+
+                    // Request bids
+                    addLog('Requesting bids...', 'info');
+                    apsspads.requestBids();
+
+                } catch (error) {
+                    addLog(`Error: ${error.message}`, 'error');
+                    setStatus('error', 'Error');
+                }
+            });
+        }
+
+        // Event listeners
+        apsspads.cmd.push(function() {
+            // Ad loaded event
+            apsspads.addEventListener("loaded", function(obj) {
+                addLog(` Ad loaded successfully`, 'info');
+                addLog(`Response: ${JSON.stringify(obj)}`, 'info');
+                setStatus('success', 'Ad Loaded');
+            });
+
+            // Ad impressed event
+            apsspads.addEventListener("impressed", function(obj) {
+                addLog(` Ad impression recorded`, 'info');
+                addLog(`Impression data: ${JSON.stringify(obj)}`, 'info');
+            });
+
+            // Ad clicked event
+            apsspads.addEventListener("clicked", function(obj) {
+                addLog(` Ad clicked`, 'info');
+                addLog(`Click data: ${JSON.stringify(obj)}`, 'info');
+            });
+
+            // Error event
+            apsspads.addEventListener("error", function(obj) {
+                addLog(` Ad error occurred`, 'error');
+                addLog(`Error status: ${obj.stat}`, 'error');
+                addLog(`Error details: ${JSON.stringify(obj)}`, 'error');
+                setStatus('error', `Error: ${obj.stat}`);
+            });
+
+            addLog('Event listeners registered', 'info');
+        });
+
+        // SDK initialization
+        addLog('AdPopcorn SSP SDK initializing...', 'info');
+        addLog('Documentation: https://adpopcornssp.gitbook.io/ssp-sdk/web-apm-+-nam/webpage-side', 'info');
+    </script>
+</body>
+</html>
