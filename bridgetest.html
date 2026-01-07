@@ -695,25 +695,44 @@
         }
     ])
     plugin("04. AD", [
-    {
-        viewType: "button",
-        buttonText: "구글 애드몹 init - initAdmobSDK",
-        onClick: function () {
-            var command = {
-                category: "AD",
-                api: "initAdmobSDK",
-                params: JSON.stringify({})
+        {
+            viewType: "button",
+            buttonText: "구글 애드몹 init - initAdmobSDK",
+            onClick: function () {
+                var command = {
+                    category: "AD",
+                    api: "initAdmobSDK",
+                    params: JSON.stringify({})
+                }
+                pluginService.postCommand(command)
             }
-            pluginService.postCommand(command)
-        }
-    },
-    {
-        viewType: "button",
-        buttonText: "구글 애드몹 테스트페이지 이동",
-        onClick: function () {
-            window.location = "https://google.github.io/webview-ads/test/#api-for-ads-tests"
-        }
-    }
+        },
+        {
+            viewType: "button",
+            buttonText: "구글 애드몹 테스트페이지 이동",
+            onClick: function () {
+                window.location = "https://google.github.io/webview-ads/test/#api-for-ads-tests"
+            }
+        },
+        {
+            viewType: "button",
+            buttonText: "네이버 NAMSDK 테스트페이지 이동",
+            onClick: function () {
+                window.location = "namTest.html"
+            }
+        },
+        // {
+        //     viewType: "button",
+        //     buttonText: "게임적립 ",
+        //     onClick: function () {
+        //         var command = {
+        //             category: "AD",
+        //             api: "mafShowOfferwall",
+        //             params: JSON.stringify({})
+        //         }
+        //         pluginService.postCommand(command)
+        //     }
+        // }
     ])
 </script>
 

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paybooc Menu Search</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --primary-color: #bb86fc;
+            --secondary-color: #03dac6;
+            --text-color: #e0e0e0;
+            --border-color: #333;
+            --hover-color: #2c2c2c;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--surface-color);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Inputs & Selects */
+        input,
+        select,
+        button {
+            background-color: #2a2a2a;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(187, 134, 252, 0.2);
+        }
+
+        button {
+            cursor: pointer;
+            font-weight: 600;
+            background-color: var(--primary-color);
+            color: #000;
+            border: none;
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Filter Dashboard */
+        .filter-dashboard {
+            background-color: var(--surface-color);
+            padding: 1.5rem 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-size: 0.8rem;
+            color: #aaa;
+            font-weight: 500;
+        }
+
+        /* Table Container */
+        .table-container {
+            flex: 1;
+            overflow: auto;
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            min-width: 1000px;
+            /* Ensure horizontal scroll on small screens */
+        }
+
+        thead th {
+            background-color: var(--surface-color);
+            color: var(--text-color);
+            text-align: left;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        tbody td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: #ccc;
+        }
+
+        tbody tr:hover {
+            background-color: var(--hover-color);
+        }
+
+        /* Status Badges */
+        .badge {
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-Y {
+            background-color: rgba(3, 218, 198, 0.2);
+            color: var(--secondary-color);
+        }
+
+        .badge-N {
+            background-color: rgba(207, 102, 121, 0.2);
+            color: #cf6679;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loader {
+            border: 4px solid #333;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="loading" class="loading-overlay">
+        <div class="loader"></div>
+    </div>
+
+    <header>
+        <h1>Menu Explorer</h1>
+        <div class="controls">
+            <input type="text" id="globalSearch" placeholder="Search anything... (ID, Name, URL)" style="width: 300px;">
+            <button id="refreshBtn">Refresh Data</button>
+        </div>
+    </header>
+
+    <div class="filter-dashboard" id="filterContainer">
+        <!-- Filters will be injected here dynamically -->
+        <div class="filter-group">
+            <label for="filter-menuScrnTypCd">menuScrnTypCd</label>
+            <select id="filter-menuScrnTypCd">
+                <option value="">All</option>
+                <option value="N">N</option>
+                <option value="W">W</option>
+                <option value="R">R</option>
+                <option value="P">P</option>
+                <option value="O">O</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>Screen ID</th>
+                    <th>Screen Name</th>
+                    <th>Type</th>
+                    <th>Use Y/N</th>
+                    <th>Link Type</th>
+                    <th>URL</th>
+                    <!-- Other Dyn Cols -->
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Rows -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const DATA_URL = 'https://cdn.paybooc.co.kr/cbf/pybcmenu/menu_final.json';
+        let rawData = [];
+        let ynFields = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchData();
+
+            // Event Listeners
+            document.getElementById('refreshBtn').addEventListener('click', fetchData);
+            document.getElementById('globalSearch').addEventListener('input', renderTable);
+            document.getElementById('filter-menuScrnTypCd').addEventListener('change', renderTable);
+        });
+
+        async function fetchData() {
+            showLoading(true);
+            try {
+                const res = await fetch(DATA_URL);
+                if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+                rawData = await res.json();
+
+                identifyYnFields(rawData);
+                generateYnFilters();
+                renderTable();
+
+            } catch (err) {
+                console.error(err);
+                alert('Failed to load data: ' + err.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function identifyYnFields(data) {
+            if (!data || data.length === 0) return;
+            const firstRow = data[0];
+            // Find keys ending with 'Yn' but exclude 'useYn' if we want to treat it specially (though here we treat all same)
+            // We actually want to exclude any we already manually added if any. 
+            // Current requirement: "yn 으로 되어있는 부분은 드랍박스로 선택하면 필터링"
+            ynFields = Object.keys(firstRow).filter(key => key.endsWith('Yn') || key === 'useYn');
+
+            // Ensure no duplicates if logic changes
+            ynFields = [...new Set(ynFields)];
+        }
+
+        function generateYnFilters() {
+            const container = document.getElementById('filterContainer');
+            // Clear existing dynamic filters (keep the hardcoded one if needed, but here we can rebuild checks)
+            // Note: menuScrnTypCd is hardcoded in HTML as requested. We append others.
+
+            // Remove old dynamic filters if any (simple way: remove all except first child? or just append new ones if not exist)
+            // Better: Clear container and re-add the static one + dynamic ones to ensure order
+
+            const staticFilterCode = document.getElementById('filter-menuScrnTypCd').parentNode.outerHTML;
+            container.innerHTML = staticFilterCode;
+
+            // Re-attach listener for the static one since we nuked it
+            document.getElementById('filter-menuScrnTypCd').addEventListener('change', renderTable);
+
+            ynFields.forEach(field => {
+                const group = document.createElement('div');
+                group.className = 'filter-group';
+
+                const label = document.createElement('label');
+                label.textContent = field;
+                label.htmlFor = `filter-${field}`;
+
+                const select = document.createElement('select');
+                select.id = `filter-${field}`;
+                select.innerHTML = `
+                <option value="">All</option>
+                <option value="Y">Y (Yes)</option>
+                <option value="N">N (No)</option>
+            `;
+                select.addEventListener('change', renderTable);
+
+                group.appendChild(label);
+                group.appendChild(select);
+                container.appendChild(group);
+            });
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            const theadRow = document.querySelector('#dataTable thead tr');
+            tbody.innerHTML = '';
+
+            // reconstruct headers to match logic if needed, but for now fixed + dynamic is tricky.
+            // Let's stick to a fixed set of important columns + maybe a details view?
+            // Or just show all? The JSON has about 10 keys. We can show them all.
+            // Let's make headers dynamic too based on first row to be safe? 
+            // User request didn't specify columns, just "parsing and filtering".
+            // Let's do dynamic headers for robustness.
+
+            if (rawData.length > 0) {
+                const keys = Object.keys(rawData[0]);
+                theadRow.innerHTML = keys.map(k => `<th>${k}</th>`).join('');
+
+                const filtered = filterData();
+
+                filtered.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = keys.map(k => {
+                        let val = row[k];
+                        // Badge for Yn
+                        if (k.endsWith('Yn') || k === 'useYn') {
+                            return `<td><span class="badge badge-${val}">${val}</span></td>`;
+                        }
+                        return `<td>${val}</td>`;
+                    }).join('');
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+
+        function filterData() {
+            const searchText = document.getElementById('globalSearch').value.toLowerCase();
+            const typeFilter = document.getElementById('filter-menuScrnTypCd').value;
+
+            // Dynamic filters
+            const dynamicFilters = {};
+            ynFields.forEach(field => {
+                const el = document.getElementById(`filter-${field}`);
+                if (el && el.value) dynamicFilters[field] = el.value;
+            });
+
+            return rawData.filter(row => {
+                // Global Search
+                if (searchText) {
+                    const rowStr = Object.values(row).join(' ').toLowerCase();
+                    if (!rowStr.includes(searchText)) return false;
+                }
+
+                // Static Filter
+                if (typeFilter && row.menuScrnTypCd !== typeFilter) return false;
+
+                // Dynamic Yn Filters
+                for (const [key, val] of Object.entries(dynamicFilters)) {
+                    if (row[key] !== val) return false;
+                }
+
+                return true;
+            });
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'flex' : 'none';
+        }
+    </script>
+
+</body>
+
+</html>
