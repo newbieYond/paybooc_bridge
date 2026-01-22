@@ -324,6 +324,35 @@
         .slider.round:before {
             border-radius: 50%;
         }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* Tooltip Styles */
+        .tooltip {
+            position: absolute;
+            background-color: #333;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            border: 1px solid var(--border-color);
+            white-space: pre-line;
+            /* Handle newlines */
+            max-width: 300px;
+        }
+
+        thead th:hover {
+            background-color: #2c2c2c;
+            /* Slight highlight */
+            cursor: help;
+        }
     </style>
 </head>
 
@@ -334,7 +363,7 @@
     </div>
 
     <header>
-        <h1>Menu Explorer</h1>
+        <h1>페이북 앱 화면 이동 기반데이터 조회</h1>
         <div class="controls">
             <div class="env-toggle-wrapper">
                 <span id="envLabel" style="color: #81c784;">운영기</span>
@@ -386,7 +415,7 @@
     <script>
         const PROD_URL = 'https://cdn.paybooc.co.kr/cbf/pybcmenu/menu_final.json';
         const DEV_URL = 'https://dev-cdn.paybooc.co.kr/cbf/pybcmenu/menu_final.json';
-
+        const RESET_URL = 'https://dev-cdn.paybooc.co.kr/cbf/pybcmenu/menu_final.json';
         let rawData = [];
         let ynFields = [];
 
@@ -508,8 +537,31 @@
             // Let's do dynamic headers for robustness.
 
             if (rawData.length > 0) {
+                // Column Descriptions Map
+                const columnDescriptions = {
+                    'scrnId': '화면ID',
+                    'scrnNm': '화면이름',
+                    'linkTypCd': "'02' 전체웹뷰\n'03' 탭바웹뷰\n'04' 아웃링크",
+                    'menuLinkUrlAddr': '이동할 페이지 URL',
+                    'menuScrnTypCd': "'N' 네이티브\n'R' SPA 웹리액트\n'P' CDN호스트 웹페이지\n'W','O' MPA 웹",
+                    'stepPgeYn': '단계페이지 여부',
+                    'pgeOpenYn': '새창으로 띄울지 여부',
+                    'liqtCtrlYn': '유량제어 사용 여부'
+                };
+
                 const keys = Object.keys(rawData[0]);
-                theadRow.innerHTML = keys.map(k => `<th>${k}</th>`).join('');
+
+                // Generate Headers with Tooltips
+                theadRow.innerHTML = keys.map(k => {
+                    const desc = columnDescriptions[k] || '';
+                    return `<th data-desc="${desc.replace(/"/g, '&quot;')}">${k}</th>`;
+                }).join('');
+
+                // Attach Tooltip Events
+                document.querySelectorAll('#dataTable th').forEach(th => {
+                    th.addEventListener('mouseenter', showTooltip);
+                    th.addEventListener('mouseleave', hideTooltip);
+                });
 
                 const filtered = filterData();
 
@@ -525,6 +577,32 @@
                     }).join('');
                     tbody.appendChild(tr);
                 });
+            }
+        }
+
+        let tooltipEl = null;
+
+        function showTooltip(e) {
+            const desc = e.target.getAttribute('data-desc');
+            if (!desc) return;
+
+            if (!tooltipEl) {
+                tooltipEl = document.createElement('div');
+                tooltipEl.className = 'tooltip';
+                document.body.appendChild(tooltipEl);
+            }
+
+            tooltipEl.textContent = desc;
+            tooltipEl.style.opacity = '1';
+
+            const rect = e.target.getBoundingClientRect();
+            tooltipEl.style.left = rect.left + 'px';
+            tooltipEl.style.top = (rect.bottom + 5) + 'px'; // Position below header
+        }
+
+        function hideTooltip() {
+            if (tooltipEl) {
+                tooltipEl.style.opacity = '0';
             }
         }
 
