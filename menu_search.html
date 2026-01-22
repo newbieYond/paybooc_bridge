@@ -27,7 +27,10 @@
             font-family: var(--font-family);
             background-color: var(--bg-color);
             color: var(--text-color);
-            min-height: 100vh;
+            height: 100vh;
+            /* Fixed height for viewport */
+            overflow: hidden;
+            /* Prevent body scroll */
             display: flex;
             flex-direction: column;
         }
@@ -39,10 +42,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: sticky;
-            top: 0;
             z-index: 100;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+            /* Prevent header from shrinking */
         }
 
         h1 {
@@ -97,6 +100,16 @@
             transform: translateY(0);
         }
 
+        /* Warning/Reset Button */
+        button.reset-btn {
+            background-color: #cf6679;
+            color: #fff;
+        }
+
+        button.reset-btn:hover {
+            background-color: #b00020;
+        }
+
         /* Filter Dashboard */
         .filter-dashboard {
             background-color: var(--surface-color);
@@ -105,6 +118,12 @@
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 1rem;
             border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+            /* Prevent filters from shrinking */
+            max-height: 250px;
+            /* Optional cap just in case */
+            overflow-y: auto;
+            /* Internal scroll if too many filters */
         }
 
         .filter-group {
@@ -122,8 +141,12 @@
         /* Table Container */
         .table-container {
             flex: 1;
+            /* Take remaining height */
             overflow: auto;
+            /* Enable scrolling */
             padding: 0;
+            position: relative;
+            /* Context for sticky */
         }
 
         table {
@@ -140,10 +163,12 @@
             text-align: left;
             padding: 1rem;
             position: sticky;
+            /* Sticky to top of container */
             top: 0;
             z-index: 10;
             font-weight: 600;
             border-bottom: 2px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         tbody td {
@@ -320,6 +345,7 @@
             </div>
             <input type="text" id="globalSearch" placeholder="Search anything... (ID, Name, URL)" style="width: 300px;">
             <button id="refreshBtn">Refresh Data</button>
+            <button id="resetBtn" class="reset-btn">Reset Filters</button>
         </div>
     </header>
 
@@ -378,6 +404,7 @@
             document.getElementById('refreshBtn').addEventListener('click', fetchData);
             document.getElementById('globalSearch').addEventListener('input', renderTable);
             document.getElementById('filter-menuScrnTypCd').addEventListener('change', renderTable);
+            document.getElementById('resetBtn').addEventListener('click', resetFilters);
 
             // Toggle Listener
             toggle.addEventListener('change', () => {
@@ -533,6 +560,23 @@
 
         function showLoading(show) {
             document.getElementById('loading').style.display = show ? 'flex' : 'none';
+        }
+
+        function resetFilters() {
+            // Clear global search
+            document.getElementById('globalSearch').value = '';
+
+            // Clear static filter
+            document.getElementById('filter-menuScrnTypCd').value = '';
+
+            // Clear dynamic filters
+            ynFields.forEach(field => {
+                const el = document.getElementById(`filter-${field}`);
+                if (el) el.value = '';
+            });
+
+            // Re-render
+            renderTable();
         }
     </script>
 
