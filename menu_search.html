@@ -225,6 +225,80 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
+
+        /* Toggle Button */
+        .env-toggle-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-right: 15px;
+            background: #2a2a2a;
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        #envLabel {
+            font-weight: 700;
+            font-size: 0.9rem;
+            min-width: 45px;
+            text-align: center;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #555;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+        }
+
+        input:checked+.slider {
+            background-color: var(--primary-color);
+        }
+
+        input:focus+.slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(20px);
+        }
+
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
     </style>
 </head>
 
@@ -237,6 +311,13 @@
     <header>
         <h1>Menu Explorer</h1>
         <div class="controls">
+            <div class="env-toggle-wrapper">
+                <span id="envLabel" style="color: #81c784;">운영기</span>
+                <label class="switch">
+                    <input type="checkbox" id="envToggle">
+                    <span class="slider round"></span>
+                </label>
+            </div>
             <input type="text" id="globalSearch" placeholder="Search anything... (ID, Name, URL)" style="width: 300px;">
             <button id="refreshBtn">Refresh Data</button>
         </div>
@@ -277,24 +358,52 @@
     </div>
 
     <script>
-        const DATA_URL = 'https://cdn.paybooc.co.kr/cbf/pybcmenu/menu_final.json';
+        const PROD_URL = 'https://cdn.paybooc.co.kr/cbf/pybcmenu/menu_final.json';
+        const DEV_URL = 'https://dev-cdn.paybooc.co.kr/cbf/pybcmenu/menu_final.json';
+
         let rawData = [];
         let ynFields = [];
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            // 1. Force PROD default (unchecked) immediately to override browser cache
+            const toggle = document.getElementById('envToggle');
+            toggle.checked = false;
+            updateEnvLabel();
+
+            // 2. Initial Fetch (now guaranteed to be PROD unless code changes)
             fetchData();
 
-            // Event Listeners
+            // 3. Event Listeners
             document.getElementById('refreshBtn').addEventListener('click', fetchData);
             document.getElementById('globalSearch').addEventListener('input', renderTable);
             document.getElementById('filter-menuScrnTypCd').addEventListener('change', renderTable);
+
+            // Toggle Listener
+            toggle.addEventListener('change', () => {
+                updateEnvLabel();
+                fetchData();
+            });
         });
+
+        function updateEnvLabel() {
+            const isDev = document.getElementById('envToggle').checked;
+            const label = document.getElementById('envLabel');
+            label.textContent = isDev ? '개발기' : '운영기';
+            label.style.color = isDev ? '#ffb74d' : '#81c784';
+        }
 
         async function fetchData() {
             showLoading(true);
+            const isDev = document.getElementById('envToggle').checked;
+            const url = isDev ? DEV_URL : PROD_URL;
+            // console.log('Fetching from:', url);
+
             try {
-                const res = await fetch(DATA_URL);
+                // Prevent caching: add timestamp and use no-store
+                const finalUrl = `${url}?t=${new Date().getTime()}`;
+                const res = await fetch(finalUrl, { cache: 'no-store' });
+
                 if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
                 rawData = await res.json();
 
@@ -304,7 +413,7 @@
 
             } catch (err) {
                 console.error(err);
-                alert('Failed to load data: ' + err.message);
+                alert(`Failed to load data from ${isDev ? '개발기' : '운영기'}: ` + err.message);
             } finally {
                 showLoading(false);
             }
