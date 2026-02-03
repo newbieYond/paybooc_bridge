@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>재무실적관리 대시보드</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'Noto Sans KR', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            900: '#134e4a',
+                        },
+                        dark: {
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            border: '#334155'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .table-header {
+            background: rgba(15, 23, 42, 0.9);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        .caret-icon {
+            transition: transform 0.2s ease;
+        }
+
+        .caret-open {
+            transform: rotate(90deg);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen p-6 font-sans">
+
+    <!-- Header -->
+    <header class="mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
+                <i class="ph-fill ph-chart-polar text-brand-500"></i>
+                재무실적관리 대시보드
+            </h1>
+            <p class="text-slate-400 mt-1 text-sm">Financial Performance Management System</p>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="text-right">
+                <div id="current-date" class="text-white font-medium"></div>
+                <div id="current-time" class="text-brand-500 text-sm font-bg"></div>
+            </div>
+            <button onclick="window.location.reload()"
+                class="p-2 rounded-lg bg-dark-card hover:bg-slate-700 border border-dark-border text-slate-300 transition-colors">
+                <i class="ph ph-arrow-clockwise text-xl"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Summary Section (CSV 1) -->
+    <section id="summary-section" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Revenue Card -->
+        <article class="glass-panel rounded-2xl p-6 relative overflow-hidden group">
+            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <i class="ph-fill ph-trend-up text-9xl text-brand-500"></i>
+            </div>
+
+            <div class="relative z-10">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span
+                            class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/20 text-brand-500 border border-brand-500/30 mb-2">
+                            Revenue
+                        </span>
+                        <h2 class="text-2xl font-bold text-white">수익</h2>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <p class="text-slate-400 text-xs uppercase tracking-wider">전년도 실적</p>
+                        <p class="text-xl font-bold text-slate-200" id="rev-prev">Loading...</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-xs uppercase tracking-wider">당년 경영계획</p>
+                        <p class="text-xl font-bold text-slate-200" id="rev-plan">Loading...</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-xs uppercase tracking-wider">당년 목표</p>
+                        <p class="text-2xl font-bold text-white" id="rev-goal">Loading...</p>
+                    </div>
+                </div>
+
+                <div class="h-48 w-full">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </article>
+
+        <!-- Profit Card -->
+        <article class="glass-panel rounded-2xl p-6 relative overflow-hidden group">
+            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <i class="ph-fill ph-coins text-9xl text-blue-500"></i>
+            </div>
+
+            <div class="relative z-10">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span
+                            class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30 mb-2">
+                            Operating Profit
+                        </span>
+                        <h2 class="text-2xl font-bold text-white">영업이익</h2>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <p class="text-slate-400 text-xs uppercase tracking-wider">전년도 실적</p>
+                        <p class="text-xl font-bold text-slate-200" id="prof-prev">Loading...</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-xs uppercase tracking-wider">당년 경영계획</p>
+                        <p class="text-xl font-bold text-slate-200" id="prof-plan">Loading...</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-xs uppercase tracking-wider">당년 목표</p>
+                        <p class="text-2xl font-bold text-white" id="prof-goal">Loading...</p>
+                    </div>
+                </div>
+
+                <div class="h-48 w-full">
+                    <canvas id="profitChart"></canvas>
+                </div>
+            </div>
+        </article>
+    </section>
+
+    <!-- Detailed Table Section (CSV 2) -->
+    <section class="glass-panel rounded-2xl p-1 overflow-hidden">
+        <div class="p-6 border-b border-dark-border flex justify-between items-center">
+            <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                <i class="ph-fill ph-table text-slate-400"></i>
+                상세 실적 현황
+            </h3>
+            <div class="flex gap-2">
+                <div class="relative">
+                    <i
+                        class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500"></i>
+                    <input type="text" id="searchInput" placeholder="검색..."
+                        class="bg-dark-bg border border-dark-border text-sm rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-white placeholder-slate-500 w-64">
+                </div>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar">
+            <table class="w-full text-sm text-left text-slate-300">
+                <thead class="text-xs text-slate-400 uppercase bg-dark-bg table-header shadow-md">
+                    <tr>
+                        <th scope="col" class="px-6 py-4 rounded-tl-lg">LV1</th>
+                        <th scope="col" class="px-6 py-4">LV2</th>
+                        <th scope="col" class="px-6 py-4">LV3</th>
+                        <th scope="col" class="px-6 py-4">LV4 (BM)</th>
+                        <th scope="col" class="px-6 py-4">조직</th>
+                        <th scope="col" class="px-6 py-4 text-right">전월누적달성률</th>
+                        <th scope="col" class="px-6 py-4 text-right">당월 목표</th>
+                        <th scope="col" class="px-6 py-4 text-right">당월 실적(예상)</th>
+                        <th scope="col" class="px-6 py-4 text-right">당월 달성률</th>
+                        <th scope="col" class="px-6 py-4 text-right rounded-tr-lg">연간목표</th>
+                    </tr>
+                </thead>
+                <tbody id="details-table-body" class="divide-y divide-dark-border">
+                    <!-- Data Rows will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <script>
+        // --- 1. Utilities ---
+        const formatNumber = (num) => new Intl.NumberFormat('ko-KR').format(num);
+        const parseNum = (str) => parseFloat(String(str).replace(/,/g, '')) || 0;
+
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-date').textContent = now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('ko-KR');
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // --- 2. Data Fetching ---
+
+        async function loadData() {
+            try {
+                // Try fetching real CSV files
+                const [summaryRes, detailsRes] = await Promise.all([
+                    fetch('financial_summary.csv'),
+                    fetch('financial_details.csv')
+                ]);
+
+                if (!summaryRes.ok || !detailsRes.ok) throw new Error("CSV Fetch failed");
+
+                const summaryText = await summaryRes.text();
+                const detailsText = await detailsRes.text();
+
+                processSummaryData(Papa.parse(summaryText, { header: true }).data);
+                processDetailsData(Papa.parse(detailsText, { header: true }).data);
+
+            } catch (error) {
+                console.warn("Fetching CSVs failed, using fallback mock data.", error);
+                // Fallback Mock Data in case of file protocol restrictions (CORS)
+                useFallbackData();
+            }
+        }
+
+        function useFallbackData() {
+            const mockSummary = [
+                { Category: "수익", PrevYearPerf: "15800", CurrYearPlan: "16500", CurrYearOrgGoal: "17000", CurrYearSGGoal: "18500" },
+                { Category: "영업이익", PrevYearPerf: "4500", CurrYearPlan: "5200", CurrYearOrgGoal: "5800", CurrYearSGGoal: "6500" }
+            ];
+
+            const mockDetails = [
+                { LV1: "수익", LV2: "결제수수료", LV3: "신용카드", LV4: "가맹점수수료", Dept: "영업1팀", PrevMonthRate: "104.2", CurrMonthGoal: "450", CurrMonthEst: "460", CurrMonthRate: "102.2", CurrYearGoal: "5500" },
+                { LV1: "수익", LV2: "결제수수료", LV3: "신용카드", LV4: "할부수수료", Dept: "영업1팀", PrevMonthRate: "101.7", CurrMonthGoal: "110", CurrMonthEst: "115", CurrMonthRate: "104.5", CurrYearGoal: "1300" },
+                { LV1: "수익", LV2: "결제수수료", LV3: "체크카드", LV4: "가맹점수수료", Dept: "영업2팀", PrevMonthRate: "104.2", CurrMonthGoal: "220", CurrMonthEst: "230", CurrMonthRate: "104.5", CurrYearGoal: "2700" },
+                { LV1: "수익", LV2: "결제수수료", LV3: "체크카드", LV4: "후불교통", Dept: "영업2팀", PrevMonthRate: "103.3", CurrMonthGoal: "25", CurrMonthEst: "26", CurrMonthRate: "104.0", CurrYearGoal: "320" },
+                { LV1: "수익", LV2: "결제수수료", LV3: "법인카드", LV4: "공용카드", Dept: "법인영업팀", PrevMonthRate: "101.4", CurrMonthGoal: "130", CurrMonthEst: "135", CurrMonthRate: "103.8", CurrYearGoal: "1600" },
+                { LV1: "수익", LV2: "결제수수료", LV3: "간편결제", LV4: "앱카드", Dept: "디지털사업팀", PrevMonthRate: "110.0", CurrMonthGoal: "100", CurrMonthEst: "110", CurrMonthRate: "110.0", CurrYearGoal: "1200" },
+                { LV1: "수익", LV2: "금융수익", LV3: "카드론", LV4: "이자수익", Dept: "금융사업팀", PrevMonthRate: "102.8", CurrMonthGoal: "310", CurrMonthEst: "320", CurrMonthRate: "103.2", CurrYearGoal: "3800" },
+                { LV1: "수익", LV2: "금융수익", LV3: "현금서비스", LV4: "취급수수료", Dept: "금융사업팀", PrevMonthRate: "96.0", CurrMonthGoal: "90", CurrMonthEst: "85", CurrMonthRate: "94.4", CurrYearGoal: "1100" },
+                { LV1: "수익", LV2: "금융수익", LV3: "리볼빙", LV4: "이자수익", Dept: "금융사업팀", PrevMonthRate: "102.5", CurrMonthGoal: "80", CurrMonthEst: "82", CurrMonthRate: "102.5", CurrYearGoal: "950" },
+                { LV1: "수익", LV2: "플랫폼수익", LV3: "데이터사업", LV4: "데이터판매", Dept: "데이터사업팀", PrevMonthRate: "112.0", CurrMonthGoal: "50", CurrMonthEst: "55", CurrMonthRate: "110.0", CurrYearGoal: "600" },
+                { LV1: "수익", LV2: "플랫폼수익", LV3: "쇼핑몰", LV4: "중개수수료", Dept: "커머스팀", PrevMonthRate: "91.7", CurrMonthGoal: "25", CurrMonthEst: "22", CurrMonthRate: "88.0", CurrYearGoal: "300" },
+                { LV1: "수익", LV2: "구독서비스", LV3: "정기구독", LV4: "넷플릭스제휴", Dept: "마케팅팀", PrevMonthRate: "116.7", CurrMonthGoal: "15", CurrMonthEst: "18", CurrMonthRate: "120.0", CurrYearGoal: "150" },
+                { LV1: "영업이익", LV2: "결제이익", LV3: "신용카드", LV4: "마진", Dept: "영업1팀", PrevMonthRate: "105.0", CurrMonthGoal: "80", CurrMonthEst: "85", CurrMonthRate: "106.3", CurrYearGoal: "950" },
+                { LV1: "영업이익", LV2: "결제이익", LV3: "간편결제", LV4: "마진", Dept: "디지털사업팀", PrevMonthRate: "110.0", CurrMonthGoal: "20", CurrMonthEst: "25", CurrMonthRate: "125.0", CurrYearGoal: "250" },
+                { LV1: "영업이익", LV2: "금융이익", LV3: "카드론", LV4: "SPREAD", Dept: "금융사업팀", PrevMonthRate: "106.3", CurrMonthGoal: "140", CurrMonthEst: "150", CurrMonthRate: "107.1", CurrYearGoal: "1700" },
+                { LV1: "영업이익", LV2: "금융이익", LV3: "리볼빙", LV4: "SPREAD", Dept: "금융사업팀", PrevMonthRate: "103.6", CurrMonthGoal: "28", CurrMonthEst: "30", CurrMonthRate: "107.1", CurrYearGoal: "320" },
+                { LV1: "영업이익", LV2: "비용", LV3: "판관비", LV4: "인건비", Dept: "인사팀", PrevMonthRate: "97.6", CurrMonthGoal: "-350", CurrMonthEst: "-355", CurrMonthRate: "98.6", CurrYearGoal: "-4200" },
+                { LV1: "영업이익", LV2: "비용", LV3: "판관비", LV4: "임차료", Dept: "총무팀", PrevMonthRate: "100.0", CurrMonthGoal: "-42", CurrMonthEst: "-42", CurrMonthRate: "100.0", CurrYearGoal: "-520" },
+                { LV1: "영업이익", LV2: "비용", LV3: "마케팅비", LV4: "포인트적립", Dept: "마케팅팀", PrevMonthRate: "96.3", CurrMonthGoal: "-220", CurrMonthEst: "-230", CurrMonthRate: "95.7", CurrYearGoal: "-2800" },
+                { LV1: "영업이익", LV2: "비용", LV3: "마케팅비", LV4: "유치수수료", Dept: "마케팅팀", PrevMonthRate: "96.2", CurrMonthGoal: "-90", CurrMonthEst: "-95", CurrMonthRate: "94.7", CurrYearGoal: "-1100" },
+                { LV1: "영업이익", LV2: "비용", LV3: "대손비용", LV4: "대손상각비", Dept: "리스크팀", PrevMonthRate: "109.4", CurrMonthGoal: "-60", CurrMonthEst: "-55", CurrMonthRate: "109.1", CurrYearGoal: "-800" }
+            ];
+
+            processSummaryData(mockSummary);
+            processDetailsData(mockDetails);
+        }
+
+        // --- 3. Parsing & Visualization ---
+
+        function processSummaryData(data) {
+            // Find rows
+            const revenue = data.find(row => row.Category && row.Category.includes("수익")) || {};
+            const profit = data.find(row => row.Category && row.Category.includes("영업이익")) || {};
+
+            // Render Revenue
+            document.getElementById('rev-prev').innerText = formatNumber(revenue.PrevYearPerf);
+            document.getElementById('rev-plan').innerText = formatNumber(revenue.CurrYearPlan);
+            document.getElementById('rev-goal').innerText = formatNumber(revenue.CurrYearOrgGoal);
+            renderChart('revenueChart', revenue, '#14b8a6'); // Teal
+
+            // Render Profit
+            document.getElementById('prof-prev').innerText = formatNumber(profit.PrevYearPerf);
+            document.getElementById('prof-plan').innerText = formatNumber(profit.CurrYearPlan);
+            document.getElementById('prof-goal').innerText = formatNumber(profit.CurrYearOrgGoal);
+            renderChart('profitChart', profit, '#3b82f6'); // Blue
+        }
+
+        function renderChart(canvasId, data, color) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+
+            // Clean data
+            const values = [
+                parseNum(data.PrevYearPerf),
+                parseNum(data.CurrYearPlan),
+                parseNum(data.CurrYearOrgGoal),
+                parseNum(data.CurrYearSGGoal)
+            ];
+
+            if (window[canvasId + 'Inst']) window[canvasId + 'Inst'].destroy();
+
+            window[canvasId + 'Inst'] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['전년실적', '경영계획', '조직목표', 'SG도전'],
+                    datasets: [{
+                        label: '금액 (억)',
+                        data: values,
+                        backgroundColor: (ctx) => {
+                            const v = ctx.raw;
+                            const max = Math.max(...values);
+                            if (v === max) return color;
+                            return color + '80';
+                        },
+                        borderRadius: 6,
+                        barThickness: 40,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#fff',
+                            bodyColor: '#cbd5e1',
+                            borderColor: '#334155',
+                            borderWidth: 1,
+                            padding: 10
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#334155', drawBorder: false },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#e2e8f0', font: { weight: '500' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function processDetailsData(data) {
+            const tbody = document.getElementById('details-table-body');
+            tbody.innerHTML = '';
+
+            // 1. Group Data: LV1 -> LV2 -> LV3
+            const hierarchy = {};
+
+            data.forEach(row => {
+                if (!row.LV1) return;
+
+                // Init LV1
+                if (!hierarchy[row.LV1]) hierarchy[row.LV1] = { items: [], subgroups: {}, stats: createStats() };
+                accumulateStats(hierarchy[row.LV1].stats, row);
+
+                // Init LV2
+                if (!hierarchy[row.LV1].subgroups[row.LV2]) {
+                    hierarchy[row.LV1].subgroups[row.LV2] = { items: [], subgroups: {}, stats: createStats() };
+                }
+                accumulateStats(hierarchy[row.LV1].subgroups[row.LV2].stats, row);
+
+                // Init LV3
+                if (!hierarchy[row.LV1].subgroups[row.LV2].subgroups[row.LV3]) {
+                    hierarchy[row.LV1].subgroups[row.LV2].subgroups[row.LV3] = { items: [], stats: createStats() };
+                }
+                accumulateStats(hierarchy[row.LV1].subgroups[row.LV2].subgroups[row.LV3].stats, row);
+
+                // Add Item
+                hierarchy[row.LV1].subgroups[row.LV2].subgroups[row.LV3].items.push(row);
+            });
+
+            // 2. Render Groups
+            let lv1Idx = 0;
+            for (const [lv1Name, lv1Data] of Object.entries(hierarchy)) {
+                lv1Idx++;
+                const lv1Id = `group-${lv1Idx}`;
+
+                // Render LV1 (Total)
+                renderRow(tbody, { type: 'LV1', name: lv1Name, stats: calculateRates(lv1Data.stats), id: lv1Id, level: 1 });
+
+                let lv2Idx = 0;
+                for (const [lv2Name, lv2Data] of Object.entries(lv1Data.subgroups)) {
+                    lv2Idx++;
+                    const lv2Id = `${lv1Id}-${lv2Idx}`;
+
+                    // Render LV2 (Subtotal)
+                    renderRow(tbody, { type: 'LV2', name: lv2Name, stats: calculateRates(lv2Data.stats), id: lv2Id, parentId: lv1Id, level: 2 });
+
+                    let lv3Idx = 0;
+                    for (const [lv3Name, lv3Data] of Object.entries(lv2Data.subgroups)) {
+                        lv3Idx++;
+                        const lv3Id = `${lv2Id}-${lv3Idx}`;
+
+                        // Render LV3 (Subtotal)
+                        renderRow(tbody, { type: 'LV3', name: lv3Name, stats: calculateRates(lv3Data.stats), id: lv3Id, parentId: lv2Id, level: 3 });
+
+                        // Render Items (LV4)
+                        lv3Data.items.forEach(item => {
+                            // Calculate stats dynamically for ITEM level too to ensure consistency
+                            const itemStats = {
+                                PrevMonthGoalCum: parseNum(item.PrevMonthGoalCum),
+                                PrevMonthPerfCum: parseNum(item.PrevMonthPerfCum),
+                                CurrMonthGoal: parseNum(item.CurrMonthGoal),
+                                CurrMonthEst: parseNum(item.CurrMonthEst),
+                                CurrYearGoal: parseNum(item.CurrYearGoal)
+                            };
+                            const calculatedItem = {
+                                ...item, // keep original text fields (LV4, Dept)
+                                ...calculateRates(itemStats) // overwrite Rates with calculated ones
+                            };
+
+                            renderRow(tbody, { type: 'ITEM', data: calculatedItem, parentId: lv3Id, level: 4 });
+                        });
+                    }
+                }
+            }
+        }
+
+        function createStats() {
+            return {
+                PrevMonthGoalCum: 0,
+                PrevMonthPerfCum: 0,
+                CurrMonthGoal: 0,
+                CurrMonthEst: 0,
+                CurrYearGoal: 0
+            };
+        }
+
+        function accumulateStats(stats, row) {
+            stats.PrevMonthGoalCum += parseNum(row.PrevMonthGoalCum || 0);
+            stats.PrevMonthPerfCum += parseNum(row.PrevMonthPerfCum || 0);
+            stats.CurrMonthGoal += parseNum(row.CurrMonthGoal || 0);
+            stats.CurrMonthEst += parseNum(row.CurrMonthEst || 0);
+            stats.CurrYearGoal += parseNum(row.CurrYearGoal || 0);
+        }
+
+        function calculateRates(stats) {
+            return {
+                ...stats,
+                PrevMonthRate: stats.PrevMonthGoalCum ? (stats.PrevMonthPerfCum / stats.PrevMonthGoalCum * 100).toFixed(1) : 0,
+                CurrMonthRate: stats.CurrMonthGoal ? (stats.CurrMonthEst / stats.CurrMonthGoal * 100).toFixed(1) : 0
+            };
+        }
+
+        // --- Toggle Logic ---
+        window.toggleRow = function (id) {
+            const row = document.getElementById(id); // The row header itself (if we want to style it)
+            const caret = document.getElementById(`caret-${id}`);
+
+            // Toggle Caret
+            if (caret) caret.classList.toggle('caret-open');
+
+            // Find all immediate children
+            const children = document.querySelectorAll(`[data-parent-id="${id}"]`);
+
+            children.forEach(child => {
+                const isHidden = child.style.display === 'none';
+                if (isHidden) {
+                    // Show row
+                    child.style.display = '';
+                    // BUT: If this child is itself a group that is collapsed, do NOT show its children
+                    // We only show direct children. Their children state is preserved by their own logic?
+                    // Actually, simple logic: Toggle direct children.
+                    // If opening, check if the child is a group (has a caret). If it has a caret that is OPEN, we should recursively open?
+                    // No, simpler: Just toggle direct children display.
+
+                    // However, if we show a child row which is an LV2/LV3 header, and IT was closed, their children remain closed (display:none).
+                    // This works naturally because we only target `[data-parent-id="${id}"]`.
+                } else {
+                    // Hide row
+                    child.style.display = 'none';
+                    // Recursively hide descendants!
+                    // If we hide LV1, we must also ensure LV2's children are hidden, etc.
+                    // We can do this by finding all rows that are descendants.
+                    hideRecursively(child.id);
+                }
+            });
+        };
+
+        function hideRecursively(parentId) {
+            if (!parentId) return;
+            const children = document.querySelectorAll(`[data-parent-id="${parentId}"]`);
+            children.forEach(child => {
+                child.style.display = 'none';
+                hideRecursively(child.id);
+            });
+        }
+
+
+        function renderRow(tbody, { type, name, stats, data, id, parentId, level }) {
+            const tr = document.createElement('tr');
+            if (id) tr.id = id;
+            if (parentId) tr.setAttribute('data-parent-id', parentId);
+
+            // --- Styling per level ---
+            let bgClass = "";
+            let nameCell = "";
+            let prevRate, currGoal, currEst, currRate, yearGoal;
+
+            // Indentation logic
+            const paddingLeft = (level - 1) * 1.5;
+
+            if (type === 'ITEM') {
+                tr.className = "hover:bg-slate-800/50 transition-colors border-b border-dark-border";
+
+                nameCell = `
+                    <td class="px-6 py-4"></td>
+                    <td class="px-6 py-4"></td>
+                    <td class="px-6 py-4"></td>
+                    <td class="px-6 py-4 text-white pl-4 border-l border-slate-700/50">${data.LV4 || '-'}</td>
+                    <td class="px-6 py-4"><span class="px-2 py-1 rounded bg-slate-700 text-xs text-slate-300 ml-4">${data.Dept}</span></td>
+                `;
+
+                prevRate = data.PrevMonthRate;
+                currGoal = data.CurrMonthGoal;
+                currEst = data.CurrMonthEst;
+                currRate = data.CurrMonthRate;
+                yearGoal = data.CurrYearGoal;
+
+            } else {
+                // Header Rows (LV1, LV2, LV3)
+                // Add Caret
+                const caret = `<i id="caret-${id}" class="ph-bold ph-caret-right caret-icon caret-open inline-block mr-2"></i>`;
+                const clickAttr = `onclick="toggleRow('${id}')" style="cursor: pointer;"`;
+
+                if (type === 'LV1') {
+                    tr.className = "bg-slate-700/50 border-b border-white/10 font-bold text-white hover:bg-slate-700/70";
+                    nameCell = `
+                        <td class="px-6 py-4 text-brand-500 text-lg group-total" colspan="5" ${clickAttr}>
+                            ${caret} ${name} <span class="text-sm font-normal text-slate-300 ml-2">Total</span>
+                        </td>
+                    `;
+                } else if (type === 'LV2') {
+                    tr.className = "bg-slate-800/80 border-b border-dark-border font-medium hover:bg-slate-800";
+                    nameCell = `
+                        <td class="px-6 py-3"></td>
+                        <td class="px-6 py-3 text-brand-100" colspan="4" ${clickAttr}>
+                            ${caret} ${name} <span class="text-xs text-slate-400 bg-slate-700 px-1.5 rounded ml-2">Subtotal</span>
+                        </td>
+                    `;
+                } else if (type === 'LV3') {
+                    tr.className = "bg-slate-800/40 border-b border-dark-border font-medium text-slate-200 hover:bg-slate-800/60";
+                    nameCell = `
+                        <td class="px-6 py-3"></td>
+                        <td class="px-6 py-3"></td>
+                        <td class="px-6 py-3" colspan="3" ${clickAttr}>
+                            ${caret} ${name}
+                        </td>
+                    `;
+                }
+
+                prevRate = stats.PrevMonthRate;
+                currGoal = stats.CurrMonthGoal;
+                currEst = stats.CurrMonthEst;
+                currRate = stats.CurrMonthRate;
+                yearGoal = stats.CurrYearGoal;
+            }
+
+            // Rate Coloring
+            const rateVal = parseFloat(currRate);
+            let rateClass = "text-slate-300";
+            if (rateVal >= 100) rateClass = "text-emerald-400 font-bold";
+            else if (rateVal < 90) rateClass = "text-rose-400 font-bold";
+
+            if (type === 'LV1') rateClass += " text-lg";
+
+            tr.innerHTML = `
+                ${nameCell}
+                <td class="px-6 py-4 text-right ${parseFloat(prevRate) >= 100 ? 'text-emerald-400' : 'text-slate-300'}">${formatNumber(prevRate)}%</td>
+                <td class="px-6 py-4 text-right text-slate-400">${formatNumber(currGoal)}</td>
+                <td class="px-6 py-4 text-right text-white">${formatNumber(currEst)}</td>
+                <td class="px-6 py-4 text-right ${rateClass}">${formatNumber(currRate)}%</td>
+                <td class="px-6 py-4 text-right text-white">${formatNumber(yearGoal)}</td>
+            `;
+
+            tbody.appendChild(tr);
+        }
+
+        // --- 4. Search Functionality ---
+        document.getElementById('searchInput').addEventListener('keyup', function (e) {
+            const term = e.target.value.toLowerCase();
+            const allRows = document.querySelectorAll('#details-table-body tr');
+
+            // Simple approach: Show row if text matches, otherwise hide
+            // BUT: With hierarchy it's tricky.
+            // Better approach: If search is empty, Restore all to 'table-row' (or respect hierarchy? Hard to respect hierarchy state easily).
+            // For now: Just filter all rows properly.
+
+            if (term === '') {
+                // Reset: Show everything? Or just reload data to reset state?
+                // Reloading data is safest to reset toggle state
+                loadData();
+                return;
+            }
+
+            allRows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                // If it's a header row (LV1/LV2/LV3), always show it if ANY of its children match?
+                // Or just show if the row itself matches?
+                // Simplification for search: Just show matching rows.
+                if (text.includes(term)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        // Initialize
+        loadData();
+
+    </script>
+</body>
+
+</html>
