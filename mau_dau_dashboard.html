@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="km">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAU/MAU Analytics Dashboard</title>
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --border-color: #334155;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .controls {
+            background-color: var(--card-bg);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        select {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            outline: none;
+            cursor: pointer;
+            min-width: 250px;
+        }
+
+        select:focus {
+            border-color: var(--accent-color);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .chart-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .chart-container {
+            flex: 1;
+            position: relative;
+            min-height: 0;
+        }
+
+        /* Loading State */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid var(--text-secondary);
+            border-bottom-color: var(--accent-color);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Stats row if needed */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-change {
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        .text-up {
+            color: var(--success-color);
+        }
+
+        .text-down {
+            color: var(--danger-color);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="loading">
+        <div class="loader"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>서비스 분석 대시보드</h1>
+            <div class="controls">
+                <label for="serviceSelect">서비스 선택:</label>
+                <select id="serviceSelect">
+                    <!-- Javascript will populate this -->
+                </select>
+            </div>
+        </header>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-label">총 DAU (최신)</div>
+                <div class="stat-value" id="stat-dau">-</div>
+                <div class="stat-change" id="stat-dau-change"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">총 MAU (최신)</div>
+                <div class="stat-value" id="stat-mau">-</div>
+                <div class="stat-change" id="stat-mau-change"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">DAU 순증감 (전일 대비)</div>
+                <div class="stat-value" id="stat-net-dau">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">월 평균 DAU</div>
+                <div class="stat-value" id="stat-avg-dau">-</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">일간 활성 사용자 (DAU) 추이</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="dauChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">월간 활성 사용자 (MAU) 추이</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="mauChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card full-width">
+                <div class="chart-header">
+                    <div class="chart-title">일별 순증감 (전일 대비)</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="netIncreaseChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const CSV_FILE = 'mau_dau_data.csv';
+        const COLORS = {
+            dau: '#3b82f6', // Blue
+            mau: '#10b981', // Emerald
+            netPositive: '#10b981',
+            netNegative: '#ef4444',
+            grid: '#334155'
+        };
+
+        // State
+        let rawData = [];
+        let services = [];
+        let charts = {};
+
+        // Load Data
+
+
+        // Load Data
+
+
+        // Initial Load Logic
+        Papa.parse(CSV_FILE, {
+            download: true,
+            header: true,
+            dynamicTyping: true,
+            skipEmptyLines: true,
+            complete: function (results) {
+                rawData = results.data;
+                initDashboard();
+                document.getElementById('loading').style.display = 'none';
+            },
+            error: function (err) {
+                console.warn("CSV 로드 실패:", err);
+                document.getElementById('loading').style.display = 'none';
+                alert("'mau_dau_data.csv' 파일을 로드할 수 없습니다. 로컬 웹 서버를 실행 중인지 확인해주세요 (CORS 정책).");
+            }
+        });
+
+        function initDashboard() {
+            // Extract unique services
+            const serviceSet = new Set(rawData.map(row => row.Service).filter(Boolean));
+            services = Array.from(serviceSet).sort();
+
+            // Populate Dropdown
+            const select = document.getElementById('serviceSelect');
+            const allOption = document.createElement('option');
+            allOption.value = 'ALL';
+            allOption.textContent = '전체 서비스 (합계)';
+            select.appendChild(allOption);
+
+            services.forEach(service => {
+                const option = document.createElement('option');
+                option.value = service;
+                option.textContent = service;
+                select.appendChild(option);
+            });
+
+            // Event Listener
+            select.addEventListener('change', (e) => updateDashboard(e.target.value));
+
+            // Initial Render
+            updateDashboard('ALL');
+        }
+
+        function processData(selectedService) {
+            // Group by Date
+            const groupedByDate = {};
+
+            rawData.forEach(row => {
+                if (!row.Date) return;
+
+                // Filter if specific service selected
+                if (selectedService !== 'ALL' && row.Service !== selectedService) return;
+
+                if (!groupedByDate[row.Date]) {
+                    groupedByDate[row.Date] = {
+                        date: row.Date,
+                        dau: 0,
+                        mau: 0
+                    };
+                }
+
+                groupedByDate[row.Date].dau += row.DAU || 0;
+                groupedByDate[row.Date].mau += row.MAU || 0;
+            });
+
+            // Convert to Array and Sort by Date
+            const sortedData = Object.values(groupedByDate).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            // Calculate Net Increases
+            for (let i = 0; i < sortedData.length; i++) {
+                if (i === 0) {
+                    sortedData[i].netDau = 0;
+                    sortedData[i].netMau = 0;
+                } else {
+                    sortedData[i].netDau = sortedData[i].dau - sortedData[i - 1].dau;
+                    sortedData[i].netMau = sortedData[i].mau - sortedData[i - 1].mau;
+                }
+            }
+
+            return sortedData;
+        }
+
+        function updateDashboard(selectedService) {
+            const data = processData(selectedService);
+
+            updateStats(data);
+            renderCharts(data);
+        }
+
+        function updateStats(data) {
+            if (!data || data.length === 0) return;
+
+            const latest = data[data.length - 1];
+            const previous = data.length > 1 ? data[data.length - 2] : null;
+
+            // Stat 1: Latest DAU
+            document.getElementById('stat-dau').textContent = latest.dau.toLocaleString();
+            if (previous) {
+                const diff = latest.dau - previous.dau;
+                const pct = ((diff / previous.dau) * 100).toFixed(1);
+                const el = document.getElementById('stat-dau-change');
+                el.innerHTML = `<span class="${diff >= 0 ? 'text-up' : 'text-down'}">${diff >= 0 ? '▲' : '▼'} ${Math.abs(diff).toLocaleString()} (${pct}%)</span> (전일 대비)`;
+            }
+
+            // Stat 2: Latest MAU
+            document.getElementById('stat-mau').textContent = latest.mau.toLocaleString();
+            if (previous) {
+                const diff = latest.mau - previous.mau;
+                const pct = ((diff / previous.mau) * 100).toFixed(1);
+                const el = document.getElementById('stat-mau-change');
+                el.innerHTML = `<span class="${diff >= 0 ? 'text-up' : 'text-down'}">${diff >= 0 ? '▲' : '▼'} ${Math.abs(diff).toLocaleString()} (${pct}%)</span> (전일 대비)`;
+            }
+
+            // Stat 3: Net DAU Change
+            const netDau = latest.netDau;
+            const netDauEl = document.getElementById('stat-net-dau');
+            netDauEl.textContent = (netDau > 0 ? '+' : '') + netDau.toLocaleString();
+            netDauEl.className = 'stat-value ' + (netDau >= 0 ? 'text-up' : 'text-down');
+
+            // Stat 4: Avg DAU
+            const avgDau = Math.round(data.reduce((acc, curr) => acc + curr.dau, 0) / data.length);
+            document.getElementById('stat-avg-dau').textContent = avgDau.toLocaleString();
+        }
+
+        function renderCharts(data) {
+            const labels = data.map(d => d.date);
+            const dauData = data.map(d => d.dau);
+            const mauData = data.map(d => d.mau);
+            const netDauData = data.map(d => d.netDau);
+
+            // Chart.js Default Config for Dark Theme
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.borderColor = '#334155';
+
+            // Destroy existing charts if they exist
+            if (charts.dau) charts.dau.destroy();
+            if (charts.mau) charts.mau.destroy();
+            if (charts.net) charts.net.destroy();
+
+            // 1. DAU Chart
+            const dauCtx = document.getElementById('dauChart').getContext('2d');
+            const dauGradient = dauCtx.createLinearGradient(0, 0, 0, 400);
+            dauGradient.addColorStop(0, 'rgba(59, 130, 246, 0.5)'); // Blue
+            dauGradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+            charts.dau = new Chart(dauCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'DAU',
+                        data: dauData,
+                        borderColor: COLORS.dau,
+                        backgroundColor: dauGradient,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 2,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: COLORS.grid } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 2. MAU Chart
+            const mauCtx = document.getElementById('mauChart').getContext('2d');
+            const mauGradient = mauCtx.createLinearGradient(0, 0, 0, 400);
+            mauGradient.addColorStop(0, 'rgba(16, 185, 129, 0.5)'); // Emerald
+            mauGradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+            charts.mau = new Chart(mauCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'MAU',
+                        data: mauData,
+                        borderColor: COLORS.mau,
+                        backgroundColor: mauGradient,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 2,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: COLORS.grid } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 3. Net Increase Chart
+            const netCtx = document.getElementById('netIncreaseChart').getContext('2d');
+            charts.net = new Chart(netCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Net DAU Change',
+                        data: netDauData,
+                        backgroundColor: netDauData.map(val => val >= 0 ? COLORS.netPositive : COLORS.netNegative),
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += (context.parsed.y > 0 ? '+' : '') + context.parsed.y;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { grid: { color: COLORS.grid } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+    </script>
+</body>
+
+</html>
