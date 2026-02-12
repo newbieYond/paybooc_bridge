@@ -94,155 +94,361 @@
         .caret-open {
             transform: rotate(90deg);
         }
+
+        /* Sidebar & Layout */
+        .layout-container {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+            /* Prevent sidebar from stretching */
+        }
+
+        .sidebar {
+            width: 280px;
+            flex-shrink: 0;
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            height: calc(100vh - 3rem);
+            position: sticky;
+            top: 1.5rem;
+            overflow-y: auto;
+            overflow-y: auto;
+            display: none;
+            /* Hidden by default */
+            flex-direction: column;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Tree View */
+        .tree-container {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .tree-node {
+            margin-bottom: 2px;
+        }
+
+        .tree-children {
+            margin-left: 1.2rem;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            padding-left: 0.5rem;
+            display: none;
+            /* Default collapsed or handle via JS */
+        }
+
+        .tree-children.expanded {
+            display: block;
+        }
+
+        .tree-row {
+            display: flex;
+            align-items: center;
+            padding: 6px 0;
+            gap: 8px;
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            transition: background 0.1s;
+        }
+
+        .tree-row:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tree-caret {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #64748b;
+            transition: transform 0.2s, color 0.2s;
+        }
+
+        .tree-caret:hover {
+            color: #94a3b8;
+        }
+
+        .tree-caret.expanded {
+            transform: rotate(90deg);
+        }
+
+        .tree-caret.leaf {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .tree-checkbox {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #475569;
+            border-radius: 4px;
+            background: #1e293b;
+            cursor: pointer;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .tree-checkbox:checked {
+            background: #14b8a6;
+            border-color: #14b8a6;
+        }
+
+        .tree-checkbox:checked::after {
+            content: '✔';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .tree-checkbox:indeterminate {
+            background: #0f766e;
+            border-color: #0f766e;
+        }
+
+        .tree-checkbox:indeterminate::after {
+            content: '-';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 14px;
+            line-height: 10px;
+        }
+
+        .tree-label {
+            cursor: pointer;
+            flex-grow: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 
 <body class="min-h-screen p-6 font-sans">
 
-    <!-- Header -->
-    <header class="mb-8 flex justify-between items-center">
-        <div>
-            <h1 class="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
-                <i class="ph-fill ph-chart-polar text-brand-500"></i>
-                재무실적관리 대시보드
-            </h1>
-            <p class="text-slate-400 mt-1 text-sm">Financial Performance Management System</p>
-        </div>
-        <div class="flex items-center gap-4">
-            <div class="text-right">
-                <div id="current-date" class="text-white font-medium"></div>
-                <div id="current-time" class="text-brand-500 text-sm font-bg"></div>
+    <div class="layout-container p-6">
+        <!-- Sidebar -->
+        <aside class="sidebar custom-scrollbar">
+            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <i class="ph-fill ph-funnel text-brand-500"></i>
+                필터
+            </h2>
+            <!-- Item Filter -->
+            <h3 class="text-sm font-bold text-slate-400 mb-2 uppercase tracking-wider border-b border-dark-border pb-2">
+                항목 (Category)</h3>
+            <div class="mb-4 flex gap-2">
+                <button onclick="expandAll(true)"
+                    class="text-xs px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-slate-300">모두 펼치기</button>
+                <button onclick="expandAll(false)"
+                    class="text-xs px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-slate-300">모두 접기</button>
             </div>
-            <button onclick="window.location.reload()"
-                class="p-2 rounded-lg bg-dark-card hover:bg-slate-700 border border-dark-border text-slate-300 transition-colors">
-                <i class="ph ph-arrow-clockwise text-xl"></i>
-            </button>
-        </div>
-    </header>
-
-    <!-- Summary Section (CSV 1) -->
-    <section id="summary-section" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <!-- Revenue Card -->
-        <article class="glass-panel rounded-2xl p-6 relative overflow-hidden group">
-            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <i class="ph-fill ph-trend-up text-9xl text-brand-500"></i>
+            <div id="filter-tree" class="tree-container custom-scrollbar mb-6" style="flex: 0 0 45%; max-height: 45%;">
+                <!-- Tree will be injected here -->
             </div>
 
-            <div class="relative z-10">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <span
-                            class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/20 text-brand-500 border border-brand-500/30 mb-2">
-                            Revenue
-                        </span>
-                        <h2 class="text-2xl font-bold text-white">수익</h2>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-3 gap-4 mb-6">
-                    <div>
-                        <p class="text-slate-400 text-xs uppercase tracking-wider">전년도 실적</p>
-                        <p class="text-xl font-bold text-slate-200" id="rev-prev">Loading...</p>
-                    </div>
-                    <div>
-                        <p class="text-slate-400 text-xs uppercase tracking-wider">당년 경영계획</p>
-                        <p class="text-xl font-bold text-slate-200" id="rev-plan">Loading...</p>
-                    </div>
-                    <div>
-                        <p class="text-slate-400 text-xs uppercase tracking-wider">당년 목표</p>
-                        <p class="text-2xl font-bold text-white" id="rev-goal">Loading...</p>
-                    </div>
-                </div>
-
-                <div class="h-48 w-full">
-                    <canvas id="revenueChart"></canvas>
-                </div>
+            <!-- Dept Filter -->
+            <h3
+                class="text-sm font-bold text-slate-400 mb-2 mt-4 uppercase tracking-wider border-b border-dark-border pb-2 pt-2 border-t border-slate-700/50">
+                조직 (Dept)</h3>
+            <div class="mb-4 flex gap-2">
+                <button onclick="toggleAllDepts(true)"
+                    class="text-xs px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-slate-300">전체 선택</button>
+                <button onclick="toggleAllDepts(false)"
+                    class="text-xs px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-slate-300">전체 해제</button>
             </div>
-        </article>
-
-        <!-- Profit Card -->
-        <article class="glass-panel rounded-2xl p-6 relative overflow-hidden group">
-            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <i class="ph-fill ph-coins text-9xl text-blue-500"></i>
+            <div id="dept-filter-list" class="tree-container custom-scrollbar" style="flex: 1;">
+                <!-- Dept List will be injected here -->
             </div>
+        </aside>
 
-            <div class="relative z-10">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <span
-                            class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30 mb-2">
-                            Operating Profit
-                        </span>
-                        <h2 class="text-2xl font-bold text-white">영업이익</h2>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="flex justify-between items-center bg-transparent">
+                <div>
+                    <h1 class="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
+                        <i class="ph-fill ph-chart-polar text-brand-500"></i>
+                        재무실적관리 대시보드
+                    </h1>
+                    <p class="text-slate-400 mt-1 text-sm">Financial Performance Management System</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()"
+                        class="p-2 rounded-lg bg-dark-card hover:bg-slate-700 border border-dark-border text-slate-300 transition-colors"
+                        title="필터 토글">
+                        <i class="ph-fill ph-funnel text-xl"></i>
+                    </button>
+                    <div class="text-right">
+                        <div id="current-date" class="text-white font-medium"></div>
+                        <div id="current-time" class="text-brand-500 text-sm font-bg"></div>
+                        <div id="data-source" class="text-xs text-slate-500 mt-1">Initializing...</div>
+                    </div>
+                    <button onclick="window.location.reload()"
+                        class="p-2 rounded-lg bg-dark-card hover:bg-slate-700 border border-dark-border text-slate-300 transition-colors">
+                        <i class="ph ph-arrow-clockwise text-xl"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Summary Section (CSV 1) -->
+            <section id="summary-section" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Revenue Card -->
+                <article class="glass-panel rounded-2xl p-6 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <i class="ph-fill ph-trend-up text-9xl text-brand-500"></i>
+                    </div>
+
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span
+                                    class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/20 text-brand-500 border border-brand-500/30 mb-2">
+                                    Revenue
+                                </span>
+                                <h2 class="text-2xl font-bold text-white">수익</h2>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-4 mb-6">
+                            <div>
+                                <p class="text-slate-400 text-xs uppercase tracking-wider">전년도 실적</p>
+                                <p class="text-xl font-bold text-slate-200" id="rev-prev">Loading...</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-400 text-xs uppercase tracking-wider">당년 경영계획</p>
+                                <p class="text-xl font-bold text-slate-200" id="rev-plan">Loading...</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-400 text-xs uppercase tracking-wider">당년 목표</p>
+                                <p class="text-2xl font-bold text-white" id="rev-goal">Loading...</p>
+                            </div>
+                        </div>
+
+                        <div class="h-48 w-full">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Profit Card -->
+                <article class="glass-panel rounded-2xl p-6 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <i class="ph-fill ph-coins text-9xl text-blue-500"></i>
+                    </div>
+
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span
+                                    class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30 mb-2">
+                                    Operating Profit
+                                </span>
+                                <h2 class="text-2xl font-bold text-white">영업이익</h2>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-4 mb-6">
+                            <div>
+                                <p class="text-slate-400 text-xs uppercase tracking-wider">전년도 실적</p>
+                                <p class="text-xl font-bold text-slate-200" id="prof-prev">Loading...</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-400 text-xs uppercase tracking-wider">당년 경영계획</p>
+                                <p class="text-xl font-bold text-slate-200" id="prof-plan">Loading...</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-400 text-xs uppercase tracking-wider">당년 목표</p>
+                                <p class="text-2xl font-bold text-white" id="prof-goal">Loading...</p>
+                            </div>
+                        </div>
+
+                        <div class="h-48 w-full">
+                            <canvas id="profitChart"></canvas>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Detailed Table Section (CSV 2) -->
+            <section class="glass-panel rounded-2xl p-1 overflow-hidden">
+                <div class="p-6 border-b border-dark-border flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="ph-fill ph-table text-slate-400"></i>
+                        상세 실적 현황
+                    </h3>
+                    <div class="flex gap-2">
+                        <div class="relative">
+                            <i
+                                class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500"></i>
+                            <input type="text" id="searchInput" placeholder="검색..."
+                                class="bg-dark-bg border border-dark-border text-sm rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-white placeholder-slate-500 w-64">
+                        </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-4 mb-6">
-                    <div>
-                        <p class="text-slate-400 text-xs uppercase tracking-wider">전년도 실적</p>
-                        <p class="text-xl font-bold text-slate-200" id="prof-prev">Loading...</p>
-                    </div>
-                    <div>
-                        <p class="text-slate-400 text-xs uppercase tracking-wider">당년 경영계획</p>
-                        <p class="text-xl font-bold text-slate-200" id="prof-plan">Loading...</p>
-                    </div>
-                    <div>
-                        <p class="text-slate-400 text-xs uppercase tracking-wider">당년 목표</p>
-                        <p class="text-2xl font-bold text-white" id="prof-goal">Loading...</p>
-                    </div>
+                <div class="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar">
+                    <table class="w-full text-sm text-left text-slate-300">
+                        <thead class="text-xs text-slate-400 uppercase bg-dark-bg table-header shadow-md">
+                            <tr>
+                                <th scope="col" class="px-6 py-4 rounded-tl-lg">LV1</th>
+                                <th scope="col" class="px-6 py-4">LV2</th>
+                                <th scope="col" class="px-6 py-4">LV3</th>
+                                <th scope="col" class="px-6 py-4">LV4 (BM)</th>
+                                <th scope="col" class="px-6 py-4">조직</th>
+                                <th scope="col" class="px-6 py-4 text-right">전월누적달성률</th>
+                                <th scope="col" class="px-6 py-4 text-right">당월 목표</th>
+                                <th scope="col" class="px-6 py-4 text-right">당월 실적(예상)</th>
+                                <th scope="col" class="px-6 py-4 text-right">당월 달성률</th>
+                                <th scope="col" class="px-6 py-4 text-right rounded-tr-lg">연간목표</th>
+                            </tr>
+                        </thead>
+                        <tbody id="details-table-body" class="divide-y divide-dark-border">
+                            <!-- Data Rows will be inserted here -->
+                        </tbody>
+                    </table>
                 </div>
-
-                <div class="h-48 w-full">
-                    <canvas id="profitChart"></canvas>
-                </div>
-            </div>
-        </article>
-    </section>
-
-    <!-- Detailed Table Section (CSV 2) -->
-    <section class="glass-panel rounded-2xl p-1 overflow-hidden">
-        <div class="p-6 border-b border-dark-border flex justify-between items-center">
-            <h3 class="text-xl font-bold text-white flex items-center gap-2">
-                <i class="ph-fill ph-table text-slate-400"></i>
-                상세 실적 현황
-            </h3>
-            <div class="flex gap-2">
-                <div class="relative">
-                    <i
-                        class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500"></i>
-                    <input type="text" id="searchInput" placeholder="검색..."
-                        class="bg-dark-bg border border-dark-border text-sm rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-white placeholder-slate-500 w-64">
-                </div>
-            </div>
-        </div>
-
-        <div class="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar">
-            <table class="w-full text-sm text-left text-slate-300">
-                <thead class="text-xs text-slate-400 uppercase bg-dark-bg table-header shadow-md">
-                    <tr>
-                        <th scope="col" class="px-6 py-4 rounded-tl-lg">LV1</th>
-                        <th scope="col" class="px-6 py-4">LV2</th>
-                        <th scope="col" class="px-6 py-4">LV3</th>
-                        <th scope="col" class="px-6 py-4">LV4 (BM)</th>
-                        <th scope="col" class="px-6 py-4">조직</th>
-                        <th scope="col" class="px-6 py-4 text-right">전월누적달성률</th>
-                        <th scope="col" class="px-6 py-4 text-right">당월 목표</th>
-                        <th scope="col" class="px-6 py-4 text-right">당월 실적(예상)</th>
-                        <th scope="col" class="px-6 py-4 text-right">당월 달성률</th>
-                        <th scope="col" class="px-6 py-4 text-right rounded-tr-lg">연간목표</th>
-                    </tr>
-                </thead>
-                <tbody id="details-table-body" class="divide-y divide-dark-border">
-                    <!-- Data Rows will be inserted here -->
-                </tbody>
-            </table>
-        </div>
-    </section>
+            </section>
+        </main>
+    </div>
 
     <script>
+        // Initialize
+        let allDetailsData = [];
+        let filterTreeData = [];
+        let deptFilterData = []; // Store dept filter state
+
+        loadData();
+
         // --- 1. Utilities ---
         const formatNumber = (num) => new Intl.NumberFormat('ko-KR').format(num);
         const parseNum = (str) => parseFloat(String(str).replace(/,/g, '')) || 0;
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const isHidden = window.getComputedStyle(sidebar).display === 'none';
+            sidebar.style.display = isHidden ? 'flex' : 'none';
+        }
 
         function updateTime() {
             const now = new Date();
@@ -267,8 +473,19 @@
                 const summaryText = await summaryRes.text();
                 const detailsText = await detailsRes.text();
 
-                processSummaryData(Papa.parse(summaryText, { header: true }).data);
-                processDetailsData(Papa.parse(detailsText, { header: true }).data);
+                const detailsData = Papa.parse(detailsText, { header: true }).data;
+                const summaryData = Papa.parse(summaryText, { header: true }).data;
+
+                processSummaryData(summaryData);
+
+                // Store globally and init filters
+                allDetailsData = detailsData;
+                initFilterTree(allDetailsData);
+                initDeptFilter(allDetailsData); // Init Dept Filter
+                processDetailsData(allDetailsData); // Initial render with all data
+
+                // Success Indicator
+                document.getElementById('data-source').innerHTML = '<span class="text-emerald-400">● Live Data (CSV)</span>';
 
             } catch (error) {
                 console.warn("Fetching CSVs failed, using fallback mock data.", error);
@@ -278,6 +495,9 @@
         }
 
         function useFallbackData() {
+            // Error Indicator
+            document.getElementById('data-source').innerHTML = '<span class="text-rose-400">● Demo Data (CORS/Error)</span>';
+
             const mockSummary = [
                 { Category: "수익", PrevYearPerf: "15800", CurrYearPlan: "16500", CurrYearOrgGoal: "17000", CurrYearSGGoal: "18500" },
                 { Category: "영업이익", PrevYearPerf: "4500", CurrYearPlan: "5200", CurrYearOrgGoal: "5800", CurrYearSGGoal: "6500" }
@@ -308,6 +528,9 @@
             ];
 
             processSummaryData(mockSummary);
+
+            allDetailsData = mockDetails;
+            initFilterTree(allDetailsData);
             processDetailsData(mockDetails);
         }
 
@@ -657,9 +880,351 @@
             });
         });
 
-        // Initialize
-        loadData();
+        // --- Filter Tree Logic ---
 
+        function initFilterTree(data) {
+            // Build hierarchy from data
+            const tree = [];
+            const levels = ['LV1', 'LV2', 'LV3', 'LV4'];
+
+            function findOrAdd(array, name, level, ids, parent) {
+                let item = array.find(i => i.name === name);
+                if (!item) {
+                    // Generate unique ID based on path
+                    const id = ids.join('-');
+                    item = {
+                        name,
+                        level,
+                        id,
+                        children: [],
+                        checked: true, // Default ON
+                        path: [...ids],
+                        parent: parent // Add parent reference
+                    };
+                    array.push(item);
+                }
+                return item;
+            }
+
+            data.forEach(row => {
+                if (!row.LV1) return;
+
+                let currentLevel = tree;
+                let pathIds = [];
+
+                // LV1
+                pathIds.push(row.LV1);
+                let lv1 = findOrAdd(currentLevel, row.LV1, 1, pathIds, null);
+
+                // LV2
+                if (row.LV2) {
+                    pathIds.push(row.LV2);
+                    let lv2 = findOrAdd(lv1.children, row.LV2, 2, pathIds, lv1);
+
+                    // LV3
+                    if (row.LV3) {
+                        pathIds.push(row.LV3);
+                        let lv3 = findOrAdd(lv2.children, row.LV3, 3, pathIds, lv2);
+
+                        // LV4 (Leaf)
+                        if (row.LV4) {
+                            pathIds.push(row.LV4);
+                            findOrAdd(lv3.children, row.LV4, 4, pathIds, lv3);
+                        }
+                    }
+                }
+            });
+
+            filterTreeData = tree;
+            renderFilterTree();
+        }
+
+        function renderFilterTree() {
+            const container = document.getElementById('filter-tree');
+            container.innerHTML = '';
+
+            function createNode(item) {
+                const node = document.createElement('div');
+                node.className = 'tree-node';
+
+                const isLeaf = item.children.length === 0;
+
+                // Row
+                const row = document.createElement('div');
+                row.className = 'tree-row';
+
+                // Caret
+                const caret = document.createElement('div');
+                caret.className = `tree-caret ${isLeaf ? 'leaf' : 'expanded'}`;
+                caret.innerHTML = isLeaf ? '' : '<i class="ph-bold ph-caret-right"></i>';
+                if (!isLeaf) {
+                    caret.onclick = (e) => {
+                        e.stopPropagation();
+                        caret.classList.toggle('expanded');
+                        const childrenContainer = node.querySelector('.tree-children');
+                        if (childrenContainer) {
+                            childrenContainer.classList.toggle('expanded');
+                            // Also toggle hidden class for safety/logic if needed, but CSS handles sticky
+                            if (childrenContainer.style.display === 'none') {
+                                childrenContainer.style.display = 'block';
+                            } else {
+                                childrenContainer.style.display = 'none';
+                            }
+                        }
+                    };
+                }
+
+                // Checkbox
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'tree-checkbox';
+                checkbox.checked = item.checked;
+                checkbox.indeterminate = item.indeterminate || false; // Set visual state
+                checkbox.dataset.id = item.id;
+                checkbox.onchange = () => toggleFilter(item, checkbox.checked);
+
+                // Label
+                const label = document.createElement('span');
+                label.className = 'tree-label';
+                label.innerText = item.name;
+                label.onclick = () => { if (!isLeaf) caret.click(); }; // Label click toggles expand
+
+                row.appendChild(caret);
+                row.appendChild(checkbox);
+                row.appendChild(label);
+                node.appendChild(row);
+
+                // Children
+                if (!isLeaf) {
+                    const childrenDiv = document.createElement('div');
+                    childrenDiv.className = 'tree-children expanded'; // Default expanded
+                    // Sync display with caret
+                    childrenDiv.style.display = 'block';
+
+                    item.children.forEach(child => {
+                        childrenDiv.appendChild(createNode(child));
+                    });
+                    node.appendChild(childrenDiv);
+                }
+
+                return node;
+            }
+
+            filterTreeData.forEach(rootItem => {
+                container.appendChild(createNode(rootItem));
+            });
+        }
+
+        function expandAll(expand) {
+            const carets = document.querySelectorAll('.tree-caret:not(.leaf)');
+            const children = document.querySelectorAll('.tree-children');
+
+            carets.forEach(c => {
+                if (expand) c.classList.add('expanded');
+                else c.classList.remove('expanded');
+            });
+
+            children.forEach(c => {
+                c.style.display = expand ? 'block' : 'none';
+            });
+        }
+
+        function toggleFilter(item, isChecked) {
+            // Update Data Model
+            updateCheckState(item, isChecked);
+
+            // Re-render Tree to update UI (simplest way to ensure consistent state visuals)
+            // Optimization: Update DOM directly for better performance, but re-rendering is safer for sync
+            // For now, re-render is fine for this dataset size.
+            renderFilterTree();
+
+            // Apply Filter
+            applyFilter();
+        }
+
+
+        // --- Dept Filter Logic ---
+
+        function initDeptFilter(data) {
+            // Get unique departments
+            const depts = new Set();
+            data.forEach(row => {
+                if (row.Dept) depts.add(row.Dept);
+            });
+
+            // Convert to array of objects
+            deptFilterData = Array.from(depts).sort().map(name => ({
+                name: name,
+                checked: true
+            }));
+
+            renderDeptFilter();
+        }
+
+        function renderDeptFilter() {
+            const container = document.getElementById('dept-filter-list');
+            container.innerHTML = '';
+
+            deptFilterData.forEach(dept => {
+                const node = document.createElement('div');
+                node.className = 'tree-node flex items-center gap-2 mb-1 pl-1 hover:bg-white/5 rounded py-1 cursor-pointer';
+
+                // Checkbox
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'tree-checkbox';
+                checkbox.checked = dept.checked;
+                checkbox.onchange = (e) => {
+                    dept.checked = e.target.checked;
+                    updateFilterTreeByDept(); // Rebuild Item Tree
+                };
+
+                // Label
+                const label = document.createElement('span');
+                label.className = 'tree-label text-sm text-slate-300';
+                label.innerText = dept.name;
+                label.onclick = () => checkbox.click(); // Label click toggles checkbox
+
+                node.appendChild(checkbox);
+                node.appendChild(label);
+                container.appendChild(node);
+            });
+        }
+
+        function toggleAllDepts(isChecked) {
+            deptFilterData.forEach(d => d.checked = isChecked);
+            renderDeptFilter();
+            updateFilterTreeByDept(); // Rebuild Item Tree
+        }
+
+        function updateFilterTreeByDept() {
+            // 1. Get Selected Depts
+            const checkedDepts = new Set(deptFilterData.filter(d => d.checked).map(d => d.name));
+
+            // 2. Filter All Data by Dept
+            const filteredDataForTree = allDetailsData.filter(row => {
+                if (!row.LV1) return false;
+                // If Dept exists, check if it is selected
+                if (row.Dept && !checkedDepts.has(row.Dept)) return false;
+                return true;
+            });
+
+            // 3. Re-Init Item Filter Tree with Filtered Data
+            // This will reset checkboxes to TRUE for visible items (Default behavior)
+            // Or we could try to preserve state if needed, but "Update items" implies refreshing list.
+            initFilterTree(filteredDataForTree);
+
+            // 4. Update Table View (Apply Filters)
+            applyFilter();
+        }
+
+
+        function updateCheckState(item, isChecked, isPropagation = false) {
+            // 1. Update Self
+            item.checked = isChecked;
+            item.indeterminate = false; // Reset indeterminate on explicit change
+
+            // 2. Propagate Down (Top-Down)
+            // Only propagate down if this call originated from user interaction (not propagation)
+            // OR if strictly enforcing parent -> child sync.
+            // If user clicks parent, we force children to match.
+            // If function called as updateParent, we DO NOT touch children.
+            if (!isPropagation && item.children && item.children.length > 0) {
+                item.children.forEach(child => updateCheckState(child, isChecked));
+            }
+
+            // 3. Propagate Up (Bottom-Up)
+            if (item.parent) {
+                updateParentState(item.parent);
+            }
+        }
+
+        function updateParentState(parent) {
+            if (!parent) return;
+
+            const allChecked = parent.children.every(c => c.checked);
+            const anyChecked = parent.children.some(c => c.checked || c.indeterminate); // Indeterminate logic
+
+            // Determine Parent State
+            if (allChecked) {
+                parent.checked = true;
+                parent.indeterminate = false;
+            } else if (anyChecked) {
+                parent.checked = false;
+                parent.indeterminate = true;
+            } else {
+                parent.checked = false;
+                parent.indeterminate = false;
+            }
+
+            // Recursively update upwards
+            updateParentState(parent.parent);
+        }
+
+        // To support bottom-up, we need parent references or recursive traversal from root.
+        // Let's add parent ref during build? Or just traverse.
+        // Let's add parent ref in initFilterTree.
+
+        // Re-implement initFilterTree to add parent refs for easier traversal?
+        // Or just re-calculate parent state before render?
+        // Let's keep it simple: Top-down only for now as requested.
+
+        function applyFilter() {
+            // Gather all checked LV4 IDs (or just paths)
+            // Traversing tree to find checked leaf nodes
+            // The Tree is now generated based on SELECTED DEPTS only.
+            // So we only need to check which tree nodes are checked.
+
+            const checkedPaths = new Set();
+            // checkedDepts is implicitly handled by initFilterTree(filteredDataForTree)
+            // But we still need dept filter data for processDetailsData if we want strict dual filter?
+            // Actually, if Tree only contains items for Selected Depts, then checking Tree Items is enough?
+            // Wait. One Item (e.g. Card) can exist in multiple Depts.
+            // If I select Dept A, Tree has Card. If I select Dept B, Tree has Card.
+            // If I select Dept A & B, Tree has Card.
+            // When filtering, I need to know if row.Dept is in Selected Depts.
+
+            const checkedDepts = new Set(deptFilterData.filter(d => d.checked).map(d => d.name));
+
+            function collectChecked(nodes) {
+                nodes.forEach(node => {
+                    // If leaf and checked, add to set
+                    if (node.children.length === 0 && node.checked) {
+                        // We need a way to match this against data.
+                        // Data has LV1, LV2, LV3, LV4 columns.
+                        // Node.path has [LV1, LV2, LV3, LV4].
+                        checkedPaths.add(node.path.join('|'));
+                    } else if (node.children.length > 0) {
+                        // Optimization: if node is unchecked, its children are unchecked (logic).
+                        // But if we allow partial selection in future...
+                        collectChecked(node.children);
+                    }
+                });
+            }
+
+            collectChecked(filterTreeData);
+
+            // Filter data
+            const filtered = allDetailsData.filter(row => {
+                if (!row.LV1) return false;
+
+                // Dept Condition
+                if (row.Dept && !checkedDepts.has(row.Dept)) return false;
+
+                // Construct path key
+                const parts = [row.LV1];
+                if (row.LV2) parts.push(row.LV2);
+                if (row.LV3) parts.push(row.LV3);
+                if (row.LV4) parts.push(row.LV4);
+
+                const key = parts.join('|');
+                return checkedPaths.has(key);
+            });
+
+            processDetailsData(filtered);
+        }
+
+        // --- Original Chart & Table Functions (Keep provided unchanged, just ensure processDetailsData uses args) ---
     </script>
 </body>
 
