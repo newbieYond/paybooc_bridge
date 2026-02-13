@@ -408,19 +408,20 @@
                 </div>
 
                 <div class="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar">
-                    <table class="w-full text-sm text-left text-slate-300">
-                        <thead class="text-xs text-slate-400 uppercase bg-dark-bg table-header shadow-md">
+                    <table class="w-full text-sm text-left text-slate-300 min-w-[1200px]">
+                        <thead
+                            class="text-xs text-slate-400 uppercase bg-dark-bg table-header shadow-md sticky top-0 z-10">
                             <tr>
-                                <th scope="col" class="px-6 py-4 rounded-tl-lg">LV1</th>
-                                <th scope="col" class="px-6 py-4">LV2</th>
-                                <th scope="col" class="px-6 py-4">LV3</th>
-                                <th scope="col" class="px-6 py-4">LV4 (BM)</th>
-                                <th scope="col" class="px-6 py-4">조직</th>
-                                <th scope="col" class="px-6 py-4 text-right">전월누적달성률</th>
-                                <th scope="col" class="px-6 py-4 text-right">당월 목표</th>
-                                <th scope="col" class="px-6 py-4 text-right">당월 실적(예상)</th>
-                                <th scope="col" class="px-6 py-4 text-right">당월 달성률</th>
-                                <th scope="col" class="px-6 py-4 text-right rounded-tr-lg">연간목표</th>
+                                <th scope="col" class="px-4 py-3 whitespace-nowrap w-[100px]">대분류</th>
+                                <th scope="col" class="px-4 py-3 whitespace-nowrap w-[120px]">중분류</th>
+                                <th scope="col" class="px-4 py-3 whitespace-nowrap w-[120px]">소분류</th>
+                                <th scope="col" class="px-4 py-3 whitespace-nowrap w-[150px]">세분류</th>
+                                <th scope="col" class="px-4 py-3 whitespace-nowrap w-[120px]">담당조직</th>
+                                <th scope="col" class="px-4 py-3 text-right whitespace-nowrap w-[100px]">전월달성률</th>
+                                <th scope="col" class="px-4 py-3 text-right whitespace-nowrap w-[100px]">당월목표</th>
+                                <th scope="col" class="px-4 py-3 text-right whitespace-nowrap w-[100px]">당월추정</th>
+                                <th scope="col" class="px-4 py-3 text-right whitespace-nowrap w-[100px]">당월달성률</th>
+                                <th scope="col" class="px-4 py-3 text-right whitespace-nowrap w-[100px]">연간목표</th>
                             </tr>
                         </thead>
                         <tbody id="details-table-body" class="divide-y divide-dark-border">
@@ -480,9 +481,29 @@
 
                 // Store globally and init filters
                 allDetailsData = detailsData;
-                initFilterTree(allDetailsData);
-                initDeptFilter(allDetailsData); // Init Dept Filter
-                processDetailsData(allDetailsData); // Initial render with all data
+
+                // Init Dept Filter first to check for URL params
+                initDeptFilter(allDetailsData);
+
+                // If URL param existed, initDeptFilter might have called updateFilterTreeByDept.
+                // If NOT, we need to init item tree with all data.
+                // We can check if filterTreeData is empty? or just standard flow.
+
+                // Optimized Flow:
+                // 1. initDeptFilter -> determines dept checked state.
+                // 2. updateFilterTreeByDept -> filters data based on Depe -> Inits Tree -> Applies Filter.
+
+                // So simply calling initDeptFilter then updateFilterTreeByDept covers ALL cases?
+                // Yes. 
+                // If no filter param, all depts checked -> updateFilterTreeByDept use all data -> initTree(all) -> applyFilter(all).
+                // If filter param, specific dept checked -> updateFilterTreeByDept use subset -> initTree(subset) -> applyFilter(subset).
+
+                updateFilterTreeByDept();
+
+                // processDetailsData(allDetailsData); // Removed, as updateFilterTreeByDept calls applyFilter() -> processDetailsData()
+
+                // But wait, updateFilterTreeByDept calls applyFilter which calls processDetailsData.
+                // So we are good.
 
                 // Success Indicator
                 document.getElementById('data-source').innerHTML = '<span class="text-emerald-400">● Live Data (CSV)</span>';
@@ -777,22 +798,38 @@
             if (type === 'ITEM') {
                 tr.className = "hover:bg-slate-800/50 transition-colors border-b border-dark-border";
 
-                nameCell = `
-                    <td class="px-6 py-4"></td>
-                    <td class="px-6 py-4"></td>
-                    <td class="px-6 py-4"></td>
-                    <td class="px-6 py-4 text-white pl-4 border-l border-slate-700/50">${data.LV4 || '-'}</td>
-                    <td class="px-6 py-4"><span class="px-2 py-1 rounded bg-slate-700 text-xs text-slate-300 ml-4">${data.Dept}</span></td>
-                `;
+                // Dept Column
+                let deptHtml = '-';
+                if (data.Dept) {
+                    const depts = data.Dept.split(',').map(d => d.trim());
+                    // Use flex-col to force new lines
+                    deptHtml = depts.map(d =>
+                        `<div class="inline-block px-2 py-0.5 rounded text-[11px] font-bold tracking-wider bg-slate-700 text-slate-300 border border-slate-600 whitespace-nowrap mb-1 last:mb-0 text-center w-fit">${d}</div>`
+                    ).join('');
+                }
 
-                prevRate = data.PrevMonthRate;
-                currGoal = data.CurrMonthGoal;
-                currEst = data.CurrMonthEst;
-                currRate = data.CurrMonthRate;
-                yearGoal = data.CurrYearGoal;
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-medium text-white whitespace-nowrap">${data.LV1 || '-'}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">${data.LV2 || '-'}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">${data.LV3 || '-'}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">${data.LV4 || '-'}</td>
+                    <td class="px-4 py-3">
+                        <div class="flex flex-col items-start gap-1">
+                            ${deptHtml}
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-right text-slate-400">${formatNumber(data.PrevMonthRate)}%</td>
+                    <td class="px-4 py-3 text-right">${formatNumber(data.CurrMonthGoal)}</td>
+                    <td class="px-4 py-3 text-right font-medium text-white">${formatNumber(data.CurrMonthEst)}</td>
+                    <td class="px-4 py-3 text-right font-bold ${getRateColor(data.CurrMonthRate)}">${formatNumber(data.CurrMonthRate)}%</td>
+                    <td class="px-4 py-3 text-right text-slate-400">${formatNumber(data.CurrYearGoal)}</td>
+                `;
 
             } else {
                 // Header Rows (LV1, LV2, LV3)
+                // stats is passed as argument
+                let nameCell = '';
+
                 // Add Caret
                 const caret = `<i id="caret-${id}" class="ph-bold ph-caret-right caret-icon caret-open inline-block mr-2"></i>`;
                 const clickAttr = `onclick="toggleRow('${id}')" style="cursor: pointer;"`;
@@ -800,24 +837,24 @@
                 if (type === 'LV1') {
                     tr.className = "bg-slate-700/50 border-b border-white/10 font-bold text-white hover:bg-slate-700/70";
                     nameCell = `
-                        <td class="px-6 py-4 text-brand-500 text-lg group-total" colspan="5" ${clickAttr}>
+                        <td class="px-4 py-3 text-brand-500 text-lg group-total" colspan="5" ${clickAttr}>
                             ${caret} ${name} <span class="text-sm font-normal text-slate-300 ml-2">Total</span>
                         </td>
                     `;
                 } else if (type === 'LV2') {
                     tr.className = "bg-slate-800/80 border-b border-dark-border font-medium hover:bg-slate-800";
                     nameCell = `
-                        <td class="px-6 py-3"></td>
-                        <td class="px-6 py-3 text-brand-100" colspan="4" ${clickAttr}>
+                        <td class="px-4 py-3"></td>
+                        <td class="px-4 py-3 text-brand-100" colspan="4" ${clickAttr}>
                             ${caret} ${name} <span class="text-xs text-slate-400 bg-slate-700 px-1.5 rounded ml-2">Subtotal</span>
                         </td>
                     `;
                 } else if (type === 'LV3') {
                     tr.className = "bg-slate-800/40 border-b border-dark-border font-medium text-slate-200 hover:bg-slate-800/60";
                     nameCell = `
-                        <td class="px-6 py-3"></td>
-                        <td class="px-6 py-3"></td>
-                        <td class="px-6 py-3" colspan="3" ${clickAttr}>
+                        <td class="px-4 py-3"></td>
+                        <td class="px-4 py-3"></td>
+                        <td class="px-4 py-3" colspan="3" ${clickAttr}>
                             ${caret} ${name}
                         </td>
                     `;
@@ -828,26 +865,29 @@
                 currEst = stats.CurrMonthEst;
                 currRate = stats.CurrMonthRate;
                 yearGoal = stats.CurrYearGoal;
+
+                let rateClass = getRateColor(currRate);
+                if (type === 'LV1') rateClass += " text-lg";
+
+                tr.innerHTML = `
+                    ${nameCell}
+                    <td class="px-4 py-3 text-right ${parseFloat(prevRate) >= 100 ? 'text-emerald-400' : 'text-slate-300'}">${formatNumber(prevRate)}%</td>
+                    <td class="px-4 py-3 text-right text-slate-400">${formatNumber(currGoal)}</td>
+                    <td class="px-4 py-3 text-right text-white">${formatNumber(currEst)}</td>
+                    <td class="px-4 py-3 text-right ${rateClass}">${formatNumber(currRate)}%</td>
+                    <td class="px-4 py-3 text-right text-white">${formatNumber(yearGoal)}</td>
+                `;
             }
 
-            // Rate Coloring
-            const rateVal = parseFloat(currRate);
-            let rateClass = "text-slate-300";
-            if (rateVal >= 100) rateClass = "text-emerald-400 font-bold";
-            else if (rateVal < 90) rateClass = "text-rose-400 font-bold";
-
-            if (type === 'LV1') rateClass += " text-lg";
-
-            tr.innerHTML = `
-                ${nameCell}
-                <td class="px-6 py-4 text-right ${parseFloat(prevRate) >= 100 ? 'text-emerald-400' : 'text-slate-300'}">${formatNumber(prevRate)}%</td>
-                <td class="px-6 py-4 text-right text-slate-400">${formatNumber(currGoal)}</td>
-                <td class="px-6 py-4 text-right text-white">${formatNumber(currEst)}</td>
-                <td class="px-6 py-4 text-right ${rateClass}">${formatNumber(currRate)}%</td>
-                <td class="px-6 py-4 text-right text-white">${formatNumber(yearGoal)}</td>
-            `;
-
             tbody.appendChild(tr);
+        }
+
+        // Helper function for rate coloring (used by ITEM type)
+        function getRateColor(rate) {
+            const rateVal = parseFloat(rate);
+            if (rateVal >= 100) return "text-emerald-400";
+            if (rateVal < 90) return "text-rose-400";
+            return "text-slate-300";
         }
 
         // --- 4. Search Functionality ---
@@ -1046,19 +1086,81 @@
         // --- Dept Filter Logic ---
 
         function initDeptFilter(data) {
-            // Get unique departments
+            // Get unique departments (handling multiple values per row: "A, B")
             const depts = new Set();
             data.forEach(row => {
-                if (row.Dept) depts.add(row.Dept);
+                if (row.Dept) {
+                    const rowDepts = row.Dept.split(',').map(d => d.trim());
+                    rowDepts.forEach(d => depts.add(d));
+                }
             });
 
             // Convert to array of objects
-            deptFilterData = Array.from(depts).sort().map(name => ({
-                name: name,
-                checked: true
-            }));
+            const urlParams = new URL(window.location).searchParams;
+            const filterParam = urlParams.get('filter') ? decodeURIComponent(urlParams.get('filter')) : null;
+
+            deptFilterData = Array.from(depts).sort().map(name => {
+                let initialChecked = true;
+                if (filterParam) {
+                    // If filter param exists, only check if name includes or equals the param
+                    // Let's use exact match or partial if convenient. User said "filter=영업2팀".
+                    // Let's support exact match first, or comma separated?
+                    // "default로 영업2팀만 필터링해서 보이도록" implies others are unchecked.
+
+                    if (depts.has(filterParam)) {
+                        // Exact match found in data
+                        initialChecked = (name === filterParam);
+                    } else {
+                        // Fallback: If param doesn't match any dept exactly, keep all checked? 
+                        // Or maybe partial match? Let's do exact match to be safe.
+                        // Wait, if I type ?filter=영업, maybe I want all sales?
+                        // Let's strict match for now as requested.
+                        initialChecked = (name === filterParam);
+                    }
+                }
+
+                return {
+                    name: name,
+                    checked: initialChecked
+                };
+            });
+
+            // If we filtered, we should ensure at least one is checked? 
+            // If user provides invalid filter, everything will be unchecked.
+            // Let's checking if ANY is checked. If none, revert to ALL checked (fallback).
+            const anyChecked = deptFilterData.some(d => d.checked);
+            if (!anyChecked && filterParam) {
+                console.warn(`Filter param '${filterParam}' not found in departments. Showing all.`);
+                deptFilterData.forEach(d => d.checked = true);
+            } else if (filterParam) {
+                // If filter was applied, we should also trigger the tree update!
+                // Since initDeptFilter determines state, the subsequent render calls will use this state.
+                // But we need to make sure updateFilterTreeByDept is called OR initFilterTree is called with filtered data.
+
+                // Currently code flow:
+                // loadData -> initFilterTree(all) -> initDeptFilter(all) -> processDetailsData(all)
+
+                // We need:
+                // loadData -> initDeptFilter(all) [calculates state] -> updateFilterTreeByDept() [which calls initFilterTree & applyFilter]
+
+                // So in loadData, we should change order?
+                // Or just let initDeptFilter call updateFilterTreeByDept() at the end?
+                // Let's Modify loadData flow.
+            }
 
             renderDeptFilter();
+            // Important: If we have a filter, we must update the Item Tree to match!
+            if (filterParam && anyChecked) {
+                // Trigger the update logic which filters data and re-inits item tree
+                updateFilterTreeByDept();
+            } else {
+                // Normal flow, just render dept filter. Item tree is already init with ALL data in loadData.
+                // Actually, updateFilterTreeByDept() does everything (filter data -> init item tree -> apply filter).
+                // So we can arguably ALWAYS call updateFilterTreeByDept() instead of explicit initFilterTree in loadData?
+                // Let's just call it if filter param exists, to override the initial state.
+                // OR simpler: Always call updateFilterTreeByDept inside initDeptFilter?
+                // No, initDeptFilter is called ONCE.
+            }
         }
 
         function renderDeptFilter() {
@@ -1104,8 +1206,13 @@
             // 2. Filter All Data by Dept
             const filteredDataForTree = allDetailsData.filter(row => {
                 if (!row.LV1) return false;
-                // If Dept exists, check if it is selected
-                if (row.Dept && !checkedDepts.has(row.Dept)) return false;
+                // If Dept exists, check if ANY of its depts are selected (OR logic for intersection)
+                // or exact? Usually if Row has "A, B", and I select "A", it should appear.
+                if (row.Dept) {
+                    const rowDepts = row.Dept.split(',').map(d => d.trim());
+                    const hasOverlap = rowDepts.some(d => checkedDepts.has(d));
+                    if (!hasOverlap) return false;
+                }
                 return true;
             });
 
@@ -1113,6 +1220,13 @@
             // This will reset checkboxes to TRUE for visible items (Default behavior)
             // Or we could try to preserve state if needed, but "Update items" implies refreshing list.
             initFilterTree(filteredDataForTree);
+
+            // If filter param exists, maybe we want to EXPAND the tree to show the selected items?
+            // "Default로 영업2팀만 필터링해서 보이도록" -> Filter applied.
+            // Expanding is nice UX.
+            if (filteredDataForTree.length < 50) { // arbitrary threshold
+                expandAll(true);
+            }
 
             // 4. Update Table View (Apply Filters)
             applyFilter();
@@ -1209,7 +1323,13 @@
                 if (!row.LV1) return false;
 
                 // Dept Condition
-                if (row.Dept && !checkedDepts.has(row.Dept)) return false;
+                if (row.Dept) {
+                    const rowDepts = row.Dept.split(',').map(d => d.trim());
+                    // Check if *any* of the row's depts are in the checkedDepts set
+                    const hasOverlap = rowDepts.some(d => checkedDepts.has(d));
+
+                    if (!hasOverlap) return false;
+                }
 
                 // Construct path key
                 const parts = [row.LV1];
