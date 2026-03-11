@@ -8,7 +8,8 @@
     <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"></script>
 
     <style>
         :root {
@@ -109,6 +110,7 @@
             height: 400px;
             display: flex;
             flex-direction: column;
+            min-width: 0;
         }
 
         .chart-header {
@@ -203,6 +205,57 @@
 
         .text-down {
             color: var(--danger-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+
+            select {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-card {
+                height: 300px;
+                padding: 1rem;
+            }
+
+            .stat-card {
+                padding: 1rem;
+            }
         }
     </style>
 </head>
@@ -437,6 +490,49 @@
             if (charts.mau) charts.mau.destroy();
             if (charts.net) charts.net.destroy();
 
+            // Calculate initial view window for horizontal pan (e.g. show last 14 days)
+            const totalDays = labels.length;
+            const daysToShow = 14; 
+            const minXLabel = labels[Math.max(0, totalDays - daysToShow)];
+            const maxXLabel = labels[totalDays - 1];
+
+            const getCommonOptions = (isBar = false) => ({
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { mode: 'index', intersect: false },
+                    zoom: {
+                        pan: {
+                            enabled: true,
+                            mode: 'x' // Allow horizontal scrolling by dragging/swiping
+                        },
+                        limits: {
+                            x: { min: labels[0], max: labels[totalDays - 1] } // Block panning out of bounds
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: COLORS.grid },
+                        ticks: {
+                            color: '#94a3b8',
+                            callback: function (value) {
+                                if (Math.abs(value) >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                                if (Math.abs(value) >= 1000) return (value / 1000).toFixed(0) + 'k';
+                                return value;
+                            }
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        min: minXLabel, // Limits the visible window on load
+                        max: maxXLabel
+                    }
+                }
+            });
+
             // 1. DAU Chart
             const dauCtx = document.getElementById('dauChart').getContext('2d');
             const dauGradient = dauCtx.createLinearGradient(0, 0, 0, 400);
@@ -458,18 +554,7 @@
                         pointHoverRadius: 5
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { mode: 'index', intersect: false }
-                    },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: COLORS.grid } },
-                        x: { grid: { display: false } }
-                    }
-                }
+                options: getCommonOptions()
             });
 
             // 2. MAU Chart
@@ -493,18 +578,7 @@
                         pointHoverRadius: 5
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { mode: 'index', intersect: false }
-                    },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: COLORS.grid } },
-                        x: { grid: { display: false } }
-                    }
-                }
+                options: getCommonOptions()
             });
 
             // 3. Net Increase Chart
@@ -521,10 +595,9 @@
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    ...getCommonOptions(true),
                     plugins: {
-                        legend: { display: false },
+                        ...getCommonOptions(true).plugins,
                         tooltip: {
                             callbacks: {
                                 label: function (context) {
@@ -539,10 +612,6 @@
                                 }
                             }
                         }
-                    },
-                    scales: {
-                        y: { grid: { color: COLORS.grid } },
-                        x: { grid: { display: false } }
                     }
                 }
             });
