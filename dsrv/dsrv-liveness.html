@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Liveness Check</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000000;
+            color: #FFFFFF;
+        }
+
+        /* ===== Liveness (얼굴 인증) 화면 (PoC) ===== */
+        #livenessScreen { background: #000000; min-height: 100vh; display: flex; flex-direction: column; }
+
+        .lv-topbar {
+            height: 56px; display: flex; align-items: center; padding: 0 16px;
+            padding-top: env(safe-area-inset-top); background: #FFFFFF; flex: 0 0 auto;
+        }
+        .lv-back {
+            width: 28px; height: 28px; border: none; background: none; cursor: pointer;
+            padding: 0; display: flex; align-items: center; justify-content: center;
+        }
+        .lv-back svg { width: 24px; height: 24px; }
+
+        .lv-camera { position: relative; flex: 1; width: 100%; background: #000000; overflow: hidden; }
+        #lvVideo {
+            position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+            background: #000000; transform: scaleX(-1); /* 전면 카메라 거울 모드 */
+        }
+        .lv-mask { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+        #lvOutline { transition: stroke 0.3s ease; }
+        #lvOutline.detected { stroke: #3FD068; }
+
+        .lv-dots {
+            position: absolute; left: 0; right: 0; bottom: 92px;
+            display: flex; justify-content: center; gap: 8px;
+        }
+        .lv-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.4); transition: all 0.3s ease; }
+        .lv-dot.active { background: #FFFFFF; transform: scale(1.3); }
+        .lv-dot.done { background: #3FD068; } /* 단계 완료 = 초록 점등 */
+
+        .lv-loading {
+            position: absolute; left: 0; right: 0; bottom: 116px;
+            display: flex; justify-content: center; gap: 6px;
+        }
+        .lv-loading span {
+            width: 8px; height: 8px; border-radius: 50%; background: #FFFFFF;
+            animation: lvBlink 1.2s infinite ease-in-out;
+        }
+        .lv-loading span:nth-child(2) { animation-delay: 0.2s; }
+        .lv-loading span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes lvBlink { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
+
+        .lv-text {
+            position: absolute; left: 0; right: 0; bottom: 48px; margin: 0;
+            text-align: center; color: #FFFFFF; font-size: 18px; font-weight: 700; word-break: keep-all;
+        }
+    </style>
+</head>
+<body>
+    <!-- ===== Liveness (얼굴 인증) 화면 (PoC) ===== -->
+    <div id="livenessScreen">
+        <!-- 상단 뒤로가기 -->
+        <div class="lv-topbar">
+            <button type="button" class="lv-back" onclick="onLivenessBack()" aria-label="뒤로가기">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 5 L8 12 L15 19"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- 카메라 (전면, 원형 마스크) -->
+        <div class="lv-camera">
+            <video id="lvVideo" autoplay playsinline muted></video>
+            <!-- 원 밖을 검게 가리는 오버레이 (SVG 마스크) -->
+            <svg class="lv-mask" viewBox="0 0 390 500" preserveAspectRatio="xMidYMid slice">
+                <defs>
+                    <mask id="lvHole">
+                        <rect width="390" height="500" fill="white"/>
+                        <ellipse cx="195" cy="240" rx="135" ry="155" fill="black"/>
+                    </mask>
+                </defs>
+                <rect width="390" height="500" fill="#000000" mask="url(#lvHole)"/>
+                <ellipse id="lvOutline" cx="195" cy="240" rx="135" ry="155" fill="none" stroke="#FF3F53" stroke-width="4"/>
+            </svg>
+
+            <!-- 진행 도트 -->
+            <div class="lv-dots">
+                <span class="lv-dot active"></span><span class="lv-dot"></span><span class="lv-dot"></span>
+            </div>
+            <!-- 로딩 -->
+            <div class="lv-loading" id="lvLoading"><span></span><span></span><span></span></div>
+            <!-- 안내 텍스트 -->
+            <p class="lv-text" id="lvText">얼굴을 원 안에 맞춰주세요</p>
+        </div>
+        <canvas id="lvCanvas" style="display:none;"></canvas>
+    </div>
+    <!-- ===== /Liveness 화면 ===== -->
+
+    <script>
+        /* ===== Liveness 얼굴 인증 (PoC) =====
+         * 라이브러리/CDN 의존 0 → iOS·Android 웹뷰 양쪽에서 동작 보장.
+         * 순수 JS 피부색(YCbCr) 검출 휴리스틱: 얼굴 존재·위치·횡이동을 추정.
+         * ⚠️ 신원/랜드마크 인식이 아니라 "피부 영역 존재·이동" 감지 수준.
+         * 3단계: 정면(중앙) → 좌로 이동 → 우로 이동.
+         * 거울 모드(video scaleX(-1)) 기준 — 지시 방향 = 화면상 이동 방향.
+         */
+        var LV_STAGES = ['center', 'left', 'right'];
+        var lvState = null;
+
+        function lvInitState() {
+            return {
+                stage: 0,            // 0=정면, 1=좌, 2=우
+                baseX: null,         // 정면 단계에서 잡은 기준 centroid X (0~1)
+                holdCount: 0,        // 현재 조건 연속 충족 프레임 수
+                finished: false,
+                analyzeTimer: null,
+                holdTimer: null
+            };
+        }
+
+        // 얼굴 인증 시작 (화면 진입 시 호출)
+        function startLiveness() {
+            lvState = lvInitState();
+            document.getElementById('lvOutline').classList.remove('detected');
+            document.getElementById('lvLoading').style.display = 'flex';
+            lvResetDots();
+            lvSetText('얼굴을 원 안에 맞춰주세요');
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                lvSetText('이 환경은 카메라를 지원하지 않습니다');
+                return;
+            }
+            navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { ideal: 'user' }, width: { ideal: 720 }, height: { ideal: 1280 } },
+                audio: false
+            }).then(function (stream) {
+                var v = document.getElementById('lvVideo');
+                v.srcObject = stream;
+                v.play();
+                lvState.analyzeTimer = setInterval(analyzeLvFrame, 150);
+            }).catch(function (err) {
+                lvSetText('카메라를 사용할 수 없습니다 (' + (err && err.name || 'error') + ')');
+            });
+        }
+
+        // 안내 텍스트 갱신
+        function lvSetText(t) { document.getElementById('lvText').textContent = t; }
+
+        // 진행 도트 초기화 / 점등
+        function lvResetDots() {
+            var dots = document.querySelectorAll('#livenessScreen .lv-dot');
+            for (var i = 0; i < dots.length; i++) {
+                dots[i].classList.toggle('active', i === 0);
+                dots[i].classList.remove('done');
+            }
+        }
+        function lvMarkDotDone(idx) {
+            var dots = document.querySelectorAll('#livenessScreen .lv-dot');
+            if (dots[idx]) { dots[idx].classList.add('done'); dots[idx].classList.remove('active'); }
+            if (dots[idx + 1]) dots[idx + 1].classList.add('active');
+        }
+
+        // 프레임 분석: 원 영역에서 피부픽셀 비율 + centroid(가로 위치) 산출
+        function analyzeLvFrame() {
+            var v = document.getElementById('lvVideo');
+            if (lvState.finished || !v.videoWidth) return;
+            var canvas = document.getElementById('lvCanvas');
+            var ctx = canvas.getContext('2d');
+            var W = 80, H = 80;
+            canvas.width = W; canvas.height = H;
+
+            // 화면 중앙(원 영역)만 잘라 분석
+            var vw = v.videoWidth, vh = v.videoHeight;
+            var side = Math.min(vw, vh) * 0.62;
+            var cx = (vw - side) / 2, cy = (vh - side) / 2;
+            ctx.drawImage(v, cx, cy, side, side, 0, 0, W, H);
+            var img = ctx.getImageData(0, 0, W, H).data;
+
+            // 피부색 검출 (YCbCr — 조명에 강함) + centroid X
+            var skin = 0, sumX = 0;
+            for (var y = 0; y < H; y++) {
+                for (var x = 0; x < W; x++) {
+                    var i = (y * W + x) * 4;
+                    var r = img[i], g = img[i + 1], b = img[i + 2];
+                    var cb = 128 - 0.168736 * r - 0.331264 * g + 0.5 * b;
+                    var cr = 128 + 0.5 * r - 0.418688 * g - 0.081312 * b;
+                    if (cb >= 77 && cb <= 127 && cr >= 133 && cr <= 173) {
+                        skin++; sumX += x;
+                    }
+                }
+            }
+            var ratio = skin / (W * H);          // 피부 비율 (얼굴 존재 추정)
+            var centroidX = skin > 0 ? (sumX / skin) / W : 0.5; // 0(좌)~1(우)
+            handleLvStage(ratio, centroidX);
+        }
+
+        // 스테이지 게이트: 정면(중앙) → 좌 이동 → 우 이동
+        function handleLvStage(ratio, centroidX) {
+            var outline = document.getElementById('lvOutline');
+            var FACE_MIN = 0.18;   // 얼굴로 인정할 최소 피부 비율
+            var MOVE_TH = 0.12;    // 기준 대비 횡이동 임계
+            var HOLD_NEED = 4;     // 조건 연속 충족 프레임 수 (약 0.6초)
+
+            // 얼굴이 충분히 안 보이면 안내 후 대기
+            if (ratio < FACE_MIN) {
+                outline.classList.remove('detected');
+                lvState.holdCount = 0;
+                if (lvState.stage === 0) lvSetText('얼굴을 원 안에 맞춰주세요');
+                return;
+            }
+            outline.classList.add('detected');
+
+            if (lvState.stage === 0) {
+                // 정면: centroid가 중앙 부근(0.35~0.65)에 안정적으로 위치
+                lvSetText('정면을 바라봐 주세요');
+                if (centroidX > 0.35 && centroidX < 0.65) {
+                    lvState.holdCount++;
+                    if (lvState.holdCount >= HOLD_NEED) {
+                        lvState.baseX = centroidX;   // 기준점 저장
+                        lvAdvanceStage();
+                    }
+                } else { lvState.holdCount = 0; }
+
+            } else if (lvState.stage === 1) {
+                // 좌: 화면상 centroid가 기준보다 왼쪽으로 이동 (거울 모드 = 화면 방향 그대로)
+                lvSetText('고개를 왼쪽으로 움직여 주세요');
+                if (centroidX < lvState.baseX - MOVE_TH) {
+                    lvState.holdCount++;
+                    if (lvState.holdCount >= HOLD_NEED) lvAdvanceStage();
+                } else { lvState.holdCount = 0; }
+
+            } else if (lvState.stage === 2) {
+                // 우: 기준보다 오른쪽으로 이동
+                lvSetText('고개를 오른쪽으로 움직여 주세요');
+                if (centroidX > lvState.baseX + MOVE_TH) {
+                    lvState.holdCount++;
+                    if (lvState.holdCount >= HOLD_NEED) lvAdvanceStage();
+                } else { lvState.holdCount = 0; }
+            }
+        }
+
+        // 현재 스테이지 완료 → 도트 점등 후 다음 단계 / 마지막이면 완료
+        function lvAdvanceStage() {
+            lvMarkDotDone(lvState.stage);
+            lvState.holdCount = 0;
+            if (lvState.stage >= LV_STAGES.length - 1) {
+                completeLiveness();
+            } else {
+                lvState.stage++;
+            }
+        }
+
+        // 인증 완료 → KYC 입력 화면(dsrv-kyc.html)으로 진행
+        function completeLiveness() {
+            if (lvState.finished) return;
+            lvState.finished = true;
+            clearInterval(lvState.analyzeTimer);
+            document.getElementById('lvOutline').classList.add('detected');
+            document.getElementById('lvText').textContent = '얼굴 인증이 완료되었어요';
+            document.getElementById('lvLoading').style.display = 'none';
+            // 잠깐 완료 표시 후 KYC로 전환
+            lvState.holdTimer = setTimeout(function () {
+                stopLvCamera();
+                location.href = 'dsrv-kyc.html';
+            }, 900);
+        }
+
+        // 카메라 정지
+        function stopLvCamera() {
+            var v = document.getElementById('lvVideo');
+            if (v.srcObject) {
+                v.srcObject.getTracks().forEach(function (t) { t.stop(); });
+                v.srcObject = null;
+            }
+        }
+
+        // 뒤로가기 → 최초 안내 화면(welcome) 복귀
+        function onLivenessBack() {
+            stopLvCamera();
+            clearInterval(lvState.analyzeTimer);
+            clearTimeout(lvState.holdTimer);
+            location.href = 'dsrv-welcome.html';
+        }
+
+        // 네이티브 백(스와이프/하드웨어) → 버튼 뒤로가기와 동일 동작
+        var commIfScript = {
+            onBackPressed: function () { onLivenessBack(); }
+        };
+
+        // 화면 진입 시 얼굴 인증 시작
+        startLiveness();
+    </script>
+</body>
+</html>

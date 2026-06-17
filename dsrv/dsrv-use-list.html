@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Paybooc Wallet</title>
+    <style>
+        :root {
+            --color-primary: #ff5a36;       /* 메인 강조색 */
+            --color-text: #000000;          /* 기본 텍스트 */
+            --color-sub: #898989;           /* 보조 텍스트 (주소/시간/금액환산) */
+            --color-cancel: #9d9d9d;        /* 취소 거래 텍스트 */
+            --color-border: #d6d6d6;        /* 필터 pill 테두리 */
+            --color-line: #e5e5e5;          /* 날짜 그룹 구분선 */
+            --color-base-blue: #0052ff;     /* base 네트워크 칩 */
+        }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: #ffffff;
+            color: var(--color-text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        body {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* ===== 헤더 ===== */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 16px;
+        }
+        .header .back {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: transparent;
+            padding: 0;
+            cursor: pointer;
+        }
+        .header .title {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        /* ===== 필터 pill ===== */
+        .filter-bar {
+            padding: 4px 16px 16px;
+        }
+        .filter-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            height: 30px;
+            padding: 0 14px;
+            border: 1px solid var(--color-border);
+            border-radius: 50px;
+            background: #fff;
+            font-size: 15px;
+            color: var(--color-text);
+            cursor: pointer;
+        }
+        .filter-pill svg {
+            flex-shrink: 0;
+        }
+
+        /* ===== 거래 리스트 ===== */
+        .tx-list {
+            padding: 0 0 24px;
+        }
+        .date-group {
+            padding: 0 16px;
+        }
+        .date-group + .date-group {
+            margin-top: 8px;
+            border-top: 1px solid var(--color-line);
+            padding-top: 16px;
+        }
+        .date-label {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--color-sub);
+            margin: 8px 0 12px;
+        }
+
+        /* 거래 행 */
+        .tx-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            background: transparent;
+            border: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .tx-icon {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            margin-top: 2px;
+        }
+        .tx-main {
+            flex: 1;
+            min-width: 0;
+        }
+        .tx-name {
+            font-size: 18px;
+            color: var(--color-text);
+            line-height: 1.2;
+        }
+        .tx-meta {
+            margin-top: 4px;
+            font-size: 14px;
+            color: var(--color-sub);
+            line-height: 1.4;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        /* meta 첫 줄(주소)은 한 줄 유지하며 넘치면 ... 처리 */
+        .tx-meta .addr {
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .tx-right {
+            flex-shrink: 0;
+            text-align: right;
+        }
+        .tx-amount {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--color-text);
+            white-space: nowrap;
+        }
+        .tx-converted {
+            margin-top: 4px;
+            font-size: 14px;
+            color: var(--color-sub);
+            white-space: nowrap;
+        }
+        /* 취소된 거래 */
+        .tx-row.cancelled .tx-amount {
+            color: var(--color-cancel);
+            text-decoration: line-through;
+        }
+
+        /* ===== 상세 바텀시트 ===== */
+        .sheet-dim {
+            position: fixed;
+            inset: 0;
+            background: rgba(65, 65, 65, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+            z-index: 10;
+        }
+        .sheet-dim.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        .sheet {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #fff;
+            border-radius: 20px 20px 0 0;
+            padding: 24px 24px calc(24px + env(safe-area-inset-bottom));
+            transform: translateY(100%);
+            transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+            z-index: 11;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .sheet.open {
+            transform: translateY(0);
+        }
+        .sheet-grabber {
+            width: 40px;
+            height: 4px;
+            border-radius: 2px;
+            background: #e0e0e0;
+            margin: 0 auto 16px;
+        }
+        .sheet-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0 0 16px;
+        }
+        .sheet-amount {
+            font-size: 30px;
+            font-weight: 700;
+            margin: 0 0 24px;
+        }
+        .sheet-field + .sheet-field {
+            margin-top: 20px;
+        }
+        .field-label {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--color-text);
+            margin: 0 0 4px;
+        }
+        .field-value {
+            font-size: 15px;
+            color: var(--color-text);
+            margin: 0;
+            word-break: break-all;
+        }
+        /* base 네트워크 칩 */
+        .network-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 24px;
+            padding: 0 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--color-text);
+        }
+        .network-chip .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--color-base-blue);
+        }
+    </style>
+</head>
+<body>
+    <!-- ===== 헤더 ===== -->
+    <div class="header">
+        <button type="button" class="back" onclick="onBack()" aria-label="뒤로">
+            <svg width="11" height="20" viewBox="0 0 11 20" fill="none">
+                <path d="M10 1L1 10L10 19" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+        <span class="title">Paybooc Wallet</span>
+    </div>
+
+    <!-- ===== 필터 ===== -->
+    <div class="filter-bar">
+        <button type="button" class="filter-pill">
+            Transaction Type
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                <path d="M3 5L6.5 8.5L10 5" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- ===== 거래 리스트 ===== -->
+    <div class="tx-list" id="txList"></div>
+
+    <!-- ===== 상세 바텀시트 ===== -->
+    <div class="sheet-dim" id="sheetDim" onclick="closeSheet()"></div>
+    <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+        <div class="sheet-grabber"></div>
+        <h2 class="sheet-title" id="sheetTitle">Transaction Detail</h2>
+        <p class="sheet-amount" id="sheetAmount"></p>
+
+        <div class="sheet-field">
+            <p class="field-label">Transaction Type</p>
+            <p class="field-value" id="sheetType"></p>
+        </div>
+        <div class="sheet-field">
+            <p class="field-label">Status</p>
+            <p class="field-value" id="sheetStatus"></p>
+        </div>
+        <div class="sheet-field">
+            <p class="field-label">From</p>
+            <p class="field-value" id="sheetFrom"></p>
+        </div>
+        <div class="sheet-field">
+            <p class="field-label">To</p>
+            <p class="field-value" id="sheetTo"></p>
+        </div>
+        <div class="sheet-field">
+            <p class="field-label">Network</p>
+            <p class="field-value">
+                <span class="network-chip"><span class="dot"></span>base</span>
+            </p>
+        </div>
+        <div class="sheet-field">
+            <p class="field-label">Date</p>
+            <p class="field-value" id="sheetDate"></p>
+        </div>
+    </div>
+
+    <!-- 공통 브릿지 모듈 (iOS/Android 분기) -->
+    <script src="dsrv-bridge.js"></script>
+    <script>
+        // 코인 아이콘 (USDC 스타일 - 파란 원형 달러)
+        var COIN_ICON =
+            '<svg class="tx-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+            '<circle cx="16" cy="16" r="15" fill="#fff" stroke="#2775CA" stroke-width="1.5"/>' +
+            '<path d="M20.5 18.2c0-1.9-1.2-2.6-3.5-2.9-1.7-.2-2-.6-2-1.4 0-.8.6-1.3 1.7-1.3 1 0 1.6.3 1.9 1.1.06.16.2.26.37.26h.9c.22 0 .39-.17.39-.39v-.05c-.21-1.13-1.13-2-2.3-2.13v-1.2c0-.22-.17-.39-.43-.43h-.84c-.22 0-.39.17-.43.43v1.16c-1.7.23-2.78 1.36-2.78 2.78 0 1.79 1.1 2.52 3.4 2.83 1.6.28 2.1.62 2.1 1.5 0 .88-.77 1.48-1.82 1.48-1.43 0-1.92-.6-2.09-1.42-.04-.21-.21-.34-.39-.34h-.96c-.22 0-.39.17-.39.39v.05c.22 1.27 1.04 2.18 2.91 2.43v1.21c0 .22.17.39.43.43h.84c.22 0 .39-.17.43-.43v-1.21c1.71-.28 2.83-1.49 2.83-3z" fill="#2775CA"/>' +
+            '<path d="M12.6 24.4c-4.45-1.6-6.74-6.55-5.1-10.96.85-2.38 2.72-4.21 5.1-5.06.22-.11.34-.28.34-.56v-.79c0-.22-.12-.39-.34-.45-.05 0-.16 0-.21.06-5.42 1.71-8.4 7.47-6.68 12.88 1.02 3.18 3.49 5.65 6.68 6.67.22.11.43 0 .48-.22.05-.06.05-.12.05-.23v-.79c0-.17-.16-.39-.32-.5zm6.85-18.26c-.22-.11-.43 0-.48.22-.06.06-.06.12-.06.23v.79c0 .22.16.44.32.56 4.45 1.6 6.74 6.55 5.1 10.96-.85 2.38-2.72 4.21-5.1 5.06-.22.11-.34.28-.34.56v.79c0 .22.12.39.34.45.05 0 .17 0 .22-.06 5.42-1.71 8.4-7.47 6.68-12.88-1.02-3.23-3.54-5.7-6.68-6.68z" fill="#2775CA"/>' +
+            '</svg>';
+
+        // 거래 목업 데이터 (Figma 1917:1182 기준)
+        var GROUPS = [
+            {
+                date: '2026.06.08',
+                items: [
+                    {
+                        name: 'Send (fee)', amount: '-1.00 USDC', converted: '7.00 USDC',
+                        addr: 'To : Paybooc', sub: '09:25 | Completed',
+                        detail: { type: 'Send (fee)', status: 'Completed', from: '페이북 월렛 주소',
+                                  to: 'Paybooc', date: '2026.06.08 09:25', amount: '-1.00 USDC' }
+                    },
+                    {
+                        name: 'Send', amount: '-280.00 USDC', converted: '8.00 USDC',
+                        addr: 'To : 0x542Fdsf3...', sub: '09:25 | Pending',
+                        detail: { type: 'Send', status: 'Pending', from: '페이북 월렛 주소',
+                                  to: '0x542Fdsf3...', date: '2026.06.08 09:25', amount: '-280.00 USDC' }
+                    }
+                ]
+            },
+            {
+                date: '2026.06.02',
+                items: [
+                    {
+                        name: 'Pay', amount: '-32.00 USDC', converted: '288.00 USDC', cancelled: true,
+                        addr: 'Starbucks Eulji-twin...', sub: '19:00 | Cancelled',
+                        detail: { type: 'Pay', status: 'Cancelled', from: '페이북 월렛 주소',
+                                  to: 'Starbucks Eulji-twin...', date: '2026.06.02 19:00', amount: '-32.00 USDC' }
+                    },
+                    {
+                        name: 'Pay', amount: '-12.00 USDC', converted: '288.00 USDC',
+                        addr: 'Starbucks Eulji-twin...', sub: '18:00 | Completed',
+                        detail: { type: 'Pay', status: 'Completed', from: '페이북 월렛 주소',
+                                  to: 'Starbucks Eulji-twin...', date: '2026.06.02 18:00', amount: '-12.00 USDC' }
+                    }
+                ]
+            },
+            {
+                date: '2026.05.31',
+                items: [
+                    {
+                        name: 'Receive', amount: '+300.00 USDC', converted: '300.00 USDC',
+                        addr: 'From : 0x2vX3b...', sub: '13:34 | Completed',
+                        detail: { type: 'Receive', status: 'Completed', from: '0x2vX3b...',
+                                  to: '페이북 월렛 주소', date: '2026.05.31 13:34', amount: '+300.00 USDC' }
+                    }
+                ]
+            }
+        ];
+
+        // 리스트 렌더링
+        function renderList() {
+            var html = '';
+            GROUPS.forEach(function (group) {
+                html += '<div class="date-group">';
+                html += '<p class="date-label">' + group.date + '</p>';
+                group.items.forEach(function (item) {
+                    var rowClass = 'tx-row' + (item.cancelled ? ' cancelled' : '');
+                    html += '<div class="' + rowClass + '" onclick=\'openSheet(' + JSON.stringify(item.detail) + ')\'>';
+                    html += COIN_ICON;
+                    html += '<div class="tx-main">';
+                    html += '<div class="tx-name">' + item.name + '</div>';
+                    html += '<div class="tx-meta"><span class="addr">' + item.addr + '</span>' + item.sub + '</div>';
+                    html += '</div>';
+                    html += '<div class="tx-right">';
+                    html += '<div class="tx-amount">' + item.amount + '</div>';
+                    html += '<div class="tx-converted">' + item.converted + '</div>';
+                    html += '</div>';
+                    html += '</div>';
+                });
+                html += '</div>';
+            });
+            document.getElementById('txList').innerHTML = html;
+        }
+
+        // 상세 바텀시트 열기
+        function openSheet(detail) {
+            document.getElementById('sheetAmount').textContent = detail.amount;
+            document.getElementById('sheetType').textContent = detail.type;
+            document.getElementById('sheetStatus').textContent = detail.status;
+            document.getElementById('sheetFrom').textContent = detail.from;
+            document.getElementById('sheetTo').textContent = detail.to;
+            document.getElementById('sheetDate').textContent = detail.date;
+            document.getElementById('sheetDim').classList.add('open');
+            document.getElementById('sheet').classList.add('open');
+        }
+
+        // 상세 바텀시트 닫기
+        function closeSheet() {
+            document.getElementById('sheetDim').classList.remove('open');
+            document.getElementById('sheet').classList.remove('open');
+        }
+
+        // 헤더 뒤로가기 → 네이티브 웹뷰 닫기
+        function onBack() {
+            callNativeBridge('Navi', 'closeWebView', {});
+        }
+
+        renderList();
+    </script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Tell us about yourself</title>
+    <style>
+        :root {
+            /* 디자인 토큰 (Figma 기준) */
+            --color-primary: #1a3a6d;       /* 버튼 primary */
+            --color-text-2: #191b1e;
+            --color-text-8: #b2b7c2;
+            --color-badge-bg: rgba(219, 226, 240, 0.4);
+        }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f3f5f8;
+            color: var(--color-text-2);
+        }
+
+        /* 헤더 (back) */
+        .appbar {
+            display: flex;
+            align-items: center;
+            height: 56px;
+            padding: 8px 20px;
+            background: #f3f5f8;
+        }
+        .appbar .back-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            margin-left: -8px;
+            border: none;
+            background: none;
+            padding: 0;
+        }
+        .btn-primary {
+            width: 100%;
+            border: none;
+            border-radius: 16px;
+            background: var(--color-primary);
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 26px;
+            padding: 15px 10px;
+            font-family: inherit;
+        }
+        .btn-primary:active { opacity: 0.8; }
+
+        /* KYC 화면 (Tell us about yourself) */
+        .kyc {
+            min-height: 100vh;
+            background: #f3f5f8;
+            padding-bottom: calc(82px + env(safe-area-inset-bottom));
+        }
+        .kyc .kyc-progress {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            padding: 12px 20px 24px;
+        }
+        .kyc .kyc-step {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 1000px;
+            background: var(--color-badge-bg);
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--color-text-8);
+        }
+        .kyc .kyc-step.active {
+            background: var(--color-primary);
+            color: #fff;
+        }
+        .kyc .kyc-heading {
+            padding: 16px 24px 0;
+            font-size: 25px;
+            font-weight: 700;
+            line-height: 1.2;
+            color: #000;
+        }
+        .kyc .kyc-field {
+            padding: 0 24px;
+            margin-top: 32px;
+        }
+        .kyc .kyc-label {
+            font-size: 15px;
+            font-weight: 700;
+            color: #000;
+        }
+        .kyc .kyc-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 14px;
+            padding: 15px 18px;
+            border: 1px solid rgba(205, 209, 218, 0.6);
+            border-radius: 14px;
+            background: #fff;
+        }
+        .kyc .kyc-input .kyc-value {
+            flex: 1;
+            font-size: 17px;
+            line-height: 26px;
+            color: var(--color-text-2);
+        }
+        .kyc .kyc-input .kyc-arrow {
+            flex: 0 0 20px;
+        }
+        /* KYC 하단 고정 버튼 */
+        .kyc-bottom {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10;
+        }
+        .kyc-bottom .gradient {
+            height: 12px;
+            background: linear-gradient(to top, #f3f5f8, rgba(243, 245, 248, 0));
+        }
+        .kyc-bottom .btn-wrap {
+            background: #f3f5f8;
+            padding: 0 20px 14px;
+            padding-bottom: calc(14px + env(safe-area-inset-bottom));
+        }
+    </style>
+</head>
+<body>
+    <!-- ===== KYC 화면 (Tell us about yourself) ===== -->
+    <div class="kyc">
+        <!-- 헤더 -->
+        <header class="appbar">
+            <button type="button" class="back-btn" onclick="onKycBack()" aria-label="back">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M15 4L7 12L15 20" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </header>
+
+        <!-- 진행 단계 -->
+        <div class="kyc-progress">
+            <div class="kyc-step">1</div>
+            <div class="kyc-step">2</div>
+            <div class="kyc-step active">3</div>
+        </div>
+
+        <!-- 제목 -->
+        <h1 class="kyc-heading">Tell us about yourself</h1>
+
+        <!-- 입력 필드들 -->
+        <div class="kyc-field">
+            <p class="kyc-label">Employment Type</p>
+            <div class="kyc-input">
+                <span class="kyc-value">Employed</span>
+                <svg class="kyc-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M6 8L10 12L14 8" stroke="#191b1e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </div>
+        <div class="kyc-field">
+            <p class="kyc-label">Purpose of Transaction</p>
+            <div class="kyc-input">
+                <span class="kyc-value">Travel Expenses</span>
+                <svg class="kyc-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M6 8L10 12L14 8" stroke="#191b1e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </div>
+        <div class="kyc-field">
+            <p class="kyc-label">Source of Funds</p>
+            <div class="kyc-input">
+                <span class="kyc-value">Salary</span>
+                <svg class="kyc-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M6 8L10 12L14 8" stroke="#191b1e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </div>
+        <div class="kyc-field">
+            <p class="kyc-label">Company Name</p>
+            <div class="kyc-input">
+                <span class="kyc-value">Google</span>
+            </div>
+        </div>
+        <div class="kyc-field">
+            <p class="kyc-label">Company Address</p>
+            <div class="kyc-input">
+                <span class="kyc-value">1600 Amphitheatre Pkwy, Mountain View, CA</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- KYC 하단 고정 버튼 -->
+    <div class="kyc-bottom">
+        <div class="gradient"></div>
+        <div class="btn-wrap">
+            <button type="button" class="btn-primary" onclick="onDone()">Done</button>
+        </div>
+    </div>
+    <!-- ===== /KYC 화면 ===== -->
+
+    <!-- 공통 브릿지 모듈 (iOS/Android 분기) -->
+    <script src="dsrv-bridge.js"></script>
+    <script>
+        // KYC 화면에서 뒤로 가기 → 최초 안내 화면(welcome) 복귀
+        function onKycBack() {
+            location.href = 'dsrv-welcome.html';
+        }
+
+        // 네이티브 백(스와이프/하드웨어) → 버튼 뒤로가기와 동일 동작
+        var commIfScript = {
+            onBackPressed: function () { onKycBack(); }
+        };
+
+        // KYC 완료 → DSRV 지갑 가입(계정+주소생성) 브릿지 호출.
+        // 결과 콜백에서 안내 팝업을 띄우고, 확인을 누르면 웹뷰를 닫는다.
+        function onDone() {
+            callNativeBridge('Navi', 'dsrvRegisterWallet', {}, 'onRegisterWalletResult');
+        }
+
+        // 가입 브릿지 콜백 — 성공/실패 모두 안내 팝업 노출 후 확인 시 웹뷰 닫기.
+        function onRegisterWalletResult(result) {
+            // result: { callback, resultCode, params }
+            if (result.resultCode === 'success') {
+                alert('지갑 가입이 완료되었습니다.');
+            } else {
+                var message = '';
+                try { message = JSON.parse(result.params).message || ''; } catch (e) {}
+                alert('지갑 가입에 실패했습니다.\n' + message);
+            }
+            // 확인(alert 닫힘) 후 웹뷰 닫기 → 홈 완료 화면으로 복귀
+            callNativeBridge('Navi', 'closeWebView', {});
+        }
+    </script>
+</body>
+</html>

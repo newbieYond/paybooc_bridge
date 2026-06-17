@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Passport Verification</title>
+    <!-- 여권 OCR (PoC) — Tesseract.js CDN. WebView 탑재 시 네트워크/ATS 허용 필요 -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #FFFFFF;
+            color: #22252A;
+        }
+
+        /* ===== 여권 인증 화면 (PoC) ===== */
+        #passportScreen { background: #FFFFFF; min-height: 100vh; display: flex; flex-direction: column; }
+
+        .pp-topbar {
+            height: 56px; display: flex; align-items: center; justify-content: flex-end;
+            padding: 0 16px; padding-top: env(safe-area-inset-top);
+        }
+        .pp-close {
+            width: 28px; height: 28px; border: none; background: none; cursor: pointer;
+            padding: 0; display: flex; align-items: center; justify-content: center;
+        }
+        .pp-close svg { width: 22px; height: 22px; }
+
+        .pp-guides { display: flex; justify-content: space-between; gap: 12px; padding: 4px 24px 20px; }
+        .pp-guide { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .pp-icon { width: 44px; height: 44px; margin-bottom: 8px; }
+        .pp-icon svg { width: 100%; height: 100%; }
+        .pp-label { font-size: 13px; line-height: 18px; color: #4B515D; word-break: keep-all; }
+
+        .pp-camera { position: relative; width: 100%; height: 280px; background: #4B515D; overflow: hidden; }
+        #ppVideo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #4B515D; }
+        .pp-frame {
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            width: 320px; height: 216px; border: 3px solid #FFFFFF; border-radius: 16px;
+            box-shadow: 0 0 0 9999px rgba(75, 81, 93, 0.35);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .pp-frame.detected { border-color: #FF3F53; box-shadow: 0 0 0 9999px rgba(75, 81, 93, 0.15); }
+
+        .pp-status { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 28px 24px 0; }
+        .pp-status-text {
+            font-size: 18px; font-weight: 700; line-height: 26px; color: #22252A;
+            text-align: center; margin: 0 0 14px; word-break: keep-all;
+        }
+        .pp-timer {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: #1A3A6D; color: #FFFFFF; font-size: 14px; font-weight: 500;
+            padding: 8px 16px; border-radius: 20px;
+        }
+        .pp-timer b { font-weight: 700; }
+        .pp-perm { margin-top: 12px; font-size: 13px; color: #FF3F53; text-align: center; }
+
+        .pp-result {
+            width: 100%; max-width: 360px; margin-top: 24px;
+            border: 1px solid #E5E7EB; border-radius: 12px; padding: 16px; display: none;
+        }
+        .pp-result.show { display: block; }
+        .pp-result h3 { margin: 0 0 12px; font-size: 16px; font-weight: 700; color: #22252A; }
+        .pp-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+        .pp-k { color: #4B515D; }
+        .pp-v { color: #22252A; font-weight: 600; }
+        .pp-confirm {
+            width: 100%; margin-top: 16px; height: 48px; background: #1A3A6D; color: #FFFFFF;
+            border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- ===== 여권 인증 화면 (PoC) ===== -->
+    <div id="passportScreen">
+        <!-- 상단 닫기 -->
+        <div class="pp-topbar">
+            <button type="button" class="pp-close" onclick="onPassportBack()" aria-label="닫기">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round">
+                    <path d="M6 6 L18 18 M18 6 L6 18"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- 가이드 3종 -->
+        <div class="pp-guides">
+            <div class="pp-guide">
+                <div class="pp-icon">
+                    <svg viewBox="0 0 44 44" fill="none">
+                        <rect x="6" y="10" width="32" height="24" rx="4" stroke="#22252A" stroke-width="2.5"/>
+                        <rect x="13" y="16" width="18" height="12" rx="2" fill="#22252A"/>
+                    </svg>
+                </div>
+                <div class="pp-label">어두운 배경에<br/>놓아주세요</div>
+            </div>
+            <div class="pp-guide">
+                <div class="pp-icon">
+                    <svg viewBox="0 0 44 44" fill="none">
+                        <path d="M14 18 H30 L26 12 H18 Z" stroke="#22252A" stroke-width="2.5" stroke-linejoin="round"/>
+                        <line x1="22" y1="18" x2="22" y2="22" stroke="#22252A" stroke-width="2.5"/>
+                        <line x1="17" y1="24" x2="17" y2="30" stroke="#22252A" stroke-width="2.5"/>
+                        <line x1="22" y1="24" x2="22" y2="32" stroke="#22252A" stroke-width="2.5"/>
+                        <line x1="27" y1="24" x2="27" y2="30" stroke="#22252A" stroke-width="2.5"/>
+                    </svg>
+                </div>
+                <div class="pp-label">각도를 조절해<br/>빛 반사를 피하세요</div>
+            </div>
+            <div class="pp-guide">
+                <div class="pp-icon">
+                    <svg viewBox="0 0 44 44" fill="none">
+                        <path d="M14 14 H18 M14 14 V18 M30 14 H26 M30 14 V18 M14 30 H18 M14 30 V26 M30 30 H26 M30 30 V26" stroke="#22252A" stroke-width="2.5" stroke-linecap="round"/>
+                        <text x="22" y="26" font-size="11" font-weight="700" fill="#22252A" text-anchor="middle">가</text>
+                    </svg>
+                </div>
+                <div class="pp-label">글자가 선명하도록<br/>고정하세요</div>
+            </div>
+        </div>
+
+        <!-- 카메라 미리보기 -->
+        <div class="pp-camera">
+            <video id="ppVideo" autoplay playsinline muted></video>
+            <div class="pp-frame" id="ppFrame"></div>
+        </div>
+        <canvas id="ppCanvas" style="display:none;"></canvas>
+
+        <!-- 하단 상태 -->
+        <div class="pp-status">
+            <p class="pp-status-text" id="ppStatusText">여권을 인식하지 못했어요</p>
+            <div class="pp-timer">남은 시간 <b id="ppTimer">32초</b></div>
+            <div class="pp-perm" id="ppPerm"></div>
+
+            <!-- 인식 결과 (Mockdata) -->
+            <div class="pp-result" id="ppResult">
+                <h3>✅ 여권 인식 완료</h3>
+                <div class="pp-row"><span class="pp-k">영문 이름</span><span class="pp-v">HONG GILDONG</span></div>
+                <div class="pp-row"><span class="pp-k">여권 번호</span><span class="pp-v">M12345678</span></div>
+                <div class="pp-row"><span class="pp-k">국적</span><span class="pp-v">KOR</span></div>
+                <div class="pp-row"><span class="pp-k">생년월일</span><span class="pp-v">1990-01-01</span></div>
+                <div class="pp-row"><span class="pp-k">만료일</span><span class="pp-v">2030-12-31</span></div>
+                <button type="button" class="pp-confirm" onclick="onPassportConfirm()">확인</button>
+            </div>
+        </div>
+    </div>
+    <!-- ===== /여권 인증 화면 ===== -->
+
+    <script>
+        /* ===== 여권 인증 (PoC) ===== */
+        var MOCK_PASSPORT = {
+            name: "HONG GILDONG", number: "M12345678",
+            nationality: "KOR", birth: "1990-01-01", expiry: "2030-12-31"
+        };
+        // ocrRunning/ocrDone: OCR 1회 게이트 / ppWorker: Tesseract 워커(워밍업 캐시)
+        var ppState = { detecting: false, detectStartAt: 0, finished: false,
+                        analyzeTimer: null, countdownTimer: null, remaining: 32,
+                        ocrRunning: false, ocrDone: false };
+        var ppWorker = null;
+
+        // 여권 스캔 시작 (화면 진입 시 호출)
+        function startPassportScan() {
+            // 상태 초기화
+            ppState = { detecting: false, detectStartAt: 0, finished: false,
+                        analyzeTimer: null, countdownTimer: null, remaining: 32,
+                        ocrRunning: false, ocrDone: false };
+            document.getElementById('ppFrame').classList.remove('detected');
+            document.getElementById('ppResult').classList.remove('show');
+            document.getElementById('ppStatusText').textContent = '여권을 인식하지 못했어요';
+            document.getElementById('ppTimer').textContent = '32초';
+            document.getElementById('ppPerm').textContent = '';
+
+            // OCR 워커 워밍업 (캡처 시점 콜드스타트/모델 다운로드 지연 제거)
+            warmUpPpWorker();
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                document.getElementById('ppPerm').textContent = '이 환경은 카메라를 지원하지 않습니다';
+                return;
+            }
+            navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+                audio: false
+            }).then(function (stream) {
+                var v = document.getElementById('ppVideo');
+                v.srcObject = stream;
+                v.play();
+                startPpCountdown();
+                ppState.analyzeTimer = setInterval(analyzePpFrame, 250);
+            }).catch(function (err) {
+                document.getElementById('ppPerm').textContent = '카메라를 사용할 수 없습니다 (' + (err && err.name || 'error') + ')';
+            });
+        }
+
+        // Tesseract 워커 미리 생성 (eng 단일 언어 — 여권 MRZ는 라틴 문자)
+        function warmUpPpWorker() {
+            if (ppWorker || typeof Tesseract === 'undefined') return;
+            try {
+                Tesseract.createWorker('eng').then(function (w) { ppWorker = w; });
+            } catch (e) { /* CDN 미로드 환경 — OCR 폴백 처리됨 */ }
+        }
+
+        // 남은 시간 카운트다운
+        function startPpCountdown() {
+            ppState.countdownTimer = setInterval(function () {
+                if (ppState.finished) return;
+                ppState.remaining -= 1;
+                document.getElementById('ppTimer').textContent = ppState.remaining + '초';
+                if (ppState.remaining <= 0) {
+                    clearInterval(ppState.countdownTimer);
+                    clearInterval(ppState.analyzeTimer);
+                    document.getElementById('ppStatusText').textContent = '시간이 초과되었어요. 다시 시도해 주세요';
+                    terminatePpWorker();
+                }
+            }, 1000);
+        }
+
+        // 프레임 분석: 박스 영역에 "문서스러운 것"이 있는지 엣지로 판정
+        function analyzePpFrame() {
+            var v = document.getElementById('ppVideo');
+            if (ppState.finished || !v.videoWidth) return;
+            var canvas = document.getElementById('ppCanvas');
+            var ctx = canvas.getContext('2d');
+            var W = 160, H = 108;
+            canvas.width = W; canvas.height = H;
+
+            var vw = v.videoWidth, vh = v.videoHeight;
+            var cropW = vw * 0.7, cropH = vh * 0.55;
+            var cropX = (vw - cropW) / 2, cropY = (vh - cropH) / 2;
+            ctx.drawImage(v, cropX, cropY, cropW, cropH, 0, 0, W, H);
+
+            var img = ctx.getImageData(0, 0, W, H).data;
+            var edgeCount = 0, total = (W - 1) * H;
+            for (var y = 0; y < H; y++) {
+                for (var x = 1; x < W; x++) {
+                    var i = (y * W + x) * 4, ip = (y * W + (x - 1)) * 4;
+                    var g = (img[i] + img[i + 1] + img[i + 2]) / 3;
+                    var gp = (img[ip] + img[ip + 1] + img[ip + 2]) / 3;
+                    if (Math.abs(g - gp) > 18) edgeCount++;
+                }
+            }
+            handlePpDetection((edgeCount / total) > 0.06);
+        }
+
+        // 감지 상태 처리: 엣지 휴리스틱은 "박스 안에 문서 있음" 사전 필터로만 사용.
+        // 안정적으로 ~1초 유지되면 OCR 검증을 1회 실행 → 여권 양식 통과 시 완료.
+        function handlePpDetection(looksLikeDoc) {
+            var frame = document.getElementById('ppFrame');
+            if (ppState.ocrRunning) return; // OCR 분석 중에는 상태 변경 보류
+            if (looksLikeDoc) {
+                if (!ppState.detecting) {
+                    ppState.detecting = true;
+                    ppState.detectStartAt = Date.now();
+                    frame.classList.add('detected');
+                    document.getElementById('ppStatusText').textContent = '빨간 박스 안에 여권을 맞춰주세요';
+                } else if (Date.now() - ppState.detectStartAt >= 1000 && !ppState.ocrDone) {
+                    verifyPassportOCR();
+                }
+            } else if (ppState.detecting) {
+                ppState.detecting = false;
+                frame.classList.remove('detected');
+                document.getElementById('ppStatusText').textContent = '여권을 인식하지 못했어요';
+            }
+        }
+
+        // 여권 양식 OCR 검증 (루프 밖, 1회만 실행)
+        function verifyPassportOCR() {
+            if (ppState.ocrRunning || ppState.ocrDone || ppState.finished) return;
+            ppState.ocrRunning = true;
+            document.getElementById('ppStatusText').textContent = '여권을 분석하고 있어요…';
+
+            // 현재 프레임에서 박스 영역을 고해상도로 캡처
+            var v = document.getElementById('ppVideo');
+            var cap = document.createElement('canvas');
+            var vw = v.videoWidth, vh = v.videoHeight;
+            var cropW = vw * 0.72, cropH = vh * 0.56;
+            var cropX = (vw - cropW) / 2, cropY = (vh - cropH) / 2;
+            cap.width = cropW; cap.height = cropH;
+            cap.getContext('2d').drawImage(v, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+
+            // 워커 미준비 또는 CDN 미로드 → 검증 불가, 사전필터만으로 통과 (PoC 폴백)
+            if (!ppWorker) {
+                ppState.ocrRunning = false;
+                ppState.ocrDone = true;
+                completePassport();
+                return;
+            }
+
+            ppWorker.recognize(cap).then(function (res) {
+                var text = (res && res.data && res.data.text) || '';
+                if (isPassportText(text)) {
+                    ppState.ocrDone = true;
+                    completePassport();
+                } else {
+                    // 여권 양식 아님 → 재시도 유도
+                    ppState.ocrRunning = false;
+                    ppState.detecting = false;
+                    document.getElementById('ppFrame').classList.remove('detected');
+                    document.getElementById('ppStatusText').textContent = '여권 양식이 아니에요. 다시 비춰주세요';
+                }
+            }).catch(function () {
+                // OCR 실패 → 사전필터 통과로 폴백 (PoC)
+                ppState.ocrDone = true;
+                completePassport();
+            });
+        }
+
+        // 여권 양식 판정 (PoC — 관대하게: 신호 2개 이상이면 통과)
+        // 신호: 줄 시작 'P<' / '<<' 연속 / 'PASSPORT' 키워드 / 하단 MRZ 추정 긴 줄
+        function isPassportText(raw) {
+            var text = (raw || '').toUpperCase();
+            var lines = text.split('\n').map(function (l) { return l.replace(/\s/g, ''); });
+            var score = 0;
+            if (/(^|\n)\s*P[<K]/m.test(text)) score++;        // MRZ 1행 시작 (P< 또는 PK)
+            if (text.indexOf('<<') !== -1) score++;            // MRZ 구분자 연속 '<<'
+            if (text.indexOf('PASSPORT') !== -1) score++;      // 여권 키워드
+            if (/REPUBLICOFKOREA|KOR/.test(text.replace(/\s/g, ''))) score++; // 국가 표기
+            // MRZ 추정: 길고 '<' 가 다수 포함된 줄 2개 이상
+            var mrzLines = lines.filter(function (l) {
+                return l.length >= 30 && (l.match(/</g) || []).length >= 3;
+            });
+            if (mrzLines.length >= 2) score += 2;
+            else if (mrzLines.length === 1) score++;
+            return score >= 2;
+        }
+
+        // 인식 완료 → Mockdata 표시
+        function completePassport() {
+            if (ppState.finished) return;
+            ppState.finished = true;
+            clearInterval(ppState.analyzeTimer);
+            clearInterval(ppState.countdownTimer);
+            document.getElementById('ppStatusText').textContent = '여권을 인식했어요';
+            document.getElementById('ppResult').classList.add('show');
+            stopPpCamera();
+            terminatePpWorker();
+        }
+
+        // OCR 워커 정리
+        function terminatePpWorker() {
+            if (ppWorker) {
+                try { ppWorker.terminate(); } catch (e) {}
+                ppWorker = null;
+            }
+        }
+
+        // 카메라 정지
+        function stopPpCamera() {
+            var v = document.getElementById('ppVideo');
+            if (v.srcObject) {
+                v.srcObject.getTracks().forEach(function (t) { t.stop(); });
+                v.srcObject = null;
+            }
+        }
+
+        // 여권 화면 닫기 → 최초 안내 화면 복귀
+        function onPassportBack() {
+            stopPpCamera();
+            clearInterval(ppState.analyzeTimer);
+            clearInterval(ppState.countdownTimer);
+            terminatePpWorker();
+            location.href = 'dsrv-welcome.html';
+        }
+
+        // 여권 인식 확인 → Liveness(얼굴 인증) 화면(별도 HTML)으로 진행
+        function onPassportConfirm() {
+            stopPpCamera();
+            location.href = 'dsrv-liveness.html';
+        }
+
+        // 네이티브 백(스와이프/하드웨어) → 버튼 뒤로가기와 동일 동작
+        var commIfScript = {
+            onBackPressed: function () { onPassportBack(); }
+        };
+
+        // 화면 진입 시 여권 스캔 시작
+        startPassportScan();
+    </script>
+</body>
+</html>
