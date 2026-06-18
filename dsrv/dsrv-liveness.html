@@ -84,11 +84,11 @@
                 <defs>
                     <mask id="lvHole">
                         <rect width="390" height="500" fill="white"/>
-                        <ellipse cx="195" cy="240" rx="135" ry="155" fill="black"/>
+                        <ellipse cx="195" cy="220" rx="90" ry="108" fill="black"/>
                     </mask>
                 </defs>
                 <rect width="390" height="500" fill="#000000" mask="url(#lvHole)"/>
-                <ellipse id="lvOutline" cx="195" cy="240" rx="135" ry="155" fill="none" stroke="#FF3F53" stroke-width="4"/>
+                <ellipse id="lvOutline" cx="195" cy="220" rx="90" ry="108" fill="none" stroke="#FF3F53" stroke-width="4"/>
             </svg>
 
             <!-- 진행 도트 -->
@@ -179,7 +179,7 @@
 
             // 화면 중앙(원 영역)만 잘라 분석
             var vw = v.videoWidth, vh = v.videoHeight;
-            var side = Math.min(vw, vh) * 0.62;
+            var side = Math.min(vw, vh) * 0.42;
             var cx = (vw - side) / 2, cy = (vh - side) / 2;
             ctx.drawImage(v, cx, cy, side, side, 0, 0, W, H);
             var img = ctx.getImageData(0, 0, W, H).data;
