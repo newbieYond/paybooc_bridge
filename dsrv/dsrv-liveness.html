@@ -20,7 +20,7 @@
         #livenessScreen { background: #000000; min-height: 100vh; display: flex; flex-direction: column; }
 
         .lv-topbar {
-            height: 56px; display: flex; align-items: center; padding: 0 16px;
+            height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
             padding-top: env(safe-area-inset-top); background: #FFFFFF; flex: 0 0 auto;
         }
         .lv-back {
@@ -28,6 +28,10 @@
             padding: 0; display: flex; align-items: center; justify-content: center;
         }
         .lv-back svg { width: 24px; height: 24px; }
+        .lv-skip {
+            border: none; background: none; color: #22252A; cursor: pointer;
+            padding: 6px 0; font-size: 15px; font-weight: 700;
+        }
 
         .lv-camera { position: relative; flex: 1; width: 100%; background: #000000; overflow: hidden; }
         #lvVideo {
@@ -81,6 +85,7 @@
                     <path d="M15 5 L8 12 L15 19"/>
                 </svg>
             </button>
+            <button type="button" class="lv-skip" onclick="onLivenessSkip()">Skip</button>
         </div>
 
         <!-- 카메라 (전면, 원형 마스크) -->
@@ -180,7 +185,7 @@
 
             // 화면 중앙(원 영역)만 잘라 분석
             var vw = v.videoWidth, vh = v.videoHeight;
-            var side = Math.min(vw, vh) * 0.62;
+            var side = Math.min(vw, vh) * 0.72;
             var cx = (vw - side) / 2, cy = (vh - side) / 2;
             ctx.drawImage(v, cx, cy, side, side, 0, 0, W, H);
             var img = ctx.getImageData(0, 0, W, H).data;
@@ -193,7 +198,7 @@
                     var r = img[i], g = img[i + 1], b = img[i + 2];
                     var cb = 128 - 0.168736 * r - 0.331264 * g + 0.5 * b;
                     var cr = 128 + 0.5 * r - 0.418688 * g - 0.081312 * b;
-                    if (cb >= 77 && cb <= 127 && cr >= 133 && cr <= 173) {
+                    if (cb >= 70 && cb <= 135 && cr >= 125 && cr <= 185) {
                         skin++; sumX += x;
                     }
                 }
@@ -206,9 +211,9 @@
         // 스테이지 게이트: 정면(중앙) → 좌 이동 → 우 이동
         function handleLvStage(ratio, centroidX) {
             var outline = document.getElementById('lvOutline');
-            var FACE_MIN = 0.18;   // 얼굴로 인정할 최소 피부 비율
-            var MOVE_TH = 0.12;    // 기준 대비 횡이동 임계
-            var HOLD_NEED = 4;     // 조건 연속 충족 프레임 수 (약 0.6초)
+            var FACE_MIN = 0.12;   // 얼굴로 인정할 최소 피부 비율
+            var MOVE_TH = 0.08;    // 기준 대비 횡이동 임계
+            var HOLD_NEED = 3;     // 조건 연속 충족 프레임 수 (약 0.45초)
 
             // 얼굴이 충분히 안 보이면 안내 후 대기
             if (ratio < FACE_MIN) {
@@ -220,9 +225,9 @@
             outline.classList.add('detected');
 
             if (lvState.stage === 0) {
-                // 정면: centroid가 중앙 부근(0.35~0.65)에 안정적으로 위치
+                // 정면: centroid가 중앙 부근(0.30~0.70)에 안정적으로 위치
                 lvSetText('정면을 바라봐 주세요');
-                if (centroidX > 0.35 && centroidX < 0.65) {
+                if (centroidX > 0.30 && centroidX < 0.70) {
                     lvState.holdCount++;
                     if (lvState.holdCount >= HOLD_NEED) {
                         lvState.baseX = centroidX;   // 기준점 저장
@@ -286,9 +291,22 @@
         // 뒤로가기 → 최초 안내 화면(welcome) 복귀
         function onLivenessBack() {
             stopLvCamera();
-            clearInterval(lvState.analyzeTimer);
-            clearTimeout(lvState.holdTimer);
+            if (lvState) {
+                clearInterval(lvState.analyzeTimer);
+                clearTimeout(lvState.holdTimer);
+            }
             location.href = 'dsrv-welcome.html';
+        }
+
+        // 스킵 → KYC 입력 화면으로 진행
+        function onLivenessSkip() {
+            stopLvCamera();
+            if (lvState) {
+                lvState.finished = true;
+                clearInterval(lvState.analyzeTimer);
+                clearTimeout(lvState.holdTimer);
+            }
+            location.href = 'dsrv-kyc.html';
         }
 
         // 네이티브 백(스와이프/하드웨어) → 버튼 뒤로가기와 동일 동작

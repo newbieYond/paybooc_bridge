@@ -22,8 +22,12 @@
         #passportScreen { background: #FFFFFF; min-height: 100vh; display: flex; flex-direction: column; }
 
         .pp-topbar {
-            height: 56px; display: flex; align-items: center; justify-content: flex-end;
+            height: 56px; display: flex; align-items: center; justify-content: space-between;
             padding: 0 16px; padding-top: env(safe-area-inset-top);
+        }
+        .pp-skip {
+            border: none; background: none; color: #22252A; cursor: pointer;
+            padding: 6px 0; font-size: 15px; font-weight: 700;
         }
         .pp-close {
             width: 28px; height: 28px; border: none; background: none; cursor: pointer;
@@ -80,6 +84,7 @@
     <div id="passportScreen">
         <!-- 상단 닫기 -->
         <div class="pp-topbar">
+            <button type="button" class="pp-skip" onclick="onPassportSkip()">Skip</button>
             <button type="button" class="pp-close" onclick="onPassportBack()" aria-label="닫기">
                 <svg viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round">
                     <path d="M6 6 L18 18 M18 6 L6 18"/>
@@ -361,6 +366,16 @@
             clearInterval(ppState.countdownTimer);
             terminatePpWorker();
             location.href = 'dsrv-welcome.html';
+        }
+
+        // 스킵 → Liveness(얼굴 인증) 화면으로 진행
+        function onPassportSkip() {
+            ppState.finished = true;
+            stopPpCamera();
+            clearInterval(ppState.analyzeTimer);
+            clearInterval(ppState.countdownTimer);
+            terminatePpWorker();
+            location.href = 'dsrv-liveness.html';
         }
 
         // 여권 인식 확인 → Liveness(얼굴 인증) 화면(별도 HTML)으로 진행
