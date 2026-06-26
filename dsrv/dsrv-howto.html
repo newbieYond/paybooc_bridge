@@ -6,80 +6,125 @@
     <title>How to use</title>
     <style>
         :root {
-            /* 디자인 토큰 (Figma 기준) */
-            --color-text-1: #000000;
+            --color-primary: #1a3a6d;
+            --color-background: #f3f5f8;
+            --color-surface: #ffffff;
             --color-text-2: #191b1e;
+            --color-text-3: #22252a;
             --color-text-4: #343841;
-            --color-text-5: #4b515d;
-            --color-text-8: #b2b7c2;
-            --color-surface-2: #f8f9fc;
+            --color-text-6: #626a7a;
             --color-badge-bg: rgba(219, 226, 240, 0.4);
-            --color-line: rgba(0, 0, 0, 0.05);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
+
         * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
+
+        html,
         body {
             margin: 0;
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #fff;
+            min-height: 100%;
+            background: var(--color-background);
             color: var(--color-text-2);
+            font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
 
-        /* 헤더 (back) - 스크롤 시 상단 고정 */
+        body {
+            display: flex;
+            justify-content: center;
+        }
+
+        p,
+        h1 {
+            margin: 0;
+        }
+
+        button {
+            font: inherit;
+        }
+
+        .page {
+            position: relative;
+            width: 100%;
+            max-width: 390px;
+            min-height: 100vh;
+            background: var(--color-background);
+            padding-bottom: calc(120px + var(--safe-bottom));
+        }
+
         .appbar {
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 20;
             display: flex;
             align-items: center;
             height: 56px;
-            padding: 8px 20px;
-            background: #fff;
+            padding: 8px 20px 8px 12px;
+            background: var(--color-surface);
         }
-        .appbar .back-btn {
-            display: flex;
+
+        .appbar::after {
+            position: absolute;
+            right: 0;
+            bottom: -48px;
+            left: 0;
+            height: 48px;
+            pointer-events: none;
+            content: "";
+            background: linear-gradient(to bottom, var(--color-surface), rgba(255, 255, 255, 0));
+        }
+
+        .back-btn {
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             width: 40px;
             height: 40px;
-            margin-left: -8px;
-            border: none;
-            background: none;
+            border: 0;
+            background: transparent;
             padding: 0;
+            cursor: pointer;
         }
 
-        /* 페이지 제목 */
+        .content {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 20px 14px 0;
+        }
+
         .page-title {
-            padding: 60px 24px 20px;
-            font-size: 28px;
-            font-weight: 700;
-            line-height: 36px;
-            text-align: center;
+            padding-bottom: 20px;
             color: var(--color-text-2);
-            letter-spacing: -0.28px;
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 32px;
+            text-align: center;
         }
 
-        /* 사용 방법 (스텝 타임라인) */
         .steps {
             display: flex;
             flex-direction: column;
             gap: 12px;
-            padding: 0 20px 60px;
         }
+
         .step {
             display: flex;
+            align-items: stretch;
             gap: 12px;
         }
-        .step .step-num {
+
+        .step-num {
             display: flex;
+            flex: 0 0 28px;
             flex-direction: column;
             align-items: center;
             gap: 4px;
-            width: 28px;
         }
-        .step .step-badge {
+
+        .step-badge {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -87,160 +132,291 @@
             height: 28px;
             border-radius: 8px;
             background: var(--color-badge-bg);
+            color: var(--color-text-3);
             font-size: 14px;
             font-weight: 700;
-            color: #22252a;
+            line-height: 20px;
         }
-        .step .step-badge.done {
+
+        .step-badge.done {
             background: #23b6ff;
             color: #fff;
         }
-        .step .step-line {
-            flex: 1;
+
+        .step-line {
             width: 2px;
+            flex: 1;
+            min-height: 1px;
             border-radius: 100px;
             background: var(--color-badge-bg);
         }
-        .step:last-child .step-line { display: none; }
-        .step .step-con {
-            flex: 1;
-            padding-bottom: 40px;
+
+        .step:last-child .step-line {
+            display: none;
         }
-        .step .step-heading {
+
+        .step-con {
+            flex: 1;
+            min-width: 0;
+            padding: 0 0 40px 0;
+        }
+
+        .step.compact .step-con {
+            padding-bottom: 20px;
+        }
+
+        .step-con.compact {
+            padding-bottom: 20px;
+        }
+
+        .step:not(.compact) .step-text {
+            min-height: 44px;
+        }
+
+        .step-heading {
+            color: var(--color-text-4);
             font-size: 20px;
             font-weight: 700;
             line-height: 28px;
-            color: var(--color-text-1);
         }
-        .step .step-text {
-            margin-top: 2px;
-            font-size: 17px;
-            line-height: 26px;
-            color: var(--color-text-5);
+
+        .step-text {
+            margin-top: 8px;
+            color: var(--color-text-6);
+            font-size: 15px;
+            font-weight: 400;
+            line-height: 22px;
         }
-        .step .step-image {
+
+        .step-image {
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            width: 100%;
             margin-top: 20px;
-            height: 164px;
-            border-radius: 20px;
-            background: var(--color-surface-2);
+            overflow: hidden;
+            border-radius: 32px;
+            background: var(--color-surface);
+        }
+
+        .step-image.tall {
+            height: 344px;
+            padding: 32px 0 0;
+        }
+
+        .step-image.transfer {
+            height: 384px;
+            padding: 24px 0 0;
+            align-items: flex-start;
+        }
+
+        .step-image.qr {
+            height: 262px;
+            padding: 24px 0 0;
+            align-items: flex-start;
+        }
+
+        .step-image img {
+            display: block;
+            max-width: none;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .wallet-shot {
+            width: 220px;
+            height: 320px;
+            object-fit: cover;
+            object-position: 50% 0;
+        }
+
+        .transfer-shot {
+            width: 220px;
+            height: 319px;
+            object-fit: cover;
+            object-position: 50% 0;
+        }
+
+        .qr-shot {
+            width: 280px;
+            height: 213px;
+            object-fit: cover;
+            object-position: 54% 100%;
+        }
+
+        .step-image::after {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            height: 60px;
+            pointer-events: none;
+            content: "";
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #fff);
+        }
+
+        .bottom-fixed {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 30;
+            display: flex;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .bottom-inner {
+            width: 100%;
+            max-width: 390px;
+            pointer-events: auto;
+        }
+
+        .bottom-gradient {
+            height: 12px;
+            background: linear-gradient(to top, var(--color-background), rgba(243, 245, 248, 0));
+        }
+
+        .btn-wrap {
+            background: var(--color-background);
+            padding: 0 20px calc(14px + var(--safe-bottom));
+        }
+
+        .btn-primary {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 17px;
-            color: #866d6d;
-        }
-        .step .step-notice {
-            display: flex;
-            gap: 8px;
-            margin-top: 20px;
-            font-size: 16px;
-            line-height: 24px;
-            color: var(--color-text-4);
-        }
-        .step .step-notice::before {
-            content: "";
-            flex: 0 0 3px;
-            height: 24px;
-            background: #ff5a36;
-            border-radius: 2px;
+            width: 100%;
+            height: 56px;
+            border: 0;
+            border-radius: 16px;
+            background: var(--color-primary);
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 26px;
+            cursor: pointer;
         }
 
-        /* 푸터 */
-        .footer {
-            margin-top: 40px;
-            padding: 32px 20px 40px;
-            background: linear-gradient(to bottom, #f3f5f8, rgba(243, 245, 248, 0));
-            border-top: 1px solid var(--color-line);
+        .btn-primary:active {
+            opacity: 0.82;
         }
-        .footer .footer-brand {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--color-text-8);
-        }
-        .footer .footer-desc {
-            margin-top: 6px;
-            font-size: 12px;
-            line-height: 20px;
-            color: var(--color-text-8);
+
+        @media (min-width: 391px) {
+            .page,
+            .bottom-inner {
+                box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04);
+            }
         }
     </style>
 </head>
 <body>
-    <!-- 헤더 -->
-    <header class="appbar">
-        <button type="button" class="back-btn" onclick="onBack()" aria-label="back">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M15 4L7 12L15 20" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </button>
-    </header>
+    <main class="page">
+        <header class="appbar">
+            <button type="button" class="back-btn" onclick="onBack()" aria-label="back">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M15 4L7 12L15 20" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </header>
 
-    <!-- 페이지 제목 -->
-    <h1 class="page-title">How to use?</h1>
+        <section class="content" aria-labelledby="howto-title">
+            <h1 class="page-title" id="howto-title">How to use?</h1>
 
-    <!-- 사용 방법 스텝 -->
-    <section class="steps">
-        <div class="step">
-            <div class="step-num">
-                <div class="step-badge">1</div>
-                <div class="step-line"></div>
-            </div>
-            <div class="step-con">
-                <p class="step-heading">Create your crypto wallet</p>
-                <div class="step-image">image</div>
-                <p class="step-notice">Create a secure crypto wallet within Paybooc.</p>
-            </div>
-        </div>
-        <div class="step">
-            <div class="step-num">
-                <div class="step-badge">2</div>
-                <div class="step-line"></div>
-            </div>
-            <div class="step-con">
-                <p class="step-heading">Transfer your crypto</p>
-                <p class="step-text">Send crypto from your personal crypto wallet to your new Paybooc Crypto Wallet address.</p>
-                <div class="step-image">image</div>
-            </div>
-        </div>
-        <div class="step">
-            <div class="step-num">
-                <div class="step-badge">3</div>
-                <div class="step-line"></div>
-            </div>
-            <div class="step-con">
-                <p class="step-heading">QR Scan &amp; Pay</p>
-                <div class="step-image">image</div>
-                <p class="step-notice">Scan the merchant QR code and pay instantly.</p>
-            </div>
-        </div>
-        <div class="step">
-            <div class="step-num">
-                <div class="step-badge done">
-                    <svg width="14" height="11" viewBox="0 0 14 11" fill="none">
-                        <path d="M1.5 5.5L5 9L12.5 1.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">
+                        <div class="step-badge">1</div>
+                        <div class="step-line"></div>
+                    </div>
+                    <div class="step-con">
+                        <p class="step-heading">Create your crypto wallet</p>
+                        <p class="step-text">Send crypto from your personal crypto wallet to your new Paybooc Crypto Wallet address.</p>
+                        <div class="step-image tall">
+                            <img class="wallet-shot" src="assets/howto-wallet.png" alt="">
+                        </div>
+                    </div>
                 </div>
-                <div class="step-line"></div>
+
+                <div class="step">
+                    <div class="step-num">
+                        <div class="step-badge">2</div>
+                        <div class="step-line"></div>
+                    </div>
+                    <div class="step-con">
+                        <p class="step-heading">Transfer your crypto</p>
+                        <p class="step-text">Send crypto from your personal crypto wallet to your new Paybooc Crypto Wallet address.</p>
+                        <div class="step-image transfer">
+                            <img class="transfer-shot" src="assets/howto-transfer.png" alt="">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-num">
+                        <div class="step-badge">3</div>
+                        <div class="step-line"></div>
+                    </div>
+                    <div class="step-con compact">
+                        <p class="step-heading">QR Scan &amp; Pay</p>
+                        <p class="step-text">Send crypto from your personal crypto wallet to your new Paybooc Crypto Wallet address.</p>
+                        <div class="step-image qr">
+                            <img class="qr-shot" src="assets/howto-qr-pay.png" alt="">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step compact">
+                    <div class="step-num">
+                        <div class="step-badge done">
+                            <svg width="15" height="11" viewBox="0 0 15 11" fill="none" aria-hidden="true">
+                                <path d="M1.6 5.4L5.6 9.3L13.4 1.4" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="step-con compact">
+                        <p class="step-heading">Done!</p>
+                        <p class="step-text">Pay freely across Korea.</p>
+                    </div>
+                </div>
             </div>
-            <div class="step-con">
-                <p class="step-heading">Done!</p>
-                <p class="step-text">You're all set to pay with crypto across Korea.</p>
+        </section>
+    </main>
+
+    <div class="bottom-fixed">
+        <div class="bottom-inner">
+            <div class="bottom-gradient"></div>
+            <div class="btn-wrap">
+                <button type="button" class="btn-primary" onclick="onDone()">Done</button>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- 푸터 -->
-    <footer class="footer">
-        <p class="footer-brand">Powered by travel wallet</p>
-        <p class="footer-desc">BC카드(페이북)가 외화 머니의 발행·관리책임을 지지 않으며, 외화 머니 충전, 사용, 환불 및 잔액 관리 등의 의무와 책임은 트래블월렛에게 있습니다.</p>
-    </footer>
-
-    <!-- 공통 브릿지 모듈 (iOS/Android 분기) -->
-    <script src="dsrv-bridge.js"></script>
     <script>
-        // 뒤로 가기 (네이티브 webview 닫기)
         function onBack() {
-            callNativeBridge('Navi', 'closeWebView', {});
+            postBridge('closeWebView', {});
+        }
+
+        function onDone() {
+            postBridge('closeWebView', {});
+        }
+
+        var commIfScript = {
+            onBackPressed: function () { onBack(); }
+        };
+
+        function postBridge(api, param) {
+            var message = {
+                "callback": "",
+                "category": "Navi",
+                "api": api,
+                "params": JSON.stringify(param)
+            };
+
+            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.payboocBridge) {
+                window.webkit.messageHandlers.payboocBridge.postMessage(JSON.stringify(message));
+            }
         }
     </script>
 </body>
