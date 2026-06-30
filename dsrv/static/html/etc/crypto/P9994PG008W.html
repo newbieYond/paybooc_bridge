@@ -16,6 +16,7 @@
 	<script src="../../../js/comm/ajax.js"></script>
 	<script src="../../../assets/scripts/comm/common.ui.js"></script>
 	<!---------------------------------------------------------------------- UI ----->
+	<script src="../../../assets/scripts/etc/crypto.js"></script>
 </head>
 <body>
 	<header class="renew21--header">
@@ -43,7 +44,7 @@
 				<div class="history-group">
 					<p class="detail-date">24.02.03</p>
 					<div class="list-item-wrap">
-						<a href="javascript: void(0)" class="list-item list-item--send" data-type="send" onclick=""><!-- // case: Send -->
+						<a href="javascript: void(0)" class="list-item list-item--send" data-type="send" onclick="BsCtl('.crypto-history-ly--error').show()"><!-- // case: Send (Pending) -->
 							<div class="tag-box">
 								<i class="ico ico-send"></i>
 								<span>Send</span>
@@ -72,7 +73,7 @@
 				<div class="history-group">
 					<p class="detail-date">24.02.02</p>
 					<div class="list-item-wrap">
-						<a href="javascript: void(0)" class="list-item list-item--pay" data-type="pay" onclick=""><!-- // case: Pay -->
+						<a href="javascript: void(0)" class="list-item list-item--pay" data-type="pay" onclick="BsCtl('.crypto-history-ly--cancel').show()"><!-- // case: Pay (취소) -->
 							<div class="tag-box">
 								<i class="ico ico-pay"></i>
 								<span>Pay</span>
@@ -96,7 +97,7 @@
 								</div>
 							</div>
 						</a>
-						<a href="javascript: void(0)" class="list-item list-item--pay" data-type="pay" onclick="">
+						<a href="javascript: void(0)" class="list-item list-item--pay" data-type="pay" onclick="BsCtl('.crypto-history-ly--pay').show()"><!-- // case: Pay (Completed) -->
 							<div class="tag-box">
 								<i class="ico ico-pay"></i>
 								<span>Pay</span>
@@ -125,7 +126,7 @@
 				<div class="history-group">
 					<p class="detail-date">24.02.01</p>
 					<div class="list-item-wrap">
-						<a href="javascript: void(0)" class="list-item list-item--receive" data-type="receive" onclick=""><!-- // case: Receive -->
+						<a href="javascript: void(0)" class="list-item list-item--receive" data-type="receive" onclick="BsCtl('.crypto-history-ly--receive').show()"><!-- // case: Receive -->
 							<div class="tag-box">
 								<i class="ico ico-receive"></i>
 								<span>Receive</span>
@@ -149,7 +150,7 @@
 								</div>
 							</div>
 						</a>
-						<a href="javascript: void(0)" class="list-item list-item--send" data-type="send" onclick="">
+						<a href="javascript: void(0)" class="list-item list-item--send" data-type="send" onclick="BsCtl('.crypto-history-ly--send').show()"><!-- // case: Send (Completed) -->
 							<div class="tag-box">
 								<i class="ico ico-send"></i>
 								<span>Send</span>
@@ -173,7 +174,7 @@
 								</div>
 							</div>
 						</a>
-						<a href="javascript: void(0)" class="list-item list-item--pay" data-type="pay" onclick=""><!-- // case: Pay -->
+						<a href="javascript: void(0)" class="list-item list-item--pay" data-type="pay" onclick="BsCtl('.crypto-history-ly--cancel').show()"><!-- // case: Pay (취소) -->
 							<div class="tag-box">
 								<i class="ico ico-pay"></i>
 								<span>Pay</span>
@@ -202,6 +203,320 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- 이용내역 상세보기 레이어 : receive [s] -->
+	<div class="lpop--wrap2 crypto-history-ly--receive wide-type" id="crypto-history-ly--receive">
+		<div class="lpop-inner">
+			<section class="select-lpop">
+				<header class="lpop-header">
+					<h1 class="lpop-tit">Transaction Details</h1>
+					<button type="button" class="btn-close">닫기</button>
+				</header>
+				<div class="lpop-cont">
+					<div class="num-tit">
+						<strong class="num">+120.00<span class="unit">USDC</span></strong>
+					</div>
+					<div class="detail-cont">
+						<ul class="info-list">
+							<li>
+								<p class="info-label">Transaction Type</p>
+								<p class="info-value">Receive</p>
+							</li>
+							<li>
+								<p class="info-label">Status</p>
+								<p class="info-value">Completed</p>
+							</li>
+							<li>
+								<p class="info-label">From</p>
+								<p class="info-value">X0dkfj282fjfj4dk9dkhfh37nddkfj282fjfj4dk9dkhfh37nd</p>
+							</li>
+							<li>
+								<p class="info-label">To</p>
+								<p class="info-value">X0dkfj282fjfj4dk9dkhfh37nddkfj282fjfj4dk9dkhfh37nd</p>
+							</li>
+							<li>
+								<p class="info-label">Network</p>
+								<p class="info-value">Base (Mainnet)</p>
+							</li>
+							<li>
+								<p class="info-label">Date</p>
+								<p class="info-value">2026.06.08 15:29</p>
+							</li>
+							<li>
+								<p class="info-label">Transaction Hash</p>
+								<p class="info-value">0xdaVSD135543t</p>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+	<!-- 이용내역 상세보기 레이어 : receive [e] -->
+
+
+	<!-- 이용내역 상세보기 레이어 : send [s] -->
+	<div class="lpop--wrap2 crypto-history-ly--send wide-type" id="crypto-history-ly--send">
+		<div class="lpop-inner">
+			<section class="select-lpop">
+				<header class="lpop-header">
+					<h1 class="lpop-tit">Transaction Details</h1>
+					<button type="button" class="btn-close">닫기</button>
+				</header>
+				<div class="lpop-cont">
+					<div class="num-tit">
+						<strong class="num">-120.00<span class="unit">USDC</span></strong>
+					</div>
+					<div class="detail-cont">
+						<ul class="info-list">
+							<li>
+								<p class="info-label">Transaction Type</p>
+								<p class="info-value">Send</p>
+							</li>
+							<li>
+								<p class="info-label">Status</p>
+								<p class="info-value">Completed</p>
+							</li>
+							<li>
+								<p class="info-label">From</p>
+								<p class="info-value">X0dkfj282fjfj4dk9dkhfh37nddkfj282fjfj4dk9dkhfh37nd</p>
+							</li>
+							<li>
+								<p class="info-label">To</p>
+								<p class="info-value">X0dkfj282fjfj4dk9dkhfh37nddkfj282fjfj4dk9dkhfh37nd</p>
+							</li>
+							<li>
+								<p class="info-label">Network</p>
+								<p class="info-value">Base (Mainnet)</p>
+							</li>
+							<li>
+								<p class="info-label">Date</p>
+								<p class="info-value">2026.06.08 15:29</p>
+							</li>
+							<li>
+								<p class="info-label">Transaction Hash</p>
+								<p class="info-value">0xdaVSD135543t</p>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+	<!-- 이용내역 상세보기 레이어 : send [e] -->
+
+	<!-- 이용내역 상세보기 레이어 : send(fee) [s] -->
+	<div class="lpop--wrap2 crypto-history-ly--sendfee wide-type" id="crypto-history-ly--sendfee">
+		<div class="lpop-inner">
+			<section class="select-lpop">
+				<header class="lpop-header">
+					<h1 class="lpop-tit">Transaction Details</h1>
+					<button type="button" class="btn-close">닫기</button>
+				</header>
+				<div class="lpop-cont">
+					<div class="num-tit">
+						<strong class="num">-1.00<span class="unit">USDC</span></strong>
+					</div>
+					<div class="detail-cont">
+						<ul class="info-list">
+							<li>
+								<p class="info-label">Transaction Type</p>
+								<p class="info-value">Send(fee)</p>
+							</li>
+							<li>
+								<p class="info-label">Status</p>
+								<p class="info-value">Completed</p>
+							</li>
+							<li>
+								<p class="info-label">From</p>
+								<p class="info-value">X0dkfj282fjfj4dk9dkhfh37nddkfj282fjfj4dk9dkhfh37nd</p>
+							</li>
+							<li>
+								<p class="info-label">To</p>
+								<p class="info-value">X0dkfj282fjfj4dk9dkhfh37nddkfj282fjfj4dk9dkhfh37nd</p>
+							</li>
+							<li>
+								<p class="info-label">Network</p>
+								<p class="info-value">Base (Mainnet)</p>
+							</li>
+							<li>
+								<p class="info-label">Date</p>
+								<p class="info-value">2026.06.08 15:29</p>
+							</li>
+							<!-- <li>
+								<p class="info-label">Transaction Hash</p>
+								<p class="info-value">0xdaVSD135543t</p>
+							</li> -->
+						</ul>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+	<!-- 이용내역 상세보기 레이어 : send(fee) [e] -->
+
+	<!-- 이용내역 상세보기 레이어 : pay [s] -->
+	<div class="lpop--wrap2 crypto-history-ly--pay wide-type" id="crypto-history-ly--pay">
+		<div class="lpop-inner">
+			<section class="select-lpop">
+				<header class="lpop-header">
+					<h1 class="lpop-tit">Transaction Details</h1>
+					<button type="button" class="btn-close">닫기</button>
+				</header>
+				<div class="lpop-cont">
+					<div class="num-tit">
+						<strong class="num">-120.00<span class="unit">USDC</span></strong>
+					</div>
+					<div class="detail-cont">
+						<ul class="info-list">
+							<li>
+								<p class="info-label">Transaction Type</p>
+								<p class="info-value">Pay</p>
+							</li>
+							<li>
+								<p class="info-label">Status</p>
+								<p class="info-value">Completed</p>
+							</li>
+							<li>
+								<p class="info-label">From</p>
+								<p class="info-value">X0dkfj282fjfj4dk9dkhfh37nddkfj282fjfj4dk9dkhfh37nd</p>
+							</li>
+							<li>
+								<p class="info-label">To</p>
+								<p class="info-value">X0dkfj282fjfj4dk9dkhfh37nddkfj282fjfj4dk9dkhfh37nd</p>
+							</li>
+							<li>
+								<p class="info-label">Network</p>
+								<p class="info-value">Base (Mainnet)</p>
+							</li>
+							<li>
+								<p class="info-label">Date</p>
+								<p class="info-value">2026.06.08 15:29</p>
+							</li>
+							<li>
+								<p class="info-label">Transaction Hash</p>
+								<p class="info-value">0xdaVSD135543t</p>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+	<!-- 이용내역 상세보기 레이어 : pay [e] -->
+
+	<!-- 이용내역 상세보기 레이어 : cancel 케이스 [s] -->
+	<div class="lpop--wrap2 crypto-history-ly--cancel wide-type" id="crypto-history-ly--cancel">
+		<div class="lpop-inner">
+			<section class="select-lpop">
+				<header class="lpop-header">
+					<h1 class="lpop-tit">Transaction Details</h1>
+					<button type="button" class="btn-close">닫기</button>
+				</header>
+				<div class="lpop-cont">
+					<div class="num-tit canceled"><!-- 취소 : .canceled 추가 -->
+						<strong class="num">-120.00<span class="unit">USDC</span></strong>
+					</div>
+					<div class="detail-cont">
+						<ul class="info-list">
+							<li>
+								<p class="info-label">Transaction Type</p>
+								<p class="info-value">Pay</p>
+							</li>
+							<li>
+								<p class="info-label">Status</p>
+								<p class="info-value">Completed</p>
+							</li>
+							<li>
+								<p class="info-label">From</p>
+								<p class="info-value">X0dkfj282fjfj4dk9dkhfh37nddkfj282fjfj4dk9dkhfh37nd</p>
+							</li>
+							<li>
+								<p class="info-label">To</p>
+								<p class="info-value">X0dkfj282fjfj4dk9dkhfh37nddkfj282fjfj4dk9dkhfh37nd</p>
+							</li>
+							<li>
+								<p class="info-label">Network</p>
+								<p class="info-value">Base (Mainnet)</p>
+							</li>
+							<li>
+								<p class="info-label">Date</p>
+								<p class="info-value">2026.06.08 15:29</p>
+							</li>
+							<li>
+								<p class="info-label">Transaction Hash</p>
+								<p class="info-value">0xdaVSD135543t</p>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+	<!-- 이용내역 상세보기 레이어 : cancel 케이스 [e] -->
+
+	<!-- 이용내역 상세보기 레이어 : Error 케이스(지연, 통신오류, 서명거절) [s] -->
+	<div class="lpop--wrap2 crypto-history-ly--error wide-type" id="crypto-history-ly--error">
+		<div class="lpop-inner">
+			<section class="select-lpop">
+				<header class="lpop-header">
+					<h1 class="lpop-tit">Transaction Details</h1>
+					<button type="button" class="btn-close">닫기</button>
+				</header>
+				<div class="lpop-cont">
+					<div class="num-tit">
+						<strong class="num">-120.00<span class="unit">USDC</span></strong>
+					</div>
+					<div class="detail-cont">
+						<ul class="info-list">
+							<li>
+								<p class="info-label">Transaction Type</p>
+								<p class="info-value">Pay</p>
+							</li>
+							<!-- Error 지연 -->
+							<li>
+								<p class="info-label">Status</p>
+								<p class="info-value">Pending<button class="tooltip-btn type01" data-tooltip-cont="Your request is being processed on the blockchain and may take a few minutes to complete.<br />If this status persists, please contact Customer Support."></button>
+								</p>
+							</li><!--// Error 지연 -->
+							<!-- Error 통신오류 -->
+							<li>
+								<p class="info-label">Status</p>
+								<p class="info-value">Failed<button class="tooltip-btn type02" data-tooltip-cont="Transaction failed due to a network error. Please try again.<br />If it persists, please contact Customer Support."></button>
+								</p>
+							</li><!--// Error 통신오류 -->
+							<!-- Error 서명거절 -->
+							<li>
+								<p class="info-label">Status</p>
+								<p class="info-value">Failed<button class="tooltip-btn type03" data-tooltip-cont="The signature has been rejected due to unusual activity.<br />For assistance, please contact Customer Support."></button>
+							</li><!-- Error 서명거절 -->
+							<li>
+								<p class="info-label">From</p>
+								<p class="info-value">X0dkfj282fjfj4dk9dkhfh37nddkfj282fjfj4dk9dkhfh37nd</p>
+							</li>
+							<li>
+								<p class="info-label">To</p>
+								<p class="info-value">X0dkfj282fjfj4dk9dkhfh37nddkfj282fjfj4dk9dkhfh37nd</p>
+							</li>
+							<li>
+								<p class="info-label">Network</p>
+								<p class="info-value">Base (Mainnet)</p>
+							</li>
+							<li>
+								<p class="info-label">Date</p>
+								<p class="info-value">2026.06.08 15:29</p>
+							</li>
+							<li>
+								<p class="info-label">Transaction Hash</p>
+								<p class="info-value">0xdaVSD135543t</p>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+	<!-- 이용내역 상세보기 레이어 : Error 케이스(지연, 통신오류, 서명거절) [e] -->
 
 	<!-- 달력 레이어, js [s] -->
 	<script src="../../../assets/scripts/libs/moment.min.js"></script>
@@ -423,6 +738,12 @@
 			});
 		});
 
+		// 상세보기 팝업 - Error 케이스 툴팁
+		$(function () {
+			new TooltipCtl('.tooltip-btn.type01'); // 툴팁 ( Error : 지연)
+			new TooltipCtl('.tooltip-btn.type02'); // 툴팁 ( Error : 통신오류)
+			new TooltipCtl('.tooltip-btn.type03'); // 툴팁 ( Error : 서명거절)
+		});
 
 	</script>
 </body>

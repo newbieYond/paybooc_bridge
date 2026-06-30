@@ -18,10 +18,32 @@
 	<!---------------------------------------------------------------------- UI ----->
 
 	<script src="../../../assets/scripts/etc/crypto.js"></script>
+
+	<style>
+		/* 카메라 영상: .spot(288x288 정사각형 원형마스크)을 cover로 꽉 채움.
+		   .spot 이 정사각형이므로 cover = 소스의 중앙 정사각형이 그대로 노출 →
+		   분석(중앙 정사각형 크롭)과 표시 영역이 정확히 일치한다. */
+		.scan-area .face-area .spot #lvVideo {
+			position: absolute; left: 0; top: 0; transform: scaleX(-1);
+			width: 100%; height: 100%; max-width: none;
+			object-fit: cover; background: #000;
+		}
+		/* 단계별 가이드 이미지 전환 */
+		.scan-area .face-area .guide img { transition: opacity .2s ease; }
+
+		/* 온디바이스 디버그 readout (?debug=1 일 때만 노출) */
+		.lv-debug {
+			display: none; position: fixed; left: 8px; bottom: 8px; z-index: 999;
+			background: rgba(0,0,0,.72); color: #0f0; font: 11px/1.5 monospace;
+			padding: 6px 8px; border-radius: 6px; white-space: pre; pointer-events: none;
+		}
+		.lv-debug.on { display: block; }
+	</style>
 </head>
 <body class="bg--gray">
 	<header class="renew01-header">
 		<a href="javascript:void(0);" class="btn-back">Back</a>
+		<a href="P9994PG007W.html" class="btn-skip right">Skip</a>
 	</header>
 	<div class="crpt-verify">
 		<div class="scan-area">
@@ -31,21 +53,16 @@
 				</div>
 
 				<div class="spot">
-					<div class="live-img" style="
-						/* 가로 세로 임의 크기로 넣었습니다. 사진은 배경이미지로 설정 */
-						width:680px; height:434px;
-						background: url(../../../assets/images/etc/crypto/img_bg_phone.png) no-repeat center/100%;">
-					</div><!-- 카메라 이미지를 배경으로 설정 -->s
+					<!-- 전면 카메라 영상 (원형 마스크 안을 cover로 채움) -->
+					<video id="lvVideo" autoplay playsinline muted></video>
 				</div>
 
-				<!-- .guide의 image case: (반투명한 아이 얼굴)
-					face-guide-front.png
-					face-guide-left.png
-					face-guide-right.png
-				-->
-				<div class="guide"><img src="../../../assets/images/etc/crypto/face-circle.png" alt=""></div>
+				<!-- 단계별 가이드 (정면/좌/우) -->
+				<div class="guide">
+					<img id="lvGuide" src="../../../assets/images/etc/crypto/face-guide-front.png" alt="">
+				</div>
 
-				<!-- .done 제어: 정면, 측면 인식 될 때마다 uiCheckMotion() 실행 해주세요 -->
+				<!-- 정면/측면 인식 완료 시마다 uiCheckMotion() 으로 점멸 -->
 				<div class="done"></div>
 			</div>
 
@@ -56,43 +73,230 @@
 			</div>
 
 			<div class="scan-stat">
-				<p class="txt">Position your face<br>in the circle</p>
-				<!-- .txt 문구 case:
-				 	1. 처음 가운데: Position your face<br>in the circle
-					2. 좌측 얼굴: Turn your head<br>to the left
-					3. 우측 얼굴: Turn your head<br>to the right
-				 -->
+				<p class="txt" id="lvText">Position your face<br>in the circle</p>
 			</div>
 		</div>
 	</div>
 
+	<!-- 분석용 캔버스 (비표시) -->
+	<canvas id="lvCanvas" style="display:none;"></canvas>
+	<!-- 온디바이스 디버그 readout -->
+	<div class="lv-debug" id="lvDebug"></div>
+
 	<script>
-		// 토스트 팝업 띄우기
-		toastPopup('Verification complete');
+		/* ===== Liveness 얼굴 인증 (PoC, 무의존) =====
+		 * dsrv-liveness.html 의 휴리스틱을 개선해 이식.
+		 * 핵심 개선:
+		 *  1) 표시영역=분석영역 정렬: video를 object-fit:cover 로 원을 꽉 채우고,
+		 *     캔버스도 동일하게 "원에 매핑되는 중앙 정사각형"만 잘라 분석 → 검은 여백 오염 제거.
+		 *  2) 거울 방향 보정: 화면은 scaleX(-1) 거울, drawImage는 원본을 샘플하므로
+		 *     캔버스도 좌우 반전해 샘플 → "화면에서 보이는 방향 = 지시 방향" 일치.
+		 *  3) 임계값 완화 + 평활화(EMA): 더 쉽게, 덜 떨리게 인증.
+		 *  4) 단계 단축: 정면 → 좌 → 우 (1턴은 anti-spoof 최소 보장).
+		 * ⚠️ 피부색(YCbCr) 휴리스틱이라 조명/피부톤/피부색 배경에 영향받음. PoC 수준.
+		 */
+		var LV_GUIDE = {
+			0: '../../../assets/images/etc/crypto/face-guide-front.png',
+			1: '../../../assets/images/etc/crypto/face-guide-left.png',
+			2: '../../../assets/images/etc/crypto/face-guide-right.png'
+		};
+		var lvState = null;
+		var LV_DEBUG = /[?&]debug=1/.test(location.search);
 
-		setTimeout(uiCheckMotion, 1500); // 인식 완료 테스트 보기
+		function lvInitState() {
+			return {
+				stage: 0,          // 0=정면, 1=좌, 2=우
+				baseX: null,       // 정면에서 잡은 기준 centroid X (0~1)
+				holdCount: 0,      // 조건 연속 충족 프레임 수
+				emaRatio: 0,       // 피부비율 평활화
+				emaX: 0.5,         // centroid 평활화
+				finished: false,
+				timer: null
+			};
+		}
 
-		// 사진이 움직이면 보기 편할 거 같아서 테스트로 넣은 코드 입니다.
-		// 개발 시 무시 해 주세요
-		(function(){
-			let startX, startY, startLeft, startTop;
-			const bg = document.querySelector('.live-img');
-			const spot = document.querySelector('.guide');
-			bg.style.left = '50%';
-			bg.style.top = '50%';
-			spot.style.pointerEvents = 'none';
-			bg.addEventListener('touchstart', e => {
-				prevX = e.touches[0].clientX;
-				prevY = e.touches[0].clientY;
-			}, { passive: true });
+		function startLiveness() {
+			lvState = lvInitState();
+			if (LV_DEBUG) document.getElementById('lvDebug').classList.add('on');
+			lvSetGuide(0);
+			lvSetText('Position your face<br>in the circle');
 
-			bg.addEventListener('touchmove', e => {
-				bg.style.left = (parseFloat(bg.style.left) + e.touches[0].clientX - prevX) + 'px';
-				bg.style.top  = (parseFloat(bg.style.top)  + e.touches[0].clientY - prevY) + 'px';
-				prevX = e.touches[0].clientX;
-				prevY = e.touches[0].clientY;
-			}, { passive: true });
-		})();
+			if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+				lvSetText('Camera is not supported<br>on this device');
+				return;
+			}
+			navigator.mediaDevices.getUserMedia({
+				video: { facingMode: { ideal: 'user' }, width: { ideal: 720 }, height: { ideal: 1280 } },
+				audio: false
+			}).then(function (stream) {
+				var v = document.getElementById('lvVideo');
+				v.srcObject = stream;
+				v.play();
+				lvState.timer = setInterval(analyzeLvFrame, 120);
+			}).catch(function (err) {
+				lvSetText('Camera is unavailable<br>(' + (err && err.name || 'error') + ')');
+			});
+		}
+
+		function lvSetText(html) { document.getElementById('lvText').innerHTML = html; }
+		function lvSetGuide(stage) {
+			var g = document.getElementById('lvGuide');
+			if (LV_GUIDE[stage]) g.src = LV_GUIDE[stage];
+		}
+
+		// 진행 인디케이터 점등
+		function lvSetIndicator(stage) {
+			var dots = document.querySelectorAll('.scan-area .indicator > span');
+			for (var i = 0; i < dots.length; i++) {
+				dots[i].classList.toggle('active', i === stage);
+			}
+		}
+
+		// 프레임 분석: 원에 매핑되는 중앙 정사각형만 좌우반전 샘플 → 피부비율 + centroidX
+		function analyzeLvFrame() {
+			var v = document.getElementById('lvVideo');
+			if (lvState.finished || !v.videoWidth) return;
+			var canvas = document.getElementById('lvCanvas');
+			var ctx = canvas.getContext('2d');
+			var W = 96, H = 96;
+			canvas.width = W; canvas.height = H;
+
+			// .spot 은 정사각형 원형 마스크 + video는 cover.
+			// cover 기준 화면에 실제 보이는 정사각형(짧은 변)을 그대로 잘라 분석 → 표시=분석 정렬.
+			var vw = v.videoWidth, vh = v.videoHeight;
+			var side = Math.min(vw, vh);
+			var sx = (vw - side) / 2, sy = (vh - side) / 2;
+
+			// 화면 거울(scaleX(-1))과 일치시키기 위해 캔버스도 좌우 반전 샘플
+			ctx.save();
+			ctx.translate(W, 0);
+			ctx.scale(-1, 1);
+			ctx.drawImage(v, sx, sy, side, side, 0, 0, W, H);
+			ctx.restore();
+
+			var img = ctx.getImageData(0, 0, W, H).data;
+
+			// 중앙 원형 가중: 원 밖(코너) 픽셀은 제외해 배경 오염 최소화
+			var cxh = W / 2, cyh = H / 2, rad = W / 2;
+			var skin = 0, total = 0, sumX = 0;
+			for (var y = 0; y < H; y++) {
+				for (var x = 0; x < W; x++) {
+					var dx = x - cxh, dy = y - cyh;
+					if (dx * dx + dy * dy > rad * rad) continue; // 원 밖 무시
+					total++;
+					var i = (y * W + x) * 4;
+					var r = img[i], g = img[i + 1], b = img[i + 2];
+					var cb = 128 - 0.168736 * r - 0.331264 * g + 0.5 * b;
+					var cr = 128 + 0.5 * r - 0.418688 * g - 0.081312 * b;
+					// 약간 넓힌 피부 범위 (더 쉽게 인식)
+					if (cb >= 70 && cb <= 140 && cr >= 130 && cr <= 180) {
+						skin++; sumX += x;
+					}
+				}
+			}
+			var ratio = total > 0 ? skin / total : 0;
+			var centroidX = skin > 0 ? (sumX / skin) / W : 0.5;
+
+			// 평활화(EMA)로 떨림 완화
+			lvState.emaRatio = lvState.emaRatio * 0.5 + ratio * 0.5;
+			lvState.emaX = lvState.emaX * 0.6 + centroidX * 0.4;
+
+			if (LV_DEBUG) {
+				document.getElementById('lvDebug').textContent =
+					'stage : ' + lvState.stage + '\n' +
+					'ratio : ' + lvState.emaRatio.toFixed(3) + '\n' +
+					'cx    : ' + lvState.emaX.toFixed(3) + '\n' +
+					'baseX : ' + (lvState.baseX == null ? '-' : lvState.baseX.toFixed(3)) + '\n' +
+					'hold  : ' + lvState.holdCount;
+			}
+
+			handleLvStage(lvState.emaRatio, lvState.emaX);
+		}
+
+		// 스테이지 게이트: 정면 → 좌 → 우 (완화된 임계값)
+		function handleLvStage(ratio, centroidX) {
+			// 정면은 얼굴 정면이라 피부면적이 크고, 좌/우 턴 단계는 면적이 줄어듦.
+			// → 턴 단계에서 presence 게이트를 낮춰 "턴 동작이 presence를 떨어뜨려 막는" 문제 방지.
+			var FACE_MIN = (lvState.stage === 0) ? 0.10 : 0.05;
+			var MOVE_TH = 0.06;    // 횡이동 임계 (완화)
+			var HOLD_NEED = 2;     // 연속 충족 프레임 (완화: 약 0.24초)
+
+			if (ratio < FACE_MIN) {
+				lvState.holdCount = 0;
+				if (lvState.stage === 0) lvSetText('Position your face<br>in the circle');
+				return;
+			}
+
+			if (lvState.stage === 0) {
+				lvSetText('Position your face<br>in the circle');
+				// 정면: centroid가 중앙 부근(0.28~0.72)
+				if (centroidX > 0.28 && centroidX < 0.72) {
+					lvState.holdCount++;
+					if (lvState.holdCount >= HOLD_NEED) {
+						lvState.baseX = centroidX;
+						lvAdvanceStage();
+					}
+				} else { lvState.holdCount = 0; }
+
+			} else if (lvState.stage === 1) {
+				lvSetText('Turn your head<br>to the left');
+				// 화면=거울=캔버스 반전 → 화면상 왼쪽 = centroid 감소
+				if (centroidX < lvState.baseX - MOVE_TH) {
+					lvState.holdCount++;
+					if (lvState.holdCount >= HOLD_NEED) lvAdvanceStage();
+				} else { lvState.holdCount = 0; }
+
+			} else if (lvState.stage === 2) {
+				lvSetText('Turn your head<br>to the right');
+				if (centroidX > lvState.baseX + MOVE_TH) {
+					lvState.holdCount++;
+					if (lvState.holdCount >= HOLD_NEED) lvAdvanceStage();
+				} else { lvState.holdCount = 0; }
+			}
+		}
+
+		// 스테이지 완료 → 체크 점멸 + 인디케이터 + 가이드 전환, 마지막이면 완료
+		function lvAdvanceStage() {
+			lvState.holdCount = 0;
+			if (typeof uiCheckMotion === 'function') uiCheckMotion(); // .done 점멸
+
+			if (lvState.stage >= 2) {
+				completeLiveness();
+			} else {
+				lvState.stage++;
+				lvSetIndicator(lvState.stage);
+				lvSetGuide(lvState.stage);
+			}
+		}
+
+		// 인증 완료 → 토스트 후 P9994PG007W 로 이동
+		function completeLiveness() {
+			if (lvState.finished) return;
+			lvState.finished = true;
+			clearInterval(lvState.timer);
+			if (typeof toastPopup === 'function') toastPopup('Verification complete');
+			lvSetText('Verification<br>complete');
+			setTimeout(function () {
+				stopLvCamera();
+				location.href = 'P9994PG007W.html';
+			}, 1200);
+		}
+
+		function stopLvCamera() {
+			var v = document.getElementById('lvVideo');
+			if (v && v.srcObject) {
+				v.srcObject.getTracks().forEach(function (t) { t.stop(); });
+				v.srcObject = null;
+			}
+		}
+
+		// 화면 이탈 시 카메라/타이머 정리 (.btn-back 은 crypto.js 전역 핸들러가 처리)
+		window.addEventListener('pagehide', function () {
+			if (lvState) clearInterval(lvState.timer);
+			stopLvCamera();
+		});
+
+		startLiveness();
 	</script>
 </body>
 </html>

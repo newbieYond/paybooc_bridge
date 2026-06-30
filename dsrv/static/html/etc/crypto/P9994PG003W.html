@@ -22,6 +22,7 @@
 </head>
 <body>
 	<header class="renew01-header">
+		<a href="P9994PG004W.html" class="btn-skip">Skip</a>
 		<a href="javascript:void(0);" class="btn-close">Close</a>
 	</header>
 	<div class="crpt-verify">
@@ -42,11 +43,11 @@
 
 		<div class="scan-area">
 			<div class="camera-area">
-				<div class="live-img" style="
+				<video id="passportScanVideo" class="live-img" autoplay playsinline muted style="
 					/* 가로 세로 임의 크기로 넣었습니다. 사진은 배경이미지로 설정 */
 					width:150%; height:400%;
-					background: url(../../../assets/images/etc/crypto/img_bg_phone.png) no-repeat center/100%;">
-				</div><!-- 카메라 이미지를 배경으로 설정 -->
+					object-fit: cover;
+					background: url(../../../assets/images/etc/crypto/img_bg_phone.png) no-repeat center/100%;"></video>
 				<div class="spot" data-stat="not"></div><!-- //카메라 인식 영역 -->
 				<!-- .spot 의 data-stat case: (라인 컬러 달라집니다)
 					1. 감지불가: not
@@ -60,7 +61,7 @@
 				<p class="txt">Passport not detected</p>
 				<!-- .txt 문구 case:
 				 	1. 감지불가: Passport not detected
-					2. 감지(먼거리): Hold your passport closer to the camer
+					2. 감지(먼거리): Hold your passport closer to the camera
 					3. 감지(라인 벗어남): Place your passport inside the red box
 					4. 감지(정상): Scanning passport
 				 -->
@@ -75,10 +76,172 @@
 	</div>
 
 	<script>
+		const passportScanStatusText = {
+			not: 'Passport not detected',
+			far: 'Hold your passport closer to the camera',
+			out: 'Place your passport inside the red box',
+			in: 'Scanning passport'
+		};
+		const passportScanState = {
+			analyzeTimer: null,
+			stableStartAt: 0,
+			stream: null,
+			completed: false
+		};
+		let passportRedirectTimer = null;
+
+		function setPassportScanStatus(status) {
+			const spot = document.querySelector('.camera-area .spot');
+			const statusText = document.querySelector('.scan-stat .txt');
+
+			if (!spot || !statusText || !passportScanStatusText[status]) {
+				return;
+			}
+
+			spot.dataset.stat = status;
+			statusText.textContent = passportScanStatusText[status];
+		}
+
+		function showPassportScanningProcess() {
+			const scanningProcess = document.querySelector('.scanning-process');
+
+			setPassportScanStatus('in');
+
+			if (scanningProcess) {
+				scanningProcess.style.display = 'block';
+			}
+		}
+
+		function completePassportScan() {
+			clearTimeout(passportRedirectTimer);
+
+			if (passportScanState.completed) {
+				return;
+			}
+
+			passportScanState.completed = true;
+			stopPassportScan();
+			showPassportScanningProcess();
+
+			passportRedirectTimer = setTimeout(function () {
+				location.href = 'P9994PG004W.html';
+			}, 1800);
+		}
+
+		function startPassportScan() {
+			setPassportScanStatus('not');
+
+			if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+				return;
+			}
+
+			navigator.mediaDevices.getUserMedia({
+				video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+				audio: false
+			}).then(function (stream) {
+				const video = document.getElementById('passportScanVideo');
+
+				passportScanState.stream = stream;
+				video.srcObject = stream;
+				video.play();
+				passportScanState.analyzeTimer = setInterval(analyzePassportScanFrame, 250);
+			}).catch(function () {
+				setPassportScanStatus('not');
+			});
+		}
+
+		function analyzePassportScanFrame() {
+			const video = document.getElementById('passportScanVideo');
+
+			if (passportScanState.completed || !video || !video.videoWidth) {
+				return;
+			}
+
+			const canvas = document.createElement('canvas');
+			const context = canvas.getContext('2d');
+			const width = 160;
+			const height = 108;
+			const cropWidth = video.videoWidth * 0.72;
+			const cropHeight = video.videoHeight * 0.56;
+			const cropX = (video.videoWidth - cropWidth) / 2;
+			const cropY = (video.videoHeight - cropHeight) / 2;
+
+			canvas.width = width;
+			canvas.height = height;
+			context.drawImage(video, cropX, cropY, cropWidth, cropHeight, 0, 0, width, height);
+
+			const imageData = context.getImageData(0, 0, width, height).data;
+			let edgeCount = 0;
+			const total = (width - 1) * height;
+
+			for (let y = 0; y < height; y += 1) {
+				for (let x = 1; x < width; x += 1) {
+					const index = (y * width + x) * 4;
+					const prevIndex = (y * width + (x - 1)) * 4;
+					const gray = (imageData[index] + imageData[index + 1] + imageData[index + 2]) / 3;
+					const prevGray = (imageData[prevIndex] + imageData[prevIndex + 1] + imageData[prevIndex + 2]) / 3;
+
+					if (Math.abs(gray - prevGray) > 18) {
+						edgeCount += 1;
+					}
+				}
+			}
+
+			updatePassportScanDetection(edgeCount / total);
+		}
+
+		function updatePassportScanDetection(edgeRatio) {
+			const now = Date.now();
+
+			if (edgeRatio <= 0.035) {
+				passportScanState.stableStartAt = 0;
+				setPassportScanStatus('not');
+				return;
+			}
+
+			if (edgeRatio <= 0.055) {
+				passportScanState.stableStartAt = 0;
+				setPassportScanStatus('far');
+				return;
+			}
+
+			if (edgeRatio <= 0.07) {
+				passportScanState.stableStartAt = 0;
+				setPassportScanStatus('out');
+				return;
+			}
+
+			setPassportScanStatus('in');
+
+			if (!passportScanState.stableStartAt) {
+				passportScanState.stableStartAt = now;
+			}
+
+			if (now - passportScanState.stableStartAt >= 1500) {
+				completePassportScan();
+			}
+		}
+
+		function stopPassportScan() {
+			clearInterval(passportScanState.analyzeTimer);
+			passportScanState.analyzeTimer = null;
+
+			if (passportScanState.stream) {
+				passportScanState.stream.getTracks().forEach(function (track) {
+					track.stop();
+				});
+				passportScanState.stream = null;
+			}
+		}
+
+		window.setPassportScanStatus = setPassportScanStatus;
+		window.completePassportScan = completePassportScan;
+		window.stopPassportScan = stopPassportScan;
+
 		// 사진이 움직이면 보기 편할 거 같아서 테스트로 넣은 코드 입니다.
 		// 개발 시 무시 해 주세요
 		(function(){
-			let startX, startY, startLeft, startTop;
+			let prevX, prevY;
 			const bg = document.querySelector('.live-img');
 			const spot = document.querySelector('.spot');
 			bg.style.left = '50%';
@@ -96,6 +259,9 @@
 				prevY = e.touches[0].clientY;
 			}, { passive: true });
 		})();
+
+		window.addEventListener('beforeunload', stopPassportScan);
+		startPassportScan();
 	</script>
 </body>
 </html>

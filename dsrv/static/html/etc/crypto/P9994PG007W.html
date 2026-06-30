@@ -73,7 +73,7 @@
 		</div>
 
 		<div class="foot">
-			<button class="btn--submit" disabled>Done</button>
+			<button class="btn--submit" disabled onclick="onDone()">Done</button>
 		</div>
 	</div>
 
@@ -187,6 +187,26 @@
 			if (companyName.value.trim()!== '' && companyAddress.value.trim()!== '') {
 				btnDone.disabled = false;
 			}
+		}
+
+		function onDone() {
+			scheme.callNativeBridge('dsrvRegisterWallet', {}, onRegisterWalletResult, 'Y', 'Y', 'Navi');
+		}
+
+		function onRegisterWalletResult(result) {
+			if (result.resultCode === 'success') {
+				alert('지갑 가입이 완료되었습니다.');
+			} else {
+				let message = '';
+
+				try {
+					message = JSON.parse(result.params).message || '';
+				} catch (e) {}
+
+				alert('지갑 가입에 실패했습니다.\n' + message);
+			}
+
+			scheme.callNativeBridge('closeWebView', {}, null, null, null, 'Navi');
 		}
 	</script>
 </body>
