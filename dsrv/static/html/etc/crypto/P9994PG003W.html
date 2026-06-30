@@ -19,6 +19,7 @@
 
 	<script src="../../../assets/scripts/etc/crypto.js"></script>
 	<script src="../../../assets/scripts/libs/lottie-player.js" async></script>
+	<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
 	<header class="renew01-header">
@@ -44,9 +45,8 @@
 		<div class="scan-area">
 			<div class="camera-area">
 				<video id="passportScanVideo" class="live-img" autoplay playsinline muted style="
-					/* 가로 세로 임의 크기로 넣었습니다. 사진은 배경이미지로 설정 */
-					width:150%; height:400%;
-					object-fit: cover;
+					width:100%; height:100%;
+					object-fit:cover;
 					background: url(../../../assets/images/etc/crypto/img_bg_phone.png) no-repeat center/100%;"></video>
 				<div class="spot" data-stat="not"></div><!-- //카메라 인식 영역 -->
 				<!-- .spot 의 data-stat case: (라인 컬러 달라집니다)
@@ -86,7 +86,11 @@
 			analyzeTimer: null,
 			stableStartAt: 0,
 			stream: null,
-			completed: false
+			completed: false,
+			ocrRunning: false,
+			retryAfter: 0,
+			worker: null,
+			workerPromise: null
 		};
 		let passportRedirectTimer = null;
 
@@ -112,10 +116,18 @@
 			}
 		}
 
-		function completePassportScan() {
+		function hidePassportScanningProcess() {
+			const scanningProcess = document.querySelector('.scanning-process');
+
+			if (scanningProcess) {
+				scanningProcess.style.display = 'none';
+			}
+		}
+
+		function completePassportScan(passport) {
 			clearTimeout(passportRedirectTimer);
 
-			if (passportScanState.completed) {
+			if (passportScanState.completed || !passport) {
 				return;
 			}
 
@@ -124,8 +136,45 @@
 			showPassportScanningProcess();
 
 			passportRedirectTimer = setTimeout(function () {
-				location.href = 'P9994PG004W.html';
+				const params = new URLSearchParams({
+					passportNumber: passport.passportNumber,
+					name: passport.name,
+					sex: passport.sex,
+					birthDate: passport.birthDate,
+					expiryDate: passport.expiryDate
+				});
+
+				location.href = 'P9994PG004W.html?' + params.toString();
 			}, 1800);
+		}
+
+		function preparePassportOcr() {
+			if (passportScanState.workerPromise) {
+				return passportScanState.workerPromise;
+			}
+
+			if (typeof Tesseract === 'undefined') {
+				passportScanState.workerPromise = Promise.reject(new Error('OCR library is unavailable'));
+				passportScanState.workerPromise.catch(function () {});
+				return passportScanState.workerPromise;
+			}
+
+			passportScanState.workerPromise = Tesseract.createWorker('eng').then(function (worker) {
+				passportScanState.worker = worker;
+				return worker.setParameters({
+					tessedit_pageseg_mode: '6',
+					tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<',
+					user_defined_dpi: '300'
+				}).then(function () {
+					return worker;
+				});
+			}).catch(function (error) {
+				passportScanState.worker = null;
+				passportScanState.workerPromise = null;
+				throw error;
+			});
+
+			return passportScanState.workerPromise;
 		}
 
 		function startPassportScan() {
@@ -144,31 +193,89 @@
 				passportScanState.stream = stream;
 				video.srcObject = stream;
 				video.play();
+				preparePassportOcr().catch(function () {
+					setPassportScanMessage('Passport scanner could not be loaded. Please try again.');
+				});
 				passportScanState.analyzeTimer = setInterval(analyzePassportScanFrame, 250);
 			}).catch(function () {
 				setPassportScanStatus('not');
 			});
 		}
 
-		function analyzePassportScanFrame() {
-			const video = document.getElementById('passportScanVideo');
+		function setPassportScanMessage(message) {
+			const statusText = document.querySelector('.scan-stat .txt');
 
-			if (passportScanState.completed || !video || !video.videoWidth) {
-				return;
+			if (statusText) {
+				statusText.textContent = message;
+			}
+		}
+
+		function getPassportCrop(video) {
+			const spot = document.querySelector('.camera-area .spot');
+
+			if (!spot || !video.videoWidth || !video.videoHeight) {
+				return null;
+			}
+
+			const videoRect = video.getBoundingClientRect();
+			const spotRect = spot.getBoundingClientRect();
+			const scale = Math.max(videoRect.width / video.videoWidth, videoRect.height / video.videoHeight);
+			const renderedWidth = video.videoWidth * scale;
+			const renderedHeight = video.videoHeight * scale;
+			const hiddenX = (renderedWidth - videoRect.width) / 2;
+			const hiddenY = (renderedHeight - videoRect.height) / 2;
+
+			const x = Math.max(0, (spotRect.left - videoRect.left + hiddenX) / scale);
+			const y = Math.max(0, (spotRect.top - videoRect.top + hiddenY) / scale);
+
+			return {
+				x: x,
+				y: y,
+				width: Math.min(video.videoWidth - x, spotRect.width / scale),
+				height: Math.min(video.videoHeight - y, spotRect.height / scale)
+			};
+		}
+
+		function capturePassportFrame(video, mrzOnly, outputWidth) {
+			const crop = getPassportCrop(video);
+
+			if (!crop) {
+				return null;
+			}
+
+			if (mrzOnly) {
+				crop.y += crop.height * 0.55;
+				crop.height *= 0.45;
 			}
 
 			const canvas = document.createElement('canvas');
+			const width = outputWidth || Math.round(crop.width);
+			const height = Math.max(1, Math.round(width * crop.height / crop.width));
 			const context = canvas.getContext('2d');
-			const width = 160;
-			const height = 108;
-			const cropWidth = video.videoWidth * 0.72;
-			const cropHeight = video.videoHeight * 0.56;
-			const cropX = (video.videoWidth - cropWidth) / 2;
-			const cropY = (video.videoHeight - cropHeight) / 2;
 
 			canvas.width = width;
 			canvas.height = height;
-			context.drawImage(video, cropX, cropY, cropWidth, cropHeight, 0, 0, width, height);
+			context.drawImage(video, crop.x, crop.y, crop.width, crop.height, 0, 0, width, height);
+
+			return canvas;
+		}
+
+		function analyzePassportScanFrame() {
+			const video = document.getElementById('passportScanVideo');
+
+			if (passportScanState.completed || passportScanState.ocrRunning || !video || !video.videoWidth) {
+				return;
+			}
+
+			const canvas = capturePassportFrame(video, false, 160);
+
+			if (!canvas) {
+				return;
+			}
+
+			const context = canvas.getContext('2d');
+			const width = canvas.width;
+			const height = canvas.height;
 
 			const imageData = context.getImageData(0, 0, width, height).data;
 			let edgeCount = 0;
@@ -192,6 +299,10 @@
 
 		function updatePassportScanDetection(edgeRatio) {
 			const now = Date.now();
+
+			if (now < passportScanState.retryAfter) {
+				return;
+			}
 
 			if (edgeRatio <= 0.035) {
 				passportScanState.stableStartAt = 0;
@@ -218,8 +329,170 @@
 			}
 
 			if (now - passportScanState.stableStartAt >= 1500) {
-				completePassportScan();
+				verifyPassportScan();
 			}
+		}
+
+		function verifyPassportScan() {
+			const video = document.getElementById('passportScanVideo');
+
+			if (passportScanState.completed || passportScanState.ocrRunning || !video) {
+				return;
+			}
+
+			const mrzCanvas = capturePassportFrame(video, true, 1400);
+
+			if (!mrzCanvas) {
+				return;
+			}
+
+			passportScanState.ocrRunning = true;
+			showPassportScanningProcess();
+
+			preparePassportOcr().then(function (worker) {
+				return worker.recognize(mrzCanvas);
+			}).then(function (result) {
+				const passport = parsePassportMrz(result && result.data ? result.data.text : '');
+
+				if (!passport) {
+					throw new Error('A valid passport MRZ was not recognized');
+				}
+
+				completePassportScan(passport);
+			}).catch(function () {
+				passportScanState.ocrRunning = false;
+				passportScanState.stableStartAt = 0;
+				passportScanState.retryAfter = Date.now() + 1500;
+				hidePassportScanningProcess();
+				setPassportScanStatus('not');
+				setPassportScanMessage('Passport could not be recognized. Please try again.');
+			});
+		}
+
+		function normalizeMrzLine(line) {
+			return String(line || '')
+				.toUpperCase()
+				.replace(/[«‹]/g, '<')
+				.replace(/[^A-Z0-9<]/g, '');
+		}
+
+		function mrzCharacterValue(character) {
+			if (/^[0-9]$/.test(character)) {
+				return Number(character);
+			}
+
+			if (/^[A-Z]$/.test(character)) {
+				return character.charCodeAt(0) - 55;
+			}
+
+			return 0;
+		}
+
+		function isValidMrzCheck(value, checkDigit) {
+			const weights = [7, 3, 1];
+			let sum = 0;
+
+			if (!/^\d$/.test(checkDigit)) {
+				return false;
+			}
+
+			for (let index = 0; index < value.length; index += 1) {
+				sum += mrzCharacterValue(value[index]) * weights[index % weights.length];
+			}
+
+			return sum % 10 === Number(checkDigit);
+		}
+
+		function normalizeMrzDigits(value) {
+			return value
+				.replace(/O/g, '0')
+				.replace(/[IL]/g, '1')
+				.replace(/Z/g, '2')
+				.replace(/S/g, '5')
+				.replace(/G/g, '6')
+				.replace(/B/g, '8');
+		}
+
+		function isValidMrzDate(value) {
+			if (!/^\d{6}$/.test(value)) {
+				return false;
+			}
+
+			const month = Number(value.slice(2, 4));
+			const day = Number(value.slice(4, 6));
+			const date = new Date(Date.UTC(2000 + Number(value.slice(0, 2)), month - 1, day));
+
+			return date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+		}
+
+		function parsePassportMrz(rawText) {
+			const lines = String(rawText || '').split(/\r?\n/).map(normalizeMrzLine).filter(Boolean);
+			const flattened = normalizeMrzLine(rawText);
+			let flattenedStart = flattened.indexOf('P<');
+
+			// OCR 결과에서 MRZ 두 줄의 개행이 사라진 경우도 동일한 44자 규격으로 복원한다.
+			while (flattenedStart >= 0 && flattened.length - flattenedStart >= 88) {
+				lines.push(flattened.slice(flattenedStart, flattenedStart + 44));
+				lines.push(flattened.slice(flattenedStart + 44, flattenedStart + 88));
+				flattenedStart = flattened.indexOf('P<', flattenedStart + 2);
+			}
+
+			for (let firstIndex = 0; firstIndex < lines.length - 1; firstIndex += 1) {
+				const firstStart = lines[firstIndex].indexOf('P<');
+
+				if (firstStart < 0 || lines[firstIndex].length - firstStart < 44) {
+					continue;
+				}
+
+				const firstLine = lines[firstIndex].slice(firstStart, firstStart + 44);
+				const secondSource = lines[firstIndex + 1];
+
+				for (let offset = 0; offset <= secondSource.length - 44; offset += 1) {
+					const secondLineRaw = secondSource.slice(offset, offset + 44);
+					const secondLine = secondLineRaw.slice(0, 9)
+						+ normalizeMrzDigits(secondLineRaw.slice(9, 10))
+						+ secondLineRaw.slice(10, 13)
+						+ normalizeMrzDigits(secondLineRaw.slice(13, 20))
+						+ secondLineRaw.slice(20, 21)
+						+ normalizeMrzDigits(secondLineRaw.slice(21, 28))
+						+ secondLineRaw.slice(28, 42)
+						+ normalizeMrzDigits(secondLineRaw.slice(42, 44));
+					const passportNumber = secondLine.slice(0, 9);
+					const birthDate = secondLine.slice(13, 19);
+					const expiryDate = secondLine.slice(21, 27);
+					const composite = secondLine.slice(0, 10) + secondLine.slice(13, 20)
+						+ secondLine.slice(21, 43);
+
+					if (!isValidMrzCheck(passportNumber, normalizeMrzDigits(secondLine[9]))
+						|| !isValidMrzCheck(birthDate, secondLine[19])
+						|| !isValidMrzCheck(expiryDate, secondLine[27])
+						|| !isValidMrzCheck(composite, secondLine[43])
+						|| !isValidMrzDate(birthDate)
+						|| !isValidMrzDate(expiryDate)) {
+						continue;
+					}
+
+					const nameParts = firstLine.slice(5).split('<<');
+					const surname = (nameParts.shift() || '').replace(/</g, ' ').trim();
+					const givenNames = nameParts.join(' ').replace(/</g, ' ').replace(/\s+/g, ' ').trim();
+					const name = (surname + ' ' + givenNames).trim();
+					const sex = secondLine[20] === '<' ? 'X' : secondLine[20];
+
+					if (!name || !/^[A-Z0-9]{5,9}<*$/.test(passportNumber) || !/^[MFUX]$/.test(sex)) {
+						continue;
+					}
+
+					return {
+						passportNumber: passportNumber.replace(/</g, ''),
+						name: name,
+						sex: sex,
+						birthDate: birthDate,
+						expiryDate: expiryDate
+					};
+				}
+			}
+
+			return null;
 		}
 
 		function stopPassportScan() {
@@ -232,33 +505,20 @@
 				});
 				passportScanState.stream = null;
 			}
+
+			if (passportScanState.worker) {
+				passportScanState.worker.terminate();
+				passportScanState.worker = null;
+				passportScanState.workerPromise = null;
+			}
 		}
 
 		window.setPassportScanStatus = setPassportScanStatus;
 		window.completePassportScan = completePassportScan;
 		window.stopPassportScan = stopPassportScan;
 
-		// 사진이 움직이면 보기 편할 거 같아서 테스트로 넣은 코드 입니다.
-		// 개발 시 무시 해 주세요
-		(function(){
-			let prevX, prevY;
-			const bg = document.querySelector('.live-img');
-			const spot = document.querySelector('.spot');
-			bg.style.left = '50%';
-			bg.style.top = '50%';
-			spot.style.pointerEvents = 'none';
-			bg.addEventListener('touchstart', e => {
-				prevX = e.touches[0].clientX;
-				prevY = e.touches[0].clientY;
-			}, { passive: true });
-
-			bg.addEventListener('touchmove', e => {
-				bg.style.left = (parseFloat(bg.style.left) + e.touches[0].clientX - prevX) + 'px';
-				bg.style.top  = (parseFloat(bg.style.top)  + e.touches[0].clientY - prevY) + 'px';
-				prevX = e.touches[0].clientX;
-				prevY = e.touches[0].clientY;
-			}, { passive: true });
-		})();
+		document.querySelector('.live-img').style.left = '50%';
+		document.querySelector('.live-img').style.top = '50%';
 
 		window.addEventListener('beforeunload', stopPassportScan);
 		startPassportScan();

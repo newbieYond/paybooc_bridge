@@ -32,13 +32,13 @@
 				<div class="form-item">
 					<h2 class="tit">Passport Number</h2>
 					<div class="cont-val">
-						<input type="text" pattern="[A-Z0-9]+" title="passport number" placeholder="M1234567" maxlength="" value="M1234567" readonly />
+						<input id="passportNumber" type="text" pattern="[A-Z0-9]+" title="passport number" placeholder="M1234567" maxlength="" value="M1234567" readonly />
 					</div>
 				</div>
 				<div class="form-item">
 					<h2 class="tit">Name (English)</h2>
 					<div class="cont-val">
-						<input type="text" title="Name (English)" placeholder="HONG GILSOON" maxlength="" value="HONG GILSOON" />
+						<input id="passportName" type="text" title="Name (English)" placeholder="HONG GILSOON" maxlength="" value="HONG GILSOON" />
 					</div>
 					<ul class="list">
 						<li>Surnam e + Given name</li>
@@ -48,19 +48,19 @@
 				<div class="form-item">
 					<h2 class="tit">Sex</h2>
 					<div class="cont-val">
-						<input type="text" title="Sex" placeholder="F" maxlength="" value="F" />
+						<input id="passportSex" type="text" title="Sex" placeholder="F" maxlength="" value="F" />
 					</div>
 				</div>
 				<div class="form-item">
 					<h2 class="tit">Date of Birth (YYMMDD)</h2>
 					<div class="cont-val">
-						<input type="text" pattern="[0-9]+" title="Date of Birth" placeholder="000000" maxlength="6" value="870201" />
+						<input id="passportBirthDate" type="text" pattern="[0-9]+" title="Date of Birth" placeholder="000000" maxlength="6" value="870201" />
 					</div>
 				</div>
 				<div class="form-item">
 					<h2 class="tit">Date of Expiry (YYMMDD)</h2>
 					<div class="cont-val">
-						<input type="text" pattern="[0-9]+" title="Date of Expiry" placeholder="000000" maxlength="6" value="200815" />
+						<input id="passportExpiryDate" type="text" pattern="[0-9]+" title="Date of Expiry" placeholder="000000" maxlength="6" value="200815" />
 					</div>
 				</div>
 			</div>
@@ -71,5 +71,25 @@
 			<button class="btn--submit" onclick="location.href='P9994PG005W.html'">Next</button>
 		</div>
 	</div>
+	<script>
+		(function () {
+			const params = new URLSearchParams(location.search);
+			const fields = [
+				{ id: 'passportNumber', parameter: 'passportNumber', pattern: /^[A-Z0-9]{1,15}$/ },
+				{ id: 'passportName', parameter: 'name', pattern: /^[A-Z]+(?: [A-Z]+)*$/ },
+				{ id: 'passportSex', parameter: 'sex', pattern: /^[MFUX]$/ },
+				{ id: 'passportBirthDate', parameter: 'birthDate', pattern: /^\d{6}$/ },
+				{ id: 'passportExpiryDate', parameter: 'expiryDate', pattern: /^\d{6}$/ }
+			];
+
+			fields.forEach(function (field) {
+				const value = (params.get(field.parameter) || '').trim().toUpperCase();
+
+				if (field.pattern.test(value)) {
+					document.getElementById(field.id).value = value;
+				}
+			});
+		})();
+	</script>
 </body>
 </html>
