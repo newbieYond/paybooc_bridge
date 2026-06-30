@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>결제에 혜택을 담다, paybooc</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi">
+	<meta http-equiv="Expires" content="-1">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-Control" content="No-Cache">
+	<link rel="stylesheet" href="../../../assets/styles/etc/crypto.css">
+
+	<!---------------------------------------------------------------------- UI ----->
+	<script src="../../../assets/scripts/libs/jquery-2.2.3.min.js"></script>
+	<script src="../../../js/comm/common.js"></script>
+	<script src="../../../js/comm/app_scheme.js"></script>
+	<script src="../../../js/comm/ajax.js"></script>
+	<script src="../../../assets/scripts/comm/common.ui.js"></script>
+	<!---------------------------------------------------------------------- UI ----->
+
+	<script src="../../../assets/scripts/etc/crypto.js"></script>
+</head>
+<body class="bg--gray">
+	<header class="renew01-header">
+		<a href="javascript:void(0);" class="btn-back">Back</a>
+	</header>
+	<div class="crpt-verify">
+		<div class="scan-area">
+			<div class="face-area">
+				<div class="circle-out">
+					<div class="circle-in"></div>
+				</div>
+
+				<div class="spot">
+					<div class="live-img" style="
+						/* 가로 세로 임의 크기로 넣었습니다. 사진은 배경이미지로 설정 */
+						width:680px; height:434px;
+						background: url(../../../assets/images/etc/crypto/img_bg_phone.png) no-repeat center/100%;">
+					</div><!-- 카메라 이미지를 배경으로 설정 -->s
+				</div>
+
+				<!-- .guide의 image case: (반투명한 아이 얼굴)
+					face-guide-front.png
+					face-guide-left.png
+					face-guide-right.png
+				-->
+				<div class="guide"><img src="../../../assets/images/etc/crypto/face-circle.png" alt=""></div>
+
+				<!-- .done 제어: 정면, 측면 인식 될 때마다 uiCheckMotion() 실행 해주세요 -->
+				<div class="done"></div>
+			</div>
+
+			<div class="indicator">
+				<span class="active"></span>
+				<span></span>
+				<span></span>
+			</div>
+
+			<div class="scan-stat">
+				<p class="txt">Position your face<br>in the circle</p>
+				<!-- .txt 문구 case:
+				 	1. 처음 가운데: Position your face<br>in the circle
+					2. 좌측 얼굴: Turn your head<br>to the left
+					3. 우측 얼굴: Turn your head<br>to the right
+				 -->
+			</div>
+		</div>
+	</div>
+
+	<script>
+		// 토스트 팝업 띄우기
+		toastPopup('Verification complete');
+
+		setTimeout(uiCheckMotion, 1500); // 인식 완료 테스트 보기
+
+		// 사진이 움직이면 보기 편할 거 같아서 테스트로 넣은 코드 입니다.
+		// 개발 시 무시 해 주세요
+		(function(){
+			let startX, startY, startLeft, startTop;
+			const bg = document.querySelector('.live-img');
+			const spot = document.querySelector('.guide');
+			bg.style.left = '50%';
+			bg.style.top = '50%';
+			spot.style.pointerEvents = 'none';
+			bg.addEventListener('touchstart', e => {
+				prevX = e.touches[0].clientX;
+				prevY = e.touches[0].clientY;
+			}, { passive: true });
+
+			bg.addEventListener('touchmove', e => {
+				bg.style.left = (parseFloat(bg.style.left) + e.touches[0].clientX - prevX) + 'px';
+				bg.style.top  = (parseFloat(bg.style.top)  + e.touches[0].clientY - prevY) + 'px';
+				prevX = e.touches[0].clientX;
+				prevY = e.touches[0].clientY;
+			}, { passive: true });
+		})();
+	</script>
+</body>
+</html>

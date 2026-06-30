@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>결제에 혜택을 담다, paybooc</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi">
+	<meta http-equiv="Expires" content="-1">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-Control" content="No-Cache">
+	<link rel="stylesheet" href="../../../assets/styles/etc/crypto.css">
+
+	<!---------------------------------------------------------------------- UI ----->
+	<script src="../../../assets/scripts/libs/jquery-2.2.3.min.js"></script>
+	<script src="../../../js/comm/common.js"></script>
+	<script src="../../../js/comm/app_scheme.js"></script>
+	<script src="../../../js/comm/ajax.js"></script>
+	<script src="../../../assets/scripts/comm/common.ui.js"></script>
+	<!---------------------------------------------------------------------- UI ----->
+
+	<script src="../../../assets/scripts/etc/crypto.js"></script>
+	<script src="../../../assets/scripts/libs/lottie-player.js" async></script>
+</head>
+<body>
+	<header class="renew01-header">
+		<a href="javascript:void(0);" class="btn-close">Close</a>
+	</header>
+	<div class="crpt-verify">
+		<div class="scan-how">
+			<div class="set place">
+				<span class="ico"></span>
+				<p class="txt">Place on a dark background</p>
+			</div>
+			<div class="set glare">
+				<span class="ico"></span>
+				<p class="txt">Avoid glare by adjusting the angle</p>
+			</div>
+			<div class="set text">
+				<span class="ico"></span>
+				<p class="txt">Hold steady so the text is clear</p>
+			</div>
+		</div>
+
+		<div class="scan-area">
+			<div class="camera-area">
+				<div class="live-img" style="
+					/* 가로 세로 임의 크기로 넣었습니다. 사진은 배경이미지로 설정 */
+					width:150%; height:400%;
+					background: url(../../../assets/images/etc/crypto/img_bg_phone.png) no-repeat center/100%;">
+				</div><!-- 카메라 이미지를 배경으로 설정 -->
+				<div class="spot" data-stat="not"></div><!-- //카메라 인식 영역 -->
+				<!-- .spot 의 data-stat case: (라인 컬러 달라집니다)
+					1. 감지불가: not
+					2. 감지(먼거리): far
+					3. 감지(라인 벗어남): out
+					4. 감지(정상): in
+				-->
+			</div>
+
+			<div class="scan-stat">
+				<p class="txt">Passport not detected</p>
+				<!-- .txt 문구 case:
+				 	1. 감지불가: Passport not detected
+					2. 감지(먼거리): Hold your passport closer to the camer
+					3. 감지(라인 벗어남): Place your passport inside the red box
+					4. 감지(정상): Scanning passport
+				 -->
+			</div>
+		</div>
+	</div>
+
+	<!-- 인식되면 .scanning-process 보이도록 변경 해 주세요 -->
+	<div class="scanning-process" style="display: none;">
+		<lottie-player src="../../../assets/images/etc/crypto/icon_main_flow.json" background="transaprent" loop speed="1" autoplay></lottie-player>
+		<p class="txt">Scanning passport</p>
+	</div>
+
+	<script>
+		// 사진이 움직이면 보기 편할 거 같아서 테스트로 넣은 코드 입니다.
+		// 개발 시 무시 해 주세요
+		(function(){
+			let startX, startY, startLeft, startTop;
+			const bg = document.querySelector('.live-img');
+			const spot = document.querySelector('.spot');
+			bg.style.left = '50%';
+			bg.style.top = '50%';
+			spot.style.pointerEvents = 'none';
+			bg.addEventListener('touchstart', e => {
+				prevX = e.touches[0].clientX;
+				prevY = e.touches[0].clientY;
+			}, { passive: true });
+
+			bg.addEventListener('touchmove', e => {
+				bg.style.left = (parseFloat(bg.style.left) + e.touches[0].clientX - prevX) + 'px';
+				bg.style.top  = (parseFloat(bg.style.top)  + e.touches[0].clientY - prevY) + 'px';
+				prevX = e.touches[0].clientX;
+				prevY = e.touches[0].clientY;
+			}, { passive: true });
+		})();
+	</script>
+</body>
+</html>

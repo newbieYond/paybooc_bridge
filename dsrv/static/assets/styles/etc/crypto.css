@@ -1,0 +1,298 @@
+@import url(../../../assets/styles/component/page_base.css);
+
+
+/* search */
+#search--wrap {display: flex; flex-direction: column; height: 100vh; background: var(--background-color-1); position: fixed; left: 0;right: 0;top: 0;bottom: 0; z-index: 110;}
+#search--wrap .head-navi {height: 56px;}
+#search--wrap .head-navi .hide-search {position: absolute;width:40px; top: 50%;left:20px; transform: translateY(-50%); height:40px; text-indent:-9999px; position:relative; background:url(../../../assets/images/comm/ico-back.svg) no-repeat left center / 24px;}
+
+#search-bar {flex-shrink: 0; position: relative; margin: 0 20px; display: flex; align-items: center; z-index: 10;}
+#search-input {flex: 1; padding-right: 46px; background: var(--background-color-2); border:0 none;}
+#search-input::placeholder {color: var(--font-neutral-7); }
+#search-btn {position: absolute; top: 50%;right: 18px;transform: translateY(-50%); width: 24px;height: 24px; font-size: 1px; overflow: hidden; cursor: pointer; background-color: var(--gray-400);
+	-webkit-mask: url(../../../assets/images/comm/img-2d-emptysearch-dark.svg) no-repeat center/100%;
+	mask: url(../../../assets/images/comm/img-2d-emptysearch-dark.svg) no-repeat center/100%;}
+
+#sc-list-wrap {margin-top: 20px; padding-bottom: 56px; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;}
+.letter-head {padding: 10px 20px; font-weight: 700; line-height: 26px; color: var(--font-neutral-4); background-color: var(--background-color-2);}
+.country-item {padding: 10px 46px 10px 20px; font-size: 16px;line-height: 24px;color: var(--font-neutral-4); cursor: pointer;}
+
+.highlight {color: var(--font-point-2);}
+
+#no-result {text-align: center; padding: 152px 0; font-size: 17px;line-height: 26px; color: var(--font-neutral-5); font-weight: 700;}
+#no-result::before {content:''; display: block; margin: 0 auto 16px; width: 52px;height: 52px; background-color: var(--gray-200);
+	-webkit-mask: url(../../../assets/images/comm/img-2d-emptysearch-dark.svg) no-repeat center/100%;
+	mask: url(../../../assets/images/comm/img-2d-emptysearch-dark.svg) no-repeat center/100%;}
+
+#minimap {position: fixed; right: 20px; top: 132px; bottom: 24px; width: 24px; border-radius: 12px; z-index: 20;
+display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+padding: 10px 4px; background: rgba(152, 168, 196, 0.15);
+touch-action: none; user-select: none; -webkit-user-select: none;}
+#minimap.hidden {display: none;}
+.mm-letter {font-size: 11px;line-height: 12px;color: #2D8DFF; cursor: pointer; font-weight: 700;width: 100%;text-align: center;}
+
+
+
+/* 인증 과정 */
+.step-wrap {display: flex;padding: 12px 20px 24px;}
+.step-wrap span {width: 24px;height: 24px;text-align: center;border-radius: 50%;background-color: var(--tab2-bg);color: var(--font-neutral-8);font-size: 14px;line-height: 24px;font-weight: 700;}
+.step-wrap span + span {margin-left: 6px;}
+.step-wrap span.active {background-color: var(--tab2-active-bg);color: var(--tab2-active-tc);}
+
+@media (prefers-color-scheme:dark) {
+	.dp-mode .step-wrap span {background-color: rgba(38, 41, 46, 0.70);color: #4b515d;}
+}
+
+.crpt-verify {display: flex; flex-direction: column; min-height: calc(100vh - 56px); padding-bottom: 70px;}
+.crpt-verify:not(:has(.bottom-wrap)) {padding-bottom: 24px;}
+.crpt-verify:has(.bottom-wrap) {padding-bottom: 70px;}
+.crpt-verify .step-wrap {flex-shrink: 0;}
+.crpt-verify .content-wrap {flex:1; padding: 20px 20px 48px;}
+.crpt-verify .bottom-wrap {position: fixed; left: 0;bottom: 0;right: 0; flex-shrink: 0; padding: 0 20px 14px; background-color: var(--background-color-1);}
+.crpt-verify .bottom-wrap::before {content: ''; position: absolute;left: 0;right: 0;top: -12px;height: 12px;background: var(--button-primary-gradient);}
+body.bg--gray .crpt-verify .bottom-wrap {background-color: var(--background-color-2);}
+body.bg--gray .crpt-verify .bottom-wrap::before {background: var(--button-secondary-gradient);}
+.crpt-verify .bottom-wrap .btn--submit {width: calc(100% - 40px);}
+
+.scan-how {margin:0 16px; padding: 20px 0; display: flex; justify-content: space-between; align-items: center;}
+.scan-how .set {flex:1; text-align: center;}
+.scan-how .set .ico {display:block; margin:0 auto 8px; width: 40px;height: 40px;}
+.scan-how .set.place .ico {background: url(../../../assets/images/etc/crypto/scan-place.svg) no-repeat center/100%;}
+.scan-how .set.glare .ico {background: url(../../../assets/images/etc/crypto/scan-glare.svg) no-repeat center/100%;}
+.scan-how .set.text .ico {background: url(../../../assets/images/etc/crypto/scan-text.svg) no-repeat center/100%;}
+.scan-how .set .txt {font-size: 13px;line-height: 18px;color: var(--font-neutral-5);}
+.scan-area {margin:0;}
+.scan-area .camera-area {width: 100%; height: 75vw; position: relative; overflow: hidden;}
+.scan-area .camera-area .live-img {position: absolute; max-width: none; width: 150%;height: auto;transform: translate(-50%, -50%);}
+.scan-area .camera-area .spot {position: absolute;left: 50%;top: 50%;transform: translate(-50%, -50%);
+	border-radius: 24px; border:2px solid #fff;
+	width: calc(100% - 60px); height: calc(100% - 44px);  box-shadow: 0 0 0 9999px rgba(25, 27, 30, 0.50);}
+.scan-area .camera-area .spot[data-stat="not"] {border-color: #fff;}
+.scan-area .camera-area .spot[data-stat="far"] {border-color: #FF3F53;}
+.scan-area .camera-area .spot[data-stat="out"] {border-color: #FF3F53;}
+.scan-area .camera-area .spot[data-stat="in"] {border-color: transparent;}
+
+.scan-area .face-area {position: relative; margin: 34px 0 0; overflow: hidden;}
+.scan-area .face-area .spot {position: absolute; width: 288px;height: 288px; left: 50%; top: 50%; max-width: none; transform: translate(-50%, -50%); border-radius: 50%; overflow: hidden;}
+.scan-area .face-area .live-img {position: absolute; left: 50%; top: 50%; max-width: none; transform: translate(-50%, -50%);}
+.scan-area .face-area .circle-out {position: relative; margin:0 auto; animation: circleRotate 2s linear infinite ;
+	border-radius: 50%; width: 300px;height: 300px; background: linear-gradient(315deg, #7FB4F1 12.66%, #FFF 51.88%, #90ABF5 86.83%);}
+.scan-area .face-area .circle-in {position: absolute;top: 50%;left: 50%; width: 288px;height: 288px; transform: translate(-50%, -50%); background:#4d4d4d; border-radius: 50%;}
+@keyframes circleRotate {
+	0% {transform: rotate(0deg);}
+	100% {transform: rotate(360deg);}
+}
+.scan-area .face-area .guide {position: absolute; width: 300px;height: 300px;left: 50%;top: 50%;transform: translate(-50%, -50%);}
+.scan-area .face-area .guide img {display: block; width: 100%;}
+.scan-area .face-area .done {width: 80px;height: 80px;background: url(../../../assets/images/etc/crypto/face-done.png) no-repeat center/100%; position: absolute; left: 50%;top: 50%;transform: translate(-50%, -50%);
+	opacity: 0;}
+@keyframes doneMotion {
+	0% {opacity: 0;}
+	15% {opacity: 1;}
+	80% {opacity: 1;}
+	100% {opacity: 0;}
+}
+
+.scan-area .indicator {display: flex; align-items: center; margin:32px auto; justify-content:center;}
+.scan-area .indicator > span {width: 4px; height: 4px;background-color: #DCDFE6; border-radius: 50%;}
+.scan-area .indicator > span.active {background-color: #1A3A6D;}
+.scan-area .indicator > span + span {margin-left: 4px;}
+
+.scan-area .scan-stat {padding: 40px 24px;}
+.scan-area .scan-stat .txt {text-align: center; font-size: 18px;line-height: 26px; color: var(--font-neutral-4); font-weight: 700;}
+.scan-area .face-area ~ .scan-stat {padding: 0 24px;}
+.scan-area .face-area ~ .scan-stat .txt {font-size: 24px;line-height: 32px;color: var(--font-neutral-2);}
+
+@media(min-width:481px){
+	.scan-area .camera-area {max-height:360px;}
+	.scan-area .camera-area .spot {aspect-ratio:4 / 3; width:auto;}
+}
+
+.scanning-process {position: fixed;top: 0;left: 0;right: 0;bottom: 0; background-color:#8C8D8F; z-index: 111;}
+.scanning-process lottie-player {position: absolute;top: calc(50% - 72px);left: 50%;width: 80px;height: 80px;transform: translate(-50%, -50%);}
+.scanning-process .txt {position: absolute;top: 50%; transform: translateY(-50%); width: 100%;text-align: center; color: var(--white); font-size: 18px;line-height: 26px;font-weight: 700;}
+
+.tit-top {margin-bottom: 32px;font-size: 22px;font-weight: 700;line-height: 30px;color: var(--font-neutral-2);}
+
+.form-item {}
+.form-item + .form-item {margin-top: 24px;}
+.form-item .tit {margin-bottom: 6px;font-size: 15px;font-weight: 700;color: var(--font-neutral-4); line-height: 22px;}
+.form-item .select-value {width: 100%; color: var(--font-neutral-8); text-align: left;}
+.form-item .select-value.on {color: var(--font-neutral-2);}
+.form-item .select-country {display:block; position:relative; color: var(--font-neutral-8); width: 100%; text-align: left; padding:15px 30px 15px 18px; border:1px solid var(--input-border); font-size:17px; line-height:24px; border-radius:var(--input-radius);	white-space:nowrap; overflow:hidden; background-color:#fff;}
+.form-item .select-country::after {display:block; content:''; position:absolute; right:16px; top:50%; width:20px; height:20px; margin-top:-10px; background:url(../../../assets/images/comm/ico-arrow-right-normal-gray1.svg) center / 20px auto no-repeat;}
+.form-item .select-country.on{color:var(--font-neutral-2);}
+
+.scan-guide {}
+.scan-guide .tit {margin-bottom: 8px;font-size: 24px;line-height: 32px;font-weight: 700;color:var(--font-neutral-2)}
+.scan-guide .desc {font-size: 16px;line-height: 24px;color: var(--font-neutral-6);}
+.scan-guide .scan-sample {display: block; margin:40px auto 20px; width: 320px;height: 220px;}
+
+.liveness-guide {margin: 32px -6px 0; border-radius: 36px; overflow: hidden;}
+.liveness-guide .view-3d {position: relative; height: 240px; background: linear-gradient(315deg, #E7E8F4 0%, #F0F4FF 47.12%, #BED6FF 100%);}
+.liveness-guide .view-3d .circle {position: absolute; top: 50%;left:50%; transform: translate(-50%, -50%); width: 192px;height: 192px;background: url(../../../assets/images/etc/crypto/face-circle.png) no-repeat center/100%;}
+.liveness-guide .view-3d lottie-player {position: absolute; top: 50%;left:50%; transform: translate(-50%, -50%); width: 112px;height: 112px;}
+.liveness-guide .readme {padding: 20px 24px 24px; background-color: var(--background-color-1);}
+.liveness-guide .readme .list--dot li {font-size: 14px;line-height: 20px;color: var(--font-neutral-5);}
+.liveness-guide .readme .list--dot li + li {margin-top: 4px;}
+
+.join-wrap > .body {padding: 0 20px 60px; width: 100%;}
+.join-wrap:has(> .foot) {padding-bottom: 82px;}
+.join-wrap > .foot {position: fixed; padding: 0 20px 14px; bottom: 0;left: 0;right: 0; display:flex; justify-content:space-between; align-items:center; background-color:var(--background-color-2);}
+.join-wrap > .foot::before {content: ''; display: block; width: 100%; height: 12px; position: absolute; left: 0; top: -12px; background: var(--button-secondary-gradient)}
+.join-wrap > .foot [class*="btn"] {flex:1; white-space:nowrap; width:100%;}
+.join-wrap > .foot [class*="btn"] + [class*="btn"] {margin-left:8px}
+
+.join-wrap .head-ready-desc {padding: 20px 0 0;}
+.join-wrap .head-ready-desc .tit {font-size: 24px;line-height: 32px;font-weight: 700;color: var(--font-neutral-2);}
+.join-wrap .cont-form {margin: 32px 0 0;}
+.join-wrap .cont-form .form-item + .form-item {margin-top: 24px;}
+.join-wrap .cont-form .form-item input:read-only,
+.join-wrap .cont-form .form-item input:disabled {background: #E4E6EA; color: var(--font-neutral-7); border-color:#DCDFE6}
+.join-wrap .cont-form .tit {font-size: 15px;font-weight: 700; line-height: 22px;color: var(--font-neutral-4);}
+.join-wrap .cont-form .cont-val {margin-top: 6px;}
+.join-wrap .cont-form .cont-val + .list {margin:6px 0 0;}
+.join-wrap .cont-form .list li {position: relative;padding-left: 12px;color: var(--font-neutral-7);font-size: 13px;line-height: 18px;}
+.join-wrap .cont-form .list li:before {position: absolute; top: 8px; left: 0; content: ''; width: 3px; height: 3px; background-color: currentColor; border-radius:50%;}
+.join-wrap .cont-form .list li + li {margin-top: 2px;}
+
+
+/* 메인 (안내화면) */
+.crypto-wallet-wrapper .tit {font-size:24px;line-height:32px;font-weight:700;}
+.crypto-wallet-wrapper .tit + .txt {margin-top:10px;display:block;}
+.crypto-wallet-wrapper .container-01 {background:#4A4AE4;padding-bottom:100px;overflow:hidden;}
+.crypto-wallet-wrapper .contanier-02 {padding:120px 14px;text-align:center;}
+.crypto-wallet-wrapper .contanier-03 {background:var(--background-color-2);padding:100px 14px 120px}
+.crypto-wallet-wrapper .video-wrap {position:relative;font-size:0; aspect-ratio:390 / 660}
+.crypto-wallet-wrapper .video-wrap video {width:100%;height:100%; object-fit:cover;}
+.crypto-wallet-wrapper .video-wrap::before {content:'';width:calc(100% - 216px);height:1px;background:var(--white);position:absolute;top:43px;left:24px;z-index:2;}
+.crypto-wallet-wrapper .video-wrap::after {content:'';width:100%;height:100%;background:rgba(0,0,0,0.2);position:absolute;top:0;left:0;}
+.crypto-wallet-wrapper .video-wrap .typo-img {width:158px;height:8px;position:absolute;top:40px;right:24px;z-index:2;font-size:0;}
+.crypto-wallet-wrapper .video-wrap .main-typo-img {width:calc(100% - 48px);position:absolute;top:148px;left:24px;z-index:2;font-size:0;aspect-ratio:390/206;}
+.crypto-wallet-wrapper .video-wrap .main-typo-img img {object-fit:cover;width:100%;}
+.crypto-wallet-wrapper .top-contents-wrap {position:relative;}
+.crypto-wallet-wrapper .top-contents-wrap .bg-img {width:161px;aspect-ratio:161/331;font-size:0;margin:0 auto;position:relative;z-index:2;top:-85px;}
+.crypto-wallet-wrapper .top-contents-wrap .bg-img .bg {filter: drop-shadow(30px 20px 60px rgba(0, 0, 0, 0.25));}
+.crypto-wallet-wrapper .top-contents-wrap .lottie-wrap.out {width:440px;height:50px;font-size:0;position:absolute;top:65px;left:50%; transform: translateX(-50%);}
+.crypto-wallet-wrapper .top-contents-wrap .img-box .ltt-in-box {width:148px;height:50px;position:absolute;top:147px;left:50%; transform:translateX(-50%); overflow: hidden;}
+.crypto-wallet-wrapper .top-contents-wrap .img-box .ltt-in-box lottie-player {position: absolute; top: 0;left: 50%;transform: translateX(-50%); height: 50px; width: 440px;}
+.crypto-wallet-wrapper .top-contents-wrap .img-box {position:relative;}
+.crypto-wallet-wrapper .top-contents-wrap .img-box .lottie-wrap.in {width:440px;}
+.crypto-wallet-wrapper .top-contents-wrap .img-box .lottie-wrap.in lottie-player {left:-120px;position:relative;}
+.crypto-wallet-wrapper .top-contents-wrap .txt-wrap {padding:0 20px;}
+.crypto-wallet-wrapper .top-contents-wrap .txt-wrap :where(.tit, .txt) {color:var(--white)}
+
+.crypto-wallet-wrapper .contanier-02 .tit {margin-bottom:24px;}
+.crypto-wallet-wrapper .contanier-02 .exp-box {padding:28px 20px 20px;border-radius:32px;text-align:center;}
+.crypto-wallet-wrapper .contanier-02 .exp-box.num01 {background:#DDF4FF;}
+.crypto-wallet-wrapper .contanier-02 .exp-box.num02 {background:#FFEFDC;}
+.crypto-wallet-wrapper .contanier-02 .exp-box.num03 {background:#E8E8FF;}
+.crypto-wallet-wrapper .contanier-02 .exp-box + .exp-box {margin-top:12px;}
+.crypto-wallet-wrapper .contanier-02 .exp-box .img {width:72px;height:72px;font-size:0;margin:0 auto;}
+.crypto-wallet-wrapper .contanier-02 .exp-box .num {display:block;font-size:14px;line-height:20px;font-weight:700;}
+.crypto-wallet-wrapper .contanier-02 .exp-box.num01 .num {color:#1772BD;}
+.crypto-wallet-wrapper .contanier-02 .exp-box.num02 .num {color:#C77919;}
+.crypto-wallet-wrapper .contanier-02 .exp-box.num03 .num {color:#6262B9;}
+.crypto-wallet-wrapper .contanier-02 .exp-box .box-tit {font-size:20px;line-height:28px;color:var(--font-neutral-4);font-weight:700;}
+.crypto-wallet-wrapper .contanier-02 .exp-box .txt {font-size:15px;line-height:22px;color:var(--font-neutral-6);margin:8px 0 16px;}
+
+.crypto-wallet-wrapper .contanier-03 .tit {margin-bottom:24px;text-align:center;}
+.crypto-wallet-wrapper .contanier-03 .use-exp-wrap {counter-reset: item;}
+.crypto-wallet-wrapper .contanier-03 .exp-box {padding-left:40px;position:relative}
+.crypto-wallet-wrapper .contanier-03 .exp-box::before {content:'';width:2px;height:calc(100% + 12px);background:rgba(219, 226, 240, 0.40);position:absolute;top:32px;left:13px;}
+.crypto-wallet-wrapper .contanier-03 .exp-box:last-of-type::before {content:none;}
+.crypto-wallet-wrapper .contanier-03 .sub-tit {font-size:20px;line-height:28px;color:var(--font-neutral-4);text-align:left;font-weight:700; counter-increment: item;position:relative;}
+.crypto-wallet-wrapper .contanier-03 .sub-tit::before {content: counter(item);width:28px;height:28px;background:rgba(219, 226, 240, 0.40);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;position:absolute;left:-40px;font-size:14px;line-height:20px;color:var(--font-neutral-3);font-weight:700;}
+.crypto-wallet-wrapper .contanier-03 .exp-box:last-child .sub-tit::before {content:'';background:url(../../../assets/images/comm/ico-checkbox-darkmode-on.svg) center / 100% no-repeat;width:28px;height:28px;background-color:#23B6FF;} 
+.crypto-wallet-wrapper .contanier-03 .sub-txt {font-size:15px;line-height:22px;color:var(--font-neutral-6);margin:8px 0  20px;display:block}
+.crypto-wallet-wrapper .contanier-03 .exp-box + .exp-box {margin-top:52px;}
+.crypto-wallet-wrapper .contanier-03 .exp-box .exp-img {width: 100%;background:var(--background-color-1);padding:32px 21px;border-radius:32px;display: inline-flex;align-items: center;justify-content: center;position: relative;}
+.crypto-wallet-wrapper .contanier-03 .exp-box .exp-img::before {content:'';width:100%;height:60px;background: linear-gradient(180deg, rgba(255, 255, 255, 0.00) 0%, #FFF 100%);position:absolute;bottom:32px;left:0;}
+.crypto-wallet-wrapper .contanier-03 .exp-box .exp-img img {max-width:280px;min-width:200px;}
+.crypto-wallet-wrapper .contanier-03 .exp-box:last-of-type {margin-top:32px;}
+
+.crypto-wallet-wrapper .bottom-fixed-wrap {position:fixed;bottom:0;left:0;right:0;padding: 0 20px 14px 20px;z-index: 10;}
+.crypto-wallet-wrapper .bottom-fixed-wrap .go-service-btn {padding: 15px 10px;border-radius:16px;background:#000;text-align:center;font-size:18px;line-height:26px;color:var(--white);font-weight:700;width:100%;height:56px;}
+.crypto-wallet-wrapper .bottom-fixed-wrap .go-service-btn.done {background:var(--button-primary)}
+
+.crypto-wallet-wrapper.single .contanier-03 {background:none;padding:20px 14px 72px;}
+.crypto-wallet-wrapper.single .contanier-03 .tit {margin-bottom:32px;}
+
+.lpop--wrap2.wide-type .lpop-inner {left:0px;right:0px;bottom:0px;}
+.lpop--wrap2.wide-type .lpop-inner .select-lpop {border-radius:24px 24px 0 0 }
+.lpop--wrap2.wide-type .lpop-cont {padding-bottom:28px;}
+.lpop--wrap2.wide-type .detaile-tit {margin:0 24px 12px;padding:0 0 12px;border-bottom:1px solid var(--line)}
+.lpop--wrap2.wide-type .detaile-tit .title {font-size:20px;line-height:28px;color:var(--font-neutral-2);font-weight:700;}
+.lpop--wrap2.wide-type .detail-cont {padding:0 20px;}
+.lpop--wrap2.wide-type .detail-cont + .detail-cont {margin-top:28px;}
+.lpop--wrap2.wide-type .detail-cont .tit-txt {font-size:16px;line-height:24px;color:var(--font-neutral-2);margin-bottom:8px;}
+.lpop--wrap2.wide-type .detail-cont .terms-list .terms-btn {padding:10px 0;display:block;font-size:16px;line-height:24px;color:var(--font-neutral-4);position:relative;width:100%;text-align:left;}
+.lpop--wrap2.wide-type .detail-cont .terms-list .terms-btn::after {content:'';width:16px;height:16px;-webkit-mask:var(--arrow-right-normal);mask:var(--arrow-right-normal);background-color:#B2B7C2;position:absolute;top:50%;right:0;transform:translateY(-50%);}
+.lpop--wrap2.wide-type .detail-cont .cont-tit {font-size:16px;line-height:24px;color:var(--font-neutral-2);font-weight:700;margin-bottom:8px;}
+.lpop--wrap2.wide-type .detail-cont .info-list li {display:flex;justify-content:space-between;gap:8px;}
+.lpop--wrap2.wide-type .detail-cont .info-list li + li {margin-top:8px;}
+.lpop--wrap2.wide-type .detail-cont .info-list .tt {font-size:16px;line-height:24px;color:var(--font-neutral-6);}
+.lpop--wrap2.wide-type .detail-cont .info-list .rt {font-size:16px;line-height:24px;color:var(--font-neutral- 2);}
+
+
+/* 이용내역 */
+.crypto-history-body {padding-bottom: 82px;}
+.stat-account-dur {padding: 32px 20px 8px; display: flex; align-items: center; justify-content: space-between;}
+.stat-account-dur .acct {font-size: 15px; line-height: 22px; color: var(--font-neutral-2);}
+.stat-account-dur .dur {display: inline-flex; align-items: center;}
+.stat-account-dur .dur .stat-text {color: var(--font-neutral-2); font-size: 14px; line-height: 20px;}
+.stat-account-dur .dur .btn-date {margin-left: 6px; font-size: 0; line-height: 0; color: transparent; text-indent: -9999px; width: 24px; height: 24px; background: url(../../../assets/images/comm/ico-filter.svg) 0 / 100% no-repeat;}
+
+.crypto-history-body .scr-cate .in {padding: 8px 14px; display: flex; align-items: center; flex-wrap: no-wrap; white-space: nowrap; overflow-x: auto;}
+.crypto-history-body .scr-cate .in::-webkit-scrollbar {display: none;}
+.crypto-history-body .scr-cate .in a {display: block; padding: 10px 16px; border-radius: 8px; background-color: var(--tab2-bg); color: var(--tab2-tc); font-size: 14px; line-height: 20px;}
+.crypto-history-body .scr-cate .in a + a {margin-left: 6px;}
+.crypto-history-body .scr-cate .in a.on {background-color: var(--tab2-active-bg); color: var(--tab2-active-tc); font-weight: 700;}
+
+.history-detail {position: relative; padding: 0 20px;}
+.history-detail .detail-date {padding: 32px 0 0; font-size: 15px; line-height: 22px; font-weight: 700; color: var(--font-neutral-7);}
+.history-detail .list-item-wrap {padding-bottom: 16px; border-bottom: 1px solid var(--line);}
+.history-detail .list-item {display: block; padding: 20px 0;}
+.history-detail .list-item .tag-box {display: flex; align-items: center;}
+.history-detail .list-item .tag-box .ico {width: 22px; height: 22px; margin-right: 8px; background-repeat: no-repeat; background-position: center; background-size: 100%;}
+.history-detail .list-item .tag-box .ico-send {background-image: url(../../../assets/images/etc/crypto/ico_send.svg);}
+.history-detail .list-item .tag-box .ico-pay {background-image: url(../../../assets/images/etc/crypto/ico_pay.svg);}
+.history-detail .list-item .tag-box .ico-receive {background-image: url(../../../assets/images/etc/crypto/ico_receive.svg);}
+.history-detail .list-item .tag-box span {color: var(--font-neutral-4); font-size: 15px; line-height: 22px; font-weight: 700;}
+.history-detail .list-item .sop-box {display: flex; align-items: center;margin: 8px 0 2px 0;}
+.history-detail .list-item .sop-box .name {min-width: 0; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; color: var(--font-neutral-2); font-size: 16px; line-height: 24px;}
+.history-detail .list-item .sop-box .num {flex-shrink: 0; margin-left: 8px; color: var(--font-neutral-2); font-size: 20px; line-height: 28px; font-weight: 700;}
+.history-detail .list-item .sop-box .num .unit {margin-left: 4px; font-size: 18px;}
+.history-detail .list-item .sop-box .num.canceled {position: relative; color: var(--font-neutral-8);}
+.history-detail .list-item .sop-box .num.canceled::after {content: ''; position: absolute; top: 50%; left: 0; transform: translateY(-50%); width: 100%; height: 1px; background-color: var(--font-neutral-8);}
+.history-detail .list-item .tim-box {display: flex; flex-wrap: wrap; flex-direction: row-reverse; justify-content: space-between; align-items: center;}
+.history-detail .list-item .tim-box .time-detail {font-size: 0; line-height: 0;}
+.history-detail .list-item .tim-box .time-detail span {position: relative; display: inline-block; vertical-align: top; font-size: 15px; line-height: 22px; color: var(--font-neutral-7);}
+.history-detail .list-item .tim-box .time-detail span + span {margin-left: 7px; padding-left: 7px;}
+.history-detail .list-item .tim-box .time-detail span + span::before {position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 1px; height: 12px; background-color: var(--line); content: '';}
+.history-detail .list-item .tim-box .num-unit {padding-left: 10px; font-size: 0; line-height: 0;}
+.history-detail .list-item .tim-box .num-unit span {display: inline-block; vertical-align: top; color: var(--font-neutral-7); font-size: 15px; line-height: 22px;}
+.history-detail .list-item .tim-box .num-unit .num,
+.history-detail .list-item .tim-box .num-unit .unit {margin-left: 2px;}
+
+/* 이용내역 상세보기 레이어 */
+
+[class *= crypto-history-] .lpop-inner .lpop-header .lpop-tit {font-size:24px;line-height:32px;color:var(--font-neutral-2);text-align:center;padding-bottom:36px;}
+[class *= crypto-history-] .num-tit {margin:0 24px 20px;padding:0 0 20px;border-bottom:1px solid var(--line)}
+[class *= crypto-history-] .num-tit .num {font-size:32px;line-height:42px;color:var(--font-neutral-2);font-weight:700;letter-spacing:-0.32px;}
+[class *= crypto-history-] .num-tit .num .unit {font-size:26px;line-height:34px;letter-spacing:-0.26px;margin-left:4px;}
+[class *= crypto-history-] .num-tit.canceled .num {position: relative; color: var(--font-neutral-8);}
+[class *= crypto-history-] .num-tit.canceled .num::after {content: ''; position: absolute; top: 50%; left: 0; transform: translateY(-50%); width: 100%; height: 1px; background-color: var(--font-neutral-8);}
+
+[class *= crypto-history-].wide-type .lpop-cont  {padding-bottom:60px;}
+
+.lpop--wrap2.wide-type .detail-cont {padding:0 20px;}
+.lpop--wrap2.wide-type .detail-cont + .detail-cont {margin-top:28px;}
+.lpop--wrap2.wide-type .detail-cont .tit-txt {font-size:16px;line-height:24px;color:var(--font-neutral-2);margin-bottom:8px;}
+.lpop--wrap2.wide-type .detail-cont .cont-tit {font-size:16px;line-height:24px;color:var(--font-neutral-2);font-weight:700;margin-bottom:8px;}
+.lpop--wrap2.wide-type .detail-cont .info-list li {display:flex;justify-content:space-between;gap:8px;min-width:0;}
+.lpop--wrap2.wide-type .detail-cont .info-list li + li {margin-top:16px;}
+.lpop--wrap2.wide-type .detail-cont .info-list .info-label {font-size:16px;line-height:24px;color:var(--font-neutral-6);width:140px;flex-shrink:0;}
+.lpop--wrap2.wide-type .detail-cont .info-list .info-value {font-size:16px;line-height:24px;color:var(--font-neutral-2);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;word-break:break-all;}
+
+.lpop--wrap2 .tooltip-btn {width: 16px;height: 16px;overflow: hidden;text-indent: -999px;-webkit-mask: var(--info);mask: var(--info);background-color: var(--gray-300);margin-left:2px;position:relative;top:2px;}

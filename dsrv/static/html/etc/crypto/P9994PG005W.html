@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>결제에 혜택을 담다, paybooc</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi">
+	<meta http-equiv="Expires" content="-1">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-Control" content="No-Cache">
+	<link rel="stylesheet" href="../../../assets/styles/etc/crypto.css">
+
+	<!---------------------------------------------------------------------- UI ----->
+	<script src="../../../assets/scripts/libs/jquery-2.2.3.min.js"></script>
+	<script src="../../../js/comm/common.js"></script>
+	<script src="../../../js/comm/app_scheme.js"></script>
+	<script src="../../../js/comm/ajax.js"></script>
+	<script src="../../../assets/scripts/comm/common.ui.js"></script>
+	<!---------------------------------------------------------------------- UI ----->
+
+	<script src="../../../assets/scripts/etc/crypto.js"></script>
+	<script src="../../../assets/scripts/libs/lottie-player.js" async></script>
+</head>
+<body class="bg--gray">
+	<header class="renew01-header">
+		<a href="javascript:void(0);" class="btn-back">Back</a>
+	</header>
+	<div class="crpt-verify">
+		<div class="step-wrap">
+			<span class="" data-tab="0">1</span><span class="active" data-tab="1">2</span><span class="" data-tab="2">3</span>
+		</div>
+
+		<div class="content-wrap">
+			<div class="scan-guide">
+				<h1 class="tit">Liveness Check</h1>
+				<p class="desc">Your face and the surrounding<br>will be recorded during the verification</p>
+			</div>
+			<div class="liveness-guide">
+				<div class="view-3d">
+					<span class="circle"></span>
+					<lottie-player src="../../../assets/images/etc/crypto/icon_main_flow.json" background="transaprent" loop speed="1" autoplay></lottie-player>
+				</div>
+				<div class="readme">
+					<ul class="list--dot">
+						<li>Please show face clearly</li>
+						<li>Maximize screen brightness</li>
+						<li>Well lit area</li>
+						<li>No glasses, mask, hat</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<div class="bottom-wrap">
+			<button class="btn--submit">Next</button>
+		</div>
+	</div>
+</body>
+</html>

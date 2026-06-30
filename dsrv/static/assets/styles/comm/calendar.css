@@ -1,0 +1,62 @@
+ .lpop-period-inner {padding:0 24px 24px;}
+.search-period-wrap .btn-period {display:flex;}
+.search-period-wrap .btn-period .item {flex:1;}
+.search-period-wrap .btn-period .item + .item {margin-left:4px;}
+.search-period-wrap .btn-period .item {display:flex; align-items:center; justify-content:center; width:100%; height:54px;box-sizing:border-box; border:1px solid var(--input-border); border-radius:var(--input-radius); color:var(--font-neutral-2); font-size:15px; background:#fff; line-height:22px;}
+.search-period-wrap .btn-period .item.active {font-weight:700; color:var(--font-neutral-1); border-color:var(--input-focus-border); border-width:2px;}
+.search-period-wrap .period-chk-wrap {display:none;}
+.search-period-wrap .period-chk-wrap.active {display:block;}
+.search-period-wrap .btn-period + .period-chk-wrap {margin-top:12px;}
+.search-period-wrap .input-period {display:flex; align-items:center; position:relative;}
+.search-period-wrap .input-period::after {display:block; content:''; position:absolute; right:12px; top:50%; transform:translate(0, -50%); width:20px; height:20px; background:url(../../images/comm/prev/ico_calendar.png) no-repeat 0 0 /cover;}
+.search-period-wrap .input-period #calRange {background-color: var(--background-color-1) !important;}
+.search-period-wrap .notice-text {margin-top:8px; color:var(--font-neutral-6); font-size:14px; line-height:20px;}
+.lpop-period-inner .btn--submit {margin-top:36px;}
+.lpop-calender-inner {padding:0 20px 24px;}
+.lpop-calender-inner .btn--submit {margin-top:24px;}
+
+/* 달력 */
+.daterangepicker .calendar-table {padding: 20px 0 0;}
+.daterangepicker .table-condensed{width:100%; margin:0 auto; position:relative; z-index:1; overflow:hidden;}
+.daterangepicker .table-condensed thead th.month,
+.daterangepicker .table-condensed thead th.month button {font-size:22px; font-weight:700; color:var(--font-neutral-2); pointer-events:none;}
+.daterangepicker .table-condensed thead th {position:relative; font-size:15px; color:var(--font-neutral-6); font-weight:400; height:32px; line-height:32px}
+.daterangepicker .table-condensed thead tr:first-child th {padding-bottom: 20px;}
+.daterangepicker .table-condensed thead tr:nth-child(2) th {height: 46px; padding-bottom: 4px;}
+.daterangepicker .table-condensed th span {position:absolute; width:32px; height:32px; top:0;}
+.daterangepicker .table-condensed .prev span, 
+.daterangepicker .table-condensed .prev-disable span {left:0; background:url(../../images/comm/arrow-left-normal.svg) no-repeat center/100%}
+.daterangepicker .table-condensed .next span, 
+.daterangepicker .table-condensed .next-disable span {right:0; background:url(../../images/comm/arrow-right-normal.svg) no-repeat center/100%}
+.daterangepicker .table-condensed .prev-disable span,
+.daterangepicker .table-condensed .next-disable span {opacity:0.4;}
+.daterangepicker .table-condensed tbody td {position:relative;width:42px; color:var(--font-neutral-2);height:42px;line-height:42px;text-align:center;font-size:16px}
+.daterangepicker .table-condensed tbody tr td:first-child {color:var(--font-point-1)}
+.daterangepicker .table-condensed tbody tr td:last-child {color:#5D67CF}
+.daterangepicker .table-condensed tbody tr td:first-child.off,
+.daterangepicker .table-condensed tbody tr td:last-child.off {color: var(--font-neutral-8);}
+.daterangepicker .table-condensed tbody tr td:first-child.in-range {color:var(--font-point-1)}
+.daterangepicker .table-condensed tbody tr td:last-child.in-range {color: #5D67CF;}
+.daterangepicker .table-condensed tbody td.ends {opacity:1; color: var(--font-neutral-8);}
+.daterangepicker .table-condensed tbody td.disabled, 
+.daterangepicker .table-condensed tbody option.disabled {color:var(--font-neutral-8) !important; cursor:not-allowed;}
+.daterangepicker .table-condensed tbody td.start-date,
+.daterangepicker .table-condensed tbody td.end-date {font-weight:700; color:#fff !important; z-index:2;}
+.daterangepicker .table-condensed tbody td.start-date:before,
+.daterangepicker .table-condensed tbody td.start-date.in-range:before,
+.daterangepicker .table-condensed tbody td.end-date.in-range:before {content:''; display:block; position:absolute; left:50% !important; top:50% !important; transform: translate(-50%, -50%) !important; width:40px !important; height:40px !important; z-index:-1; background:var(--font-point-1);  border-radius:50%;}
+.daterangepicker .table-condensed tbody td.start-date+.in-range:before {width:150%; left:-50%;}
+.daterangepicker .table-condensed tbody td.in-range {font-weight: 700; color: var(--font-neutral-2);}
+.daterangepicker .table-condensed tbody td.in-range:before {content:''; display:block; width:100%; height:100%; position:absolute; left:0; top:0; background:#FFECED; z-index:-1;}
+.daterangepicker .table-condensed tbody td.end-date {z-index:auto;}
+.daterangepicker .table-condensed tbody td.end-date:after {content:''; display:block; width:100%; height:100%; position:absolute; left:-50%; top:0; background:#FFECED; z-index:-2;}
+.daterangepicker .table-condensed tbody td.today.available:before,
+.daterangepicker .table-condensed tbody td.today.off:before {content:''; display:block !important; position:absolute; left:50%; top:5px; transform:translateX(-50%); width:4px; height:4px; border-radius:100%; background-color: var(--font-point-1);}
+.daterangepicker .table-condensed tbody td.today.active.start-date.end-date.available {color:#fff}
+.daterangepicker .table-condensed tbody td.today.active.start-date.end-date.available:before {height:40px; top:0;}
+.daterangepicker .table-condensed tbody td.today.active.end-date.available:before {height:40px; top:0; width:40px; background:var(--font-point-1); border-radius:50%; z-index:-1;}
+.daterangepicker .table-condensed tbody td.today.active.start-date.active.end-date.available:after {display:none;}
+.daterangepicker .table-condensed tbody tr td:last-child:before {width:100%; left:0;}
+.daterangepicker .table-condensed tbody td.in-range.end-date {}
+.daterangepicker .single .table-condensed tbody td.end-date:after {display:none;}
+.daterangepicker .txtHidden {padding:0 !important; overflow:hidden; position:absolute; top:-9999px; font-size:0; line-height:0; width:0; height:0;}

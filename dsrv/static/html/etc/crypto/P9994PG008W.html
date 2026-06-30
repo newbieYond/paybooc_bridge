@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="Expires" content="-1">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-Control" content="No-Cache">
+	<meta name="format-detection" content="telephone=no">
+	<title>Paybooc Crypto Pay</title>
+	<link rel="stylesheet" href="../../../assets/styles/etc/crypto.css">
+	<!---------------------------------------------------------------------- UI ----->
+	<script src="../../../assets/scripts/libs/jquery-2.2.3.min.js"></script>
+	<script src="../../../js/comm/common.js"></script>
+	<script src="../../../js/comm/app_scheme.js"></script>
+	<script src="../../../js/comm/ajax.js"></script>
+	<script src="../../../assets/scripts/comm/common.ui.js"></script>
+	<!---------------------------------------------------------------------- UI ----->
+</head>
+<body>
+	<header class="renew21--header">
+		<a href="#" class="btn-back">뒤로</a>
+		<h1 class="tit">Transaction History</h1>
+	</header>
+	<div class="crypto-history-body">
+		<div class="stat-account-dur">
+			<div class="acct">Total <strong>124</strong></div>
+			<div class="dur">
+				<span class="stat-text" id="uixDateDurText">Past 12 months</span>
+				<button class="btn-date" onclick="BsCtl('#periodPop').show();">기간 선택</button>
+			</div>
+		</div>
+		<div class="history-all-area">
+			<div class="scr-cate">
+				<div class="in">
+					<a href="javascript:void(0);" class="tab-btn on" data-filter="all">All</a>
+					<a href="javascript:void(0);" class="tab-btn" data-filter="pay">Pay</a>
+					<a href="javascript:void(0);" class="tab-btn" data-filter="send">Send</a>
+					<a href="javascript:void(0);" class="tab-btn" data-filter="receive">Receive</a>
+				</div>
+			</div>
+			<div class="history-detail">
+				<div class="history-group">
+					<p class="detail-date">24.02.03</p>
+					<div class="list-item-wrap">
+						<a href="javascript: void(0)" class="list-item list-item--send" data-type="send" onclick=""><!-- // case: Send -->
+							<div class="tag-box">
+								<i class="ico ico-send"></i>
+								<span>Send</span>
+							</div>
+							<div class="sop-box">
+								<div class="name">To : 0x542Fdsf322839f322839f322839f322839</div>
+								<div class="num"><span>- 200.00</span><span class="unit">USDC</span></div>
+							</div>
+							<div class="tim-box">
+								<div class="right">
+									<div class="num-unit">
+										<span>Bal.<span class="num">3,406.00</span></span>
+										<span class="unit">USDC</span>
+									</div>
+								</div>
+								<div class="left">
+									<div class="time-detail">
+										<span class="time">20:00</span>
+										<span class="detail">Pending</span>
+									</div>
+								</div>
+							</div>
+						</a>
+					</div>
+				</div>
+				<div class="history-group">
+					<p class="detail-date">24.02.02</p>
+					<div class="list-item-wrap">
+						<a href="javascript: void(0)" class="list-item list-item--pay" data-type="pay" onclick=""><!-- // case: Pay -->
+							<div class="tag-box">
+								<i class="ico ico-pay"></i>
+								<span>Pay</span>
+							</div>
+							<div class="sop-box">
+								<div class="name">To : 0x542Fdsf322839f322839f322839f322839</div>
+								<div class="num canceled"><span>200.00</span><span class="unit">USDC</span></div> <!-- // case : 취소 .canceled 추가 -->
+							</div>
+							<div class="tim-box">
+								<div class="right">
+									<div class="num-unit">
+										<span>Bal.<span class="num">2,333.00</span></span>
+										<span class="unit">USDC</span>
+									</div>
+								</div>
+								<div class="left">
+									<div class="time-detail">
+										<span class="time">20:00</span>
+										<span class="detail">canceled</span>
+									</div>
+								</div>
+							</div>
+						</a>
+						<a href="javascript: void(0)" class="list-item list-item--pay" data-type="pay" onclick="">
+							<div class="tag-box">
+								<i class="ico ico-pay"></i>
+								<span>Pay</span>
+							</div>
+							<div class="sop-box">
+								<div class="name">To : 0x542Fdsf322839f322839f322839f322839</div>
+								<div class="num"><span>+ 79.44</span><span class="unit">USDC</span></div>
+							</div>
+							<div class="tim-box">
+								<div class="right">
+									<div class="num-unit">
+										<span>Bal.<span class="num">2,999.00</span></span>
+										<span class="unit">USDC</span>
+									</div>
+								</div>
+								<div class="left">
+									<div class="time-detail">
+										<span class="time">20:00</span>
+										<span class="detail">Completed</span>
+									</div>
+								</div>
+							</div>
+						</a>
+					</div>
+				</div>
+				<div class="history-group">
+					<p class="detail-date">24.02.01</p>
+					<div class="list-item-wrap">
+						<a href="javascript: void(0)" class="list-item list-item--receive" data-type="receive" onclick=""><!-- // case: Receive -->
+							<div class="tag-box">
+								<i class="ico ico-receive"></i>
+								<span>Receive</span>
+							</div>
+							<div class="sop-box">
+								<div class="name">To : 0x542Fdsf322839f322839f322839f322839</div>
+								<div class="num"><span>+ 200.00</span><span class="unit">USDC</span></div>
+							</div>
+							<div class="tim-box">
+								<div class="right">
+									<div class="num-unit">
+										<span>Bal.<span class="num">3,106.00</span></span>
+										<span class="unit">USDC</span>
+									</div>
+								</div>
+								<div class="left">
+									<div class="time-detail">
+										<span class="time">20:00</span>
+										<span class="detail">Completed</span>
+									</div>
+								</div>
+							</div>
+						</a>
+						<a href="javascript: void(0)" class="list-item list-item--send" data-type="send" onclick="">
+							<div class="tag-box">
+								<i class="ico ico-send"></i>
+								<span>Send</span>
+							</div>
+							<div class="sop-box">
+								<div class="name">To : 0x542Fdsf322839f322839f322839f322839</div>
+								<div class="num"><span>- 200.00</span><span class="unit">USDC</span></div>
+							</div>
+							<div class="tim-box">
+								<div class="right">
+									<div class="num-unit">
+										<span>Bal.<span class="num">3,306.00</span></span>
+										<span class="unit">USDC</span>
+									</div>
+								</div>
+								<div class="left">
+									<div class="time-detail">
+										<span class="time">20:00</span>
+										<span class="detail">Pending</span>
+									</div>
+								</div>
+							</div>
+						</a>
+						<a href="javascript: void(0)" class="list-item list-item--pay" data-type="pay" onclick=""><!-- // case: Pay -->
+							<div class="tag-box">
+								<i class="ico ico-pay"></i>
+								<span>Pay</span>
+							</div>
+							<div class="sop-box">
+								<div class="name">To : 0x542Fdsf322839f322839f322839f322839</div>
+								<div class="num canceled"><span>200.00</span><span class="unit">USDC</span></div> <!-- // case : 취소 .canceled 추가 -->
+							</div>
+							<div class="tim-box">
+								<div class="right">
+									<div class="num-unit">
+										<span>Bal.<span class="num">2,333.00</span></span>
+										<span class="unit">USDC</span>
+									</div>
+								</div>
+								<div class="left">
+									<div class="time-detail">
+										<span class="time">20:00</span>
+										<span class="detail">canceled</span>
+									</div>
+								</div>
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 달력 레이어, js [s] -->
+	<script src="../../../assets/scripts/libs/moment.min.js"></script>
+	<script src="../../../assets/scripts/libs/daterangepicker.js"></script>
+	<link rel="stylesheet" href="../../../assets/styles/comm/calendar.css">
+
+	<div class="lpop--wrap2" id="periodPop"><!-- //조회기간 -->
+		<div class="lpop-inner">
+			<section class="select-lpop">
+				<header class="lpop-header bdbn">
+					<h1 class="lpop-tit">Set date range</h1>
+					<button type="button" class="btn-close">close</button>
+				</header>
+				<div class="lpop-cont">
+					<div class="lpop-period-inner">
+						<div class="search-period-wrap">
+							<div class="btn-period">
+								<button type="button" class="item" value="1">1month</button>
+								<button type="button" class="item" value="2">2month</button>
+								<button type="button" class="item" value="3">3month</button>
+								<button type="button" class="item period active">Custom</button>
+							</div>
+							<div class="period-chk-wrap active">
+								<div class="input-period">
+									<input type="text" id="calRange" title="Custom period" readonly>
+								</div>
+								<p class="notice-text">You can view up to 3 months of history within the past 12 months.</p>
+							</div>
+						</div>
+						<button type="button" class="btn--submit full" onclick="uixConfirmDurDate();">Apply</button>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+
+	<div class="lpop--wrap2" id="calendarPop"><!-- //달력 -->
+		<div class="lpop-inner">
+			<section class="select-lpop">
+				<header class="lpop-header bdbn">
+					<h1 class="lpop-tit"></h1>
+					<button type="button" class="btn-close">닫기</button>
+				</header>
+				<div class="lpop-cont">
+					<div class="lpop-calender-inner">
+						<!-- 달력 -->
+						<div class="calendar-range-crypto"></div>
+						<!--// 달력-->
+						<button type="button" class="btn--submit full btn-calendar-close">Done</button>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+	<script>
+		const uixDefaultDurDate = getNowAndMonthAgo(12);    // 최초 12개월
+		var uixDate = {
+			defaultStart: uixDefaultDurDate.monthAgo.split('T')[0],
+			defaultEnd: uixDefaultDurDate.now.split('T')[0],
+			newStart: null,
+			newEnd: null,
+		};
+
+		function uixConfirmDurDate() {
+			const startStr = uixDate.newStart ? uixDate.newStart.split('T')[0] : uixDate.defaultStart;
+			const endStr = uixDate.newEnd ? uixDate.newEnd.split('T')[0] : uixDate.defaultEnd;
+
+			const isStart = uixDate.defaultStart == startStr;
+			const isEnd = uixDate.defaultEnd == endStr;
+
+			const textStart = moment(startStr).format('MMM DD, YYYY');
+			const textEnd = moment(endStr).format('MMM DD, YYYY');
+
+			let text = '';
+			if (isStart && isEnd) {
+				text = 'Past 12 months';
+			} else {
+				text = textStart + ' - ' + textEnd;
+			}
+			$('#uixDateDurText').text(text);
+			BsCtl('#periodPop').hide();
+		};
+
+		// 탭 변경시
+		$('.btn-period button').on('click', function () {
+			$(this).addClass('active').siblings().removeClass('active');
+			if ($(this).hasClass('period')) {
+				$('.period-chk-wrap').addClass('active');
+
+				if (typeof uixDate !== 'undefined' && uixDate.newStart && uixDate.newEnd) {
+					const startStr = uixDate.newStart.split('T')[0];
+					const endStr = uixDate.newEnd.split('T')[0];
+
+					const displayStart = moment(startStr).format('MMM DD, YYYY');
+					const displayEnd = moment(endStr).format('MMM DD, YYYY');
+
+					$('#calRange').val(displayStart + ' - ' + displayEnd);
+
+					$('#calRange').data('daterangepicker').setStartDate(moment(startStr));
+					$('#calRange').data('daterangepicker').setEndDate(moment(endStr));
+				}
+			} else {
+				$('.period-chk-wrap').removeClass('active');
+				getNowAndMonthAgo($(this).val());
+			}
+		});
+
+		// 달력 설정
+		$('#calRange').daterangepicker({
+			locale: {
+				"separator": " - ",
+				"applyLabel": "Apply",
+				"format": 'MMM DD, YYYY', // 영문 포맷
+				"daysOfWeek": ["S", "M", "T", "W", "T", "F", "S"],
+				"monthNames": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+			},
+			"linkedCalendars": false,
+			"autoUpdateInput": true,
+			"showCustomRangeLabel": false,
+			"showDropdowns": false, // 공통 설정 문제로 드롭다운이 안 되므로 false 유지
+			"parentEl": ".calendar-range-crypto",
+			"startDate": moment().subtract(1, 'years'),
+			"minDate": moment().subtract(1, 'years'),
+			"maxDate": moment(),
+		});
+
+		// 달력 불필요한 요소 제거
+		$('#calendarPop .calendar-range').find('td.today').removeClass('active start-date active end-date');
+		$(document).find('.drp-calendar.right').remove();
+		$(document).find('.drp-buttons').remove();
+
+		// 직접입력 인풋 클릭시 달력 팝업 오픈
+		$('#calRange').on('click', function () {
+			BsCtl('#calendarPop').show();
+		});
+
+		// 달력팝업에서 확인버튼 클릭시 기간 팝업 오픈
+		$('.btn-calendar-close').on('click', function () {
+			BsCtl('#periodPop').show();
+		});
+
+		// 달력에서 클릭한 날짜
+		$('#calRange').on('hide.daterangepicker', function (ev, picker) {
+			if (typeof uixDate !== 'undefined') {
+				// 서버 전송 및 내부 데이터용은 YYYY-MM-DD 형식 유지
+				uixDate.newStart = picker.startDate.format('YYYY-MM-DD');
+				uixDate.newEnd = picker.endDate.format('YYYY-MM-DD');
+			}
+		});
+
+		// 개월 클릭시 날짜 계산
+		function getNowAndMonthAgo(month) {
+			const now = new Date();
+			const monthAgo = new Date(now);
+			monthAgo.setMonth(now.getMonth() - month);
+			monthAgo.setHours(0, 0, 0, 0);
+
+			const format = (date) => {
+				const yyyy = date.getFullYear();
+				const mm = String(date.getMonth() + 1).padStart(2, '0');
+				const dd = String(date.getDate()).padStart(2, '0');
+				const hh = String(date.getHours()).padStart(2, '0');
+				const mi = String(date.getMinutes()).padStart(2, '0');
+				const ss = String(date.getSeconds()).padStart(2, '0');
+				return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}`;
+			};
+
+			if (typeof uixDate !== 'undefined') {
+				uixDate.newStart = format(monthAgo);
+				uixDate.newEnd = format(now);
+			}
+
+			return {
+				monthAgo: format(monthAgo),
+				now: format(now)
+			};
+		}
+
+		let uixStartDate, uixStartEnd;  // 개발에서 조회 가능한 시작일, 종료일 값
+		function uixDisplayDate() {
+			uixStartDate = uixDate.newStart ? uixDate.newStart.split('T')[0] : uixDate.defaultStart;
+			uixStartEnd = uixDate.newEnd ? uixDate.newEnd.split('T')[0] : uixDate.defaultEnd;
+			console.log(`시작일: ${uixStartDate}, 종료일: ${uixStartEnd}`);
+		}
+		uixDisplayDate();   // 콘솔 테스트
+
+
+		// 탭 
+		const tabs = document.querySelectorAll('.tab-btn');
+		const groups = document.querySelectorAll('.history-group');
+
+		tabs.forEach(tab => {
+			tab.addEventListener('click', e => {
+				e.preventDefault();
+
+				tabs.forEach(t => t.classList.remove('on'));
+				tab.classList.add('on');
+
+				const filter = tab.dataset.filter;
+
+				groups.forEach(group => {
+					const items = group.querySelectorAll('.list-item');
+
+					let visibleCount = 0;
+
+					items.forEach(item => {
+						const show =
+							filter === 'all' ||
+							item.dataset.type === filter;
+
+						item.style.display = show ? '' : 'none';
+
+						if (show) visibleCount++;
+					});
+
+					// 해당 날짜에 보여줄 내역이 없으면 날짜 그룹 숨김
+					group.style.display = visibleCount ? '' : 'none';
+				});
+			});
+		});
+
+
+	</script>
+</body>
+</html>

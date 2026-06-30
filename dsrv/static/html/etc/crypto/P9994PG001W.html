@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>결제에 혜택을 담다, paybooc</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi">
+	<meta http-equiv="Expires" content="-1">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-Control" content="No-Cache">
+	<link rel="stylesheet" href="../../../assets/styles/etc/crypto.css">
+
+	<!---------------------------------------------------------------------- UI ----->
+	<script src="../../../assets/scripts/libs/jquery-2.2.3.min.js"></script>
+	<script src="../../../js/comm/common.js"></script>
+	<script src="../../../js/comm/app_scheme.js"></script>
+	<script src="../../../js/comm/ajax.js"></script>
+	<script src="../../../assets/scripts/comm/common.ui.js"></script>
+	<!---------------------------------------------------------------------- UI ----->
+
+	<script src="../../../assets/scripts/etc/crypto.js"></script>
+</head>
+<body class="bg--gray">
+	<header class="renew01-header">
+		<a href="javascript:void(0);" class="btn-back">Back</a>
+	</header>
+	<div class="crpt-verify">
+		<div class="step-wrap">
+			<span class="active" data-tab="0">1</span><span class="" data-tab="1">2</span><span class="" data-tab="2">3</span>
+		</div>
+
+		<div class="content-wrap">
+			<h1 class="tit-top">Verify your passport</h1>
+			<div class="form-item">
+				<h2 class="tit">Residence</h2>
+				<button class="select-country" onclick="showCountries(this);">Select your residence</button>
+			</div>
+			<div class="form-item">
+				<h2 class="tit">Document Issuing Country/Region</h2>
+				<button class="select-country" onclick="showCountries(this);">Select issuing country</button>
+			</div>
+		</div>
+
+		<div class="bottom-wrap">
+			<button class="btn--submit" disabled onclick="alert([...document.querySelectorAll('.select-country')].map(el => el.innerText))">Next</button>
+		</div>
+	</div>
+
+	<!-- 나라 검색 레이어 팝업 -->
+	<div id="search--wrap" style="display: none;">
+		<div class="head-navi">
+			<button type="button" class="hide-search" onclick="hideCountries()">Back</button>
+		</div>
+		<div id="search-bar">
+			<input id="search-input" type="text" placeholder="search" lang="en" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+			<button id="search-btn">Search</button>
+		</div>
+		<div id="sc-list-wrap"></div>
+		<div id="minimap"></div>
+	</div>
+
+	<script src="../../../assets/scripts/etc/crypto_search.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function(){
+			input.addEventListener('input', doSearch);
+			btn.addEventListener('click', doSearch);
+			input.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+			// --- init ---
+			renderFull();
+			renderMinimap();
+			uiCheckValid();
+		})
+	</script>
+</body>
+</html>

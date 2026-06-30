@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>결제에 혜택을 담다, paybooc</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi">
+	<meta http-equiv="Expires" content="-1">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-Control" content="No-Cache">
+	<link rel="stylesheet" href="../../../assets/styles/etc/crypto.css">
+
+	<!---------------------------------------------------------------------- UI ----->
+	<script src="../../../assets/scripts/libs/jquery-2.2.3.min.js"></script>
+	<script src="../../../js/comm/common.js"></script>
+	<script src="../../../js/comm/app_scheme.js"></script>
+	<script src="../../../js/comm/ajax.js"></script>
+	<script src="../../../assets/scripts/comm/common.ui.js"></script>
+	<!---------------------------------------------------------------------- UI ----->
+
+	<script src="../../../assets/scripts/etc/crypto.js"></script>
+</head>
+<body class="bg--gray">
+	<header class="renew01-header">
+		<a href="javascript:void(0);" class="btn-back">Back</a>
+	</header>
+	<div class="join-wrap">
+		<div class="body">
+			<div class="head-ready-desc">
+				<h1 class="tit">Please check if the recognized information is correct.</h1>
+			</div>
+			<div class="cont-form">
+				<div class="form-item">
+					<h2 class="tit">Passport Number</h2>
+					<div class="cont-val">
+						<input type="text" pattern="[A-Z0-9]+" title="passport number" placeholder="M1234567" maxlength="" value="M1234567" readonly />
+					</div>
+				</div>
+				<div class="form-item">
+					<h2 class="tit">Name (English)</h2>
+					<div class="cont-val">
+						<input type="text" title="Name (English)" placeholder="HONG GILSOON" maxlength="" value="HONG GILSOON" />
+					</div>
+					<ul class="list">
+						<li>Surnam e + Given name</li>
+						<li>Type in uppercase letters, without spaces or special characters.</li>
+					</ul>
+				</div>
+				<div class="form-item">
+					<h2 class="tit">Sex</h2>
+					<div class="cont-val">
+						<input type="text" title="Sex" placeholder="F" maxlength="" value="F" />
+					</div>
+				</div>
+				<div class="form-item">
+					<h2 class="tit">Date of Birth (YYMMDD)</h2>
+					<div class="cont-val">
+						<input type="text" pattern="[0-9]+" title="Date of Birth" placeholder="000000" maxlength="6" value="870201" />
+					</div>
+				</div>
+				<div class="form-item">
+					<h2 class="tit">Date of Expiry (YYMMDD)</h2>
+					<div class="cont-val">
+						<input type="text" pattern="[0-9]+" title="Date of Expiry" placeholder="000000" maxlength="6" value="200815" />
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="foot">
+			<button class="btn--submit-gray">Retake Photo</button>
+			<button class="btn--submit">Next</button>
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>결제에 혜택을 담다, paybooc</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi">
+	<meta http-equiv="Expires" content="-1">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-Control" content="No-Cache">
+	<link rel="stylesheet" href="../../../assets/styles/etc/crypto.css">
+
+	<!---------------------------------------------------------------------- UI ----->
+	<script src="../../../assets/scripts/libs/jquery-2.2.3.min.js"></script>
+	<script src="../../../js/comm/common.js"></script>
+	<script src="../../../js/comm/app_scheme.js"></script>
+	<script src="../../../js/comm/ajax.js"></script>
+	<script src="../../../assets/scripts/comm/common.ui.js"></script>
+	<!---------------------------------------------------------------------- UI ----->
+
+	<script src="../../../assets/scripts/etc/crypto.js"></script>
+</head>
+<body class="bg--gray">
+	<header class="renew01-header">
+		<a href="javascript:void(0);" class="btn-back">Back</a>
+	</header>
+	<div class="join-wrap">
+		<div class="step-wrap">
+			<span class="" data-tab="0">1</span><span class="" data-tab="1">2</span><span class="active" data-tab="2">3</span>
+		</div>
+		<div class="body">
+			<div class="head-ready-desc">
+				<h1 class="tit">Tell us about yourself</h1>
+			</div>
+			<div class="cont-form">
+				<div class="form-item">
+					<h2 class="tit">Occupation</h2>
+					<div class="cont-val">
+						<button class="select-value" onclick="BsCtl('.opt-occupation').show();">
+							<span>Select Occupation</span>
+						</button>
+					</div>
+				</div>
+				<div class="form-item">
+					<h2 class="tit">Purpose of Transaction</h2>
+					<div class="cont-val">
+						<button class="select-value" onclick="BsCtl('.opt-purpose').show();">
+							<span>Select your purpose</span>
+						</button>
+					</div>
+				</div>
+				<div class="form-item">
+					<h2 class="tit">Source of Funds</h2>
+					<div class="cont-val">
+						<button class="select-value" onclick="BsCtl('.opt-source').show();">
+							<span>Select source</span>
+						</button>
+					</div>
+				</div>
+
+				<div class="form-item">
+					<h2 class="tit">Company Name</h2>
+					<div class="cont-val">
+						<input type="text" id="inpCmpName" oninput="uiCheckFields()" placeholder="Enter your Company Name" readonly />
+					</div>
+				</div>
+				<div class="form-item">
+					<h2 class="tit">Company Address</h2>
+					<div class="cont-val">
+						<input type="text" id="inpCmpAddress" oninput="uiCheckFields()" placeholder="Enter your company address" readonly />
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="foot">
+			<button class="btn--submit" disabled>Done</button>
+		</div>
+	</div>
+
+	<!-- Occupation 선택 -->
+	<div class="lpop--wrap2 opt-occupation">
+		<div class="lpop-inner">
+			<section class="select-lpop">
+				<header class="lpop-header">
+					<button type="button" class="btn-close">닫기</button>
+				</header>
+				<div class="lpop-cont select">
+					<ul class="select-list">
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Salaried Employee</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Professional</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Public Official</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Self Employed</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Homemaker</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Student</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Casino Industry Employee</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Lending Industry Employee</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Currency Exchange Employee</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Precious Metals Dealer</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Virtual Asset Service Provider Employee</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Wholesale and Retail Employee</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Real Estate Agent</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Ecommerce Employee</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Catering and Entertainment Employee</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Construction Industry Employee</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Trading Industry Employee</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Accommodation Industry Employee</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Scrap Metal Dealer</a></li>
+					</ul>
+				</div>
+			</section>
+		</div>
+	</div>
+
+	<!-- Purpose of Transaction 선택 -->
+	<div class="lpop--wrap2 opt-purpose">
+		<div class="lpop-inner">
+			<section class="select-lpop">
+				<header class="lpop-header">
+					<button type="button" class="btn-close">닫기</button>
+				</header>
+				<div class="lpop-cont select">
+					<ul class="select-list">
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Purchase of Goods</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Fuel</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Payment for Goods</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Business Expenses</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Transportation</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Living Expenses & Allowance</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Transfers & Gifts</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Savings & Investment</a></li>
+					</ul>
+				</div>
+			</section>
+		</div>
+	</div>
+
+	<!-- Source of Funds 선택 -->
+	<div class="lpop--wrap2 opt-source">
+		<div class="lpop-inner">
+			<section class="select-lpop">
+				<header class="lpop-header">
+					<button type="button" class="btn-close">닫기</button>
+				</header>
+				<div class="lpop-cont select">
+					<ul class="select-list">
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Earned Income</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Business Income</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Real Estate Income</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Pension Income</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Financial Income</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Inheritance and Gift</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Retirement Income</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Operating Funds</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Purchase Funds</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Borrowed Funds</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Capital Increase</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Disposal of Real Estate</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Disposal of Investment Assets</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Funds</a></li>
+						<li><a href="#" class="item-inner" onclick="uiCheckSelect();">Membership Fees</a></li>
+					</ul>
+				</div>
+			</section>
+		</div>
+	</div>
+
+	<script>
+		// 셀렉트 선택 여부를 체크하고 input 활성화
+		function uiCheckSelect(){
+			requestAnimationFrame(() => {
+				const selectValues = document.querySelectorAll('.select-value');
+				const allSelect = [...selectValues].every(el => el.classList.contains('on'));
+				const companyName = document.querySelector('#inpCmpName');
+				const companyAddress = document.querySelector('#inpCmpAddress');
+				if (allSelect) {
+					companyName.readOnly = false;
+					companyAddress.readOnly = false;
+				}
+			});
+		}
+
+		// input:text 입력 체크하고 버튼 활성화
+		function uiCheckFields(){
+			const companyName = document.querySelector('#inpCmpName');
+			const companyAddress = document.querySelector('#inpCmpAddress');
+			const btnDone = document.querySelector('.btn--submit');
+			if (companyName.value.trim()!== '' && companyAddress.value.trim()!== '') {
+				btnDone.disabled = false;
+			}
+		}
+	</script>
+</body>
+</html>

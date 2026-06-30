@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Paybooc Crypto Wallet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi">
+    <meta http-equiv="Expires" content="-1">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-Control" content="No-Cache">
+    <link rel="shortcut icon" href="../../../assets/images/comm/ico-top.svg">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Paybooc">
+    <meta property="og:url" content="">
+    <meta property="og:title" content="">
+    <meta property="og:description" content="">
+    <meta property="og:image" content="../../../assets/images/etc/promo/snow/img_share_sns_1200_renew.png">
+    <link rel="stylesheet" type="text/css" href="../../../assets/styles/etc/crypto.css">
+
+    <!---------------------------------------------------------------------- UI ----->
+    <script src="../../../assets/scripts/libs/jquery-2.2.3.min.js"></script>
+    <script src="../../../js/comm/common.js"></script>
+    <script src="../../../js/comm/app_scheme.js"></script>
+    <script src="../../../js/comm/ajax.js"></script>
+    <script src="../../../assets/scripts/comm/common.ui.js"></script>
+    <!---------------------------------------------------------------------- UI ----->
+
+    <script src="../../../assets/scripts/comm/nethru_pb.js" async></script>
+    <script src="../../../assets/scripts/libs/lottie-player.js"></script>
+</head>
+
+<body>
+    <div class="crypto-wallet-wrapper">
+        <header class="renew21--header">
+            <a href="javascript:void(0)" class="btn-back" onclick="onBackHistory();">뒤로가기</a>
+            <h1 class="tit"></h1>
+        </header>
+        <div class="crypto-contents">
+            <section class="container-01">
+                <div class="video-wrap">
+                    <video src="../../../assets/images/etc/crypto/crypto_main.mp4" autoplay muted loop playsinline></video>
+                    <div class="typo-img">
+                        <img src="../../../assets/images/etc/crypto/img_typo_top.svg" alt="">
+                    </div>
+                    <div class="main-typo-img">
+                        <img src="../../../assets/images/etc/crypto/img_typo_main.svg" alt="">
+                    </div>
+                </div>
+                <div class="top-contents-wrap">
+                    <div class="img-box">
+                        <div class="bg-img">
+                            <div class="bg">
+                                <img src="../../../assets/images/etc/crypto/img_bg_phone.png" alt="">
+                            </div>
+                            <div class="ltt-in-box">
+                                <!-- <div class="lottie-wrap in"> -->
+                                <lottie-player src="../../../assets/images/etc/crypto/icon_main_flow.json" class="" loop></lottie-player>
+                                <!-- </div> -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lottie-wrap out">
+                        <lottie-player src="../../../assets/images/etc/crypto/icon_main_flow.json" class="main-lottie" loop></lottie-player>
+                    </div>
+                    <div class="txt-wrap">
+                        <p class="tit">Your Crypto,<br />Now Accepted in Korea</p>
+                        <span class="txt">Paybooc connects you directly with merchants across Korea using crypto. Simply transfer crypto from your personal wallet and pay instantly with a quick QR scan.</span>
+                    </div>
+                </div>
+            </section>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    setTimeout(function () {
+                        const l = document.querySelectorAll('lottie-player');
+                        l.forEach(i => { i.play(); });
+                    }, 1500);
+                });
+            </script>
+            <section class="contanier-02">
+                <p class="tit">Why Paybooc<br />Crypto Pay?</p>
+                <div class="exp-box num01">
+                    <span class="num">POINT1</span>
+                    <strong class="box-tit">Zero FX Fees</strong>
+                    <p class="txt">Skip the currency exchange booths.<br />Pay with your crypto directly and save on hidden foreign exchange fees.</p>
+                    <div class="img">
+                        <img src="../../../assets/images/comm/img-2d-sale.svg" alt="">
+                    </div>
+                </div>
+                <div class="exp-box num02">
+                    <span class="num">POINT2</span>
+                    <strong class="box-tit">Freedom in<br />Online Transactions</strong>
+                    <p class="txt">Order K-food delivery or shop on local apps without needing a Korean credit card</p>
+                    <div class="img">
+                        <img src="../../../assets/images/comm/img-2d-smartphone.svg" alt="">
+                    </div>
+                </div>
+                <div class="exp-box num03">
+                    <span class="num">POINT3</span>
+                    <strong class="box-tit">Uncompromised<br />Securitys</strong>
+                    <p class="txt">As a non-custodial wallet,<br />Paybooc never stores your private keys<br />or controls your crypto.</p>
+                    <div class="img">
+                        <img src="../../../assets/images/comm/img-2d-shoppingbag.svg" alt="">
+                    </div>
+                </div>
+            </section>
+            <section class="contanier-03">
+                <p class="tit">How to use?</p>
+                <div class="use-exp-wrap">
+                    <div class="exp-box">
+                        <p class="sub-tit">Create your crypto wallet</p>
+                        <span class="sub-txt">Send crypto from your personal crypto wallet to your new Paybooc Crypto Wallet address.</span>
+                        <div class="exp-img">
+                            <img src="../../../assets/images/etc/crypto/img_main_exp_01.png" alt="">
+                        </div>
+                    </div>
+                    <div class="exp-box">
+                        <p class="sub-tit">Transfer your crypto</p>
+                        <span class="sub-txt">Send crypto from your personal crypto wallet to your new Paybooc Crypto Wallet address.</span>
+                        <div class="exp-img">
+                            <img src="../../../assets/images/etc/crypto/img_main_exp_02.png" alt="">
+                        </div>
+                    </div>
+                    <div class="exp-box">
+                        <p class="sub-tit">QR Scan & Pay</p>
+                        <span class="sub-txt">Send crypto from your personal crypto wallet to your new Paybooc Crypto Wallet address.</span>
+                        <div class="exp-img">
+                            <img src="../../../assets/images/etc/crypto/img_main_exp_03.png" alt="">
+                        </div>
+                    </div>
+                    <div class="exp-box done">
+                        <p class="sub-tit">Done!</p>
+                        <span class="sub-txt">Pay freely across Korea.</span>
+                    </div>
+                </div>
+                </sectionvf>
+
+                <div class="bottom-fixed-wrap">
+                    <button class="go-service-btn" onclick="BsCtl('.crypto-create-agree-ly').show();">Create Crypto Wallet</button>
+                </div>
+        </div>
+    </div>
+
+    <!-- 서비스 안내_약관동의 레이어 [s] -->
+    <div class="lpop--wrap2 crypto-create-agree-ly wide-type" id="crypto-create-agree-ly">
+        <div class="lpop-inner">
+            <section class="select-lpop">
+                <header class="lpop-header">
+                    <h1 class="lpop-tit"></h1>
+                    <button type="button" class="btn-close">닫기</button>
+                </header>
+                <div class="lpop-cont">
+                    <div class="detaile-tit">
+                        <h3 class="title">Welcome to<br />Paybooc Crypto Pay</h3>
+                    </div>
+                    <div class="detail-cont">
+                        <p class="tit-txt">Your wallet balance will be used automatically when you pay.</p>
+                        <ul class="terms-list">
+                            <li>
+                                <button class="terms-btn">Terms of Services</button>
+                            </li>
+                            <li>
+                                <button class="terms-btn">Privacy Policy</button>
+                            </li>
+                            <li>
+                                <button class="terms-btn">E-Financial Transaction Terms</button>
+                            </li>
+                            <li>
+                                <button class="terms-btn">Terms of Payment and Withdrawal</button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="detail-cont">
+                        <p class="cont-tit">Withdrawal Limits</p>
+                        <ul class="info-list">
+                            <li>
+                                <span class="tt">Per Transaction</span>
+                                <span class="rt">1,000,000 KRW</span>
+                            </li>
+                            <li>
+                                <span class="tt">Daily Limit</span>
+                                <span class="rt">Monthly Limit</span>
+                            </li>
+                            <li>
+                                <span class="tt">Per Transactiowsn</span>
+                                <span class="rt">1,000,000 KRW</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="detail-cont">
+                        <p class="cont-tit">Billing Networks Details</p>
+                        <ul class="info-list">
+                            <li>
+                                <span class="tt">Token</span>
+                                <span class="rt">USDC1</span>
+                            </li>
+                            <li>
+                                <span class="tt">Network</span>
+                                <span class="rt">Base (mainnet)</span>
+                            </li>
+                            <li>
+                                <span class="tt">Spender</span>
+                                <span class="rt">BC주소</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="lpop-foot">
+                    <a href="javascript:void(0);" class="btn-confirm" onclick="">Accept all and continue</a>
+                </div>
+            </section>
+        </div>
+    </div>
+    <!-- 서비스 안내_약관동의 레이어 [e] -->
+
+
+    <script>
+
+        $(function () {
+
+
+
+        });
+
+
+    </script>
+</body>
+
+</html>
