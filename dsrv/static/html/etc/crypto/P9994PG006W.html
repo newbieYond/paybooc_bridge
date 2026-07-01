@@ -189,7 +189,7 @@
 					var cb = 128 - 0.168736 * r - 0.331264 * g + 0.5 * b;
 					var cr = 128 + 0.5 * r - 0.418688 * g - 0.081312 * b;
 					// 약간 넓힌 피부 범위 (더 쉽게 인식)
-					if (cb >= 70 && cb <= 140 && cr >= 130 && cr <= 180) {
+					if (cb >= 60 && cb <= 150 && cr >= 125 && cr <= 185) {
 						skin++; sumX += x;
 					}
 				}
@@ -217,9 +217,9 @@
 		function handleLvStage(ratio, centroidX) {
 			// 정면은 얼굴 정면이라 피부면적이 크고, 좌/우 턴 단계는 면적이 줄어듦.
 			// → 턴 단계에서 presence 게이트를 낮춰 "턴 동작이 presence를 떨어뜨려 막는" 문제 방지.
-			var FACE_MIN = (lvState.stage === 0) ? 0.10 : 0.05;
-			var MOVE_TH = 0.06;    // 횡이동 임계 (완화)
-			var HOLD_NEED = 2;     // 연속 충족 프레임 (완화: 약 0.24초)
+			var FACE_MIN = (lvState.stage === 0) ? 0.08 : 0.03;
+			var MOVE_TH = 0.035;   // 횡이동 임계 (완화)
+			var HOLD_NEED = 1;     // 연속 충족 프레임 (완화: 약 0.12초)
 
 			if (ratio < FACE_MIN) {
 				lvState.holdCount = 0;
