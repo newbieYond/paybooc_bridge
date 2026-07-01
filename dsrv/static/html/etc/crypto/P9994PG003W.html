@@ -46,8 +46,7 @@
 			<div class="camera-area">
 				<video id="passportScanVideo" class="live-img" autoplay playsinline muted style="
 					width:100%; height:100%;
-					object-fit:cover;
-					background: url(../../../assets/images/etc/crypto/img_bg_phone.png) no-repeat center/100%;"></video>
+					object-fit:cover;"></video>
 				<div class="spot" data-stat="not"></div><!-- //카메라 인식 영역 -->
 				<!-- .spot 의 data-stat case: (라인 컬러 달라집니다)
 					1. 감지불가: not
@@ -71,7 +70,7 @@
 
 	<!-- 인식되면 .scanning-process 보이도록 변경 해 주세요 -->
 	<div class="scanning-process" style="display: none;">
-		<lottie-player src="../../../assets/images/etc/crypto/process.json" background="transaprent" loop speed="1" autoplay></lottie-player>
+		<lottie-player src="../../../assets/images/etc/crypto/process.json" background="transparent" loop speed="1" autoplay></lottie-player>
 		<p class="txt">Scanning passport</p>
 	</div>
 
@@ -86,7 +85,7 @@
 		// 운영 적용 시 반드시 false로 변경해야 한다.
 		const passportScanConfig = {
 			allowRelaxedMrz: true,
-			requiredMatchingReads: 2
+			requiredMatchingReads: 1
 		};
 		const passportScanState = {
 			analyzeTimer: null,
@@ -358,7 +357,6 @@
 			}
 
 			passportScanState.ocrRunning = true;
-			showPassportScanningProcess();
 
 			preparePassportOcr().then(function (worker) {
 				return worker.recognize(mrzCanvas);
@@ -590,10 +588,11 @@
 			const surname = normalizeMrzLetters(nameParts.shift() || '').replace(/</g, ' ').trim();
 			const givenNames = normalizeMrzLetters(nameParts.join(' ')).replace(/</g, ' ').replace(/\s+/g, ' ').trim();
 			const name = (surname + ' ' + givenNames).trim();
+			const surnameLetterCount = surname.replace(/[^A-Z]/g, '').length;
 
 			// PoC 완화 판정: 첫 번째 MRZ 줄의 발급국 및 성명 영역이 충분히 읽히면 성공 후보로 본다.
 			if (!/^[A-Z]{3}$/.test(issuer)
-				|| !/^[A-Z]{2,}$/.test(surname)) {
+				|| surnameLetterCount < 2) {
 				return null;
 			}
 

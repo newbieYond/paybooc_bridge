@@ -236,6 +236,33 @@ body.bg--gray .crpt-verify .bottom-wrap::before {background: var(--button-second
 .lpop--wrap2.wide-type .detail-cont .info-list .tt {font-size:16px;line-height:24px;color:var(--font-neutral-6);}
 .lpop--wrap2.wide-type .detail-cont .info-list .rt {font-size:16px;line-height:24px;color:var(--font-neutral- 2);}
 
+/* 결제서비스 약관 상세 */
+.crypto-terms-detail-ly .lpop-inner {height:min(86vh, 720px); max-height:calc(100% - 28px);}
+.crypto-terms-detail-ly .crypto-terms-sheet {display:flex; flex-direction:column; width:100%; height:100%; overflow:hidden; border-radius:24px 24px 0 0; background:var(--background-color-1); box-shadow:0 -10px 32px rgba(25, 27, 30, .12);}
+.crypto-terms-detail-ly .lpop-header {position:relative; min-height:0; padding:32px 64px 18px 24px; border-bottom:1px solid var(--line); background:var(--background-color-1);}
+.crypto-terms-detail-ly .terms-sheet-handle {position:absolute; top:8px; left:50%; width:36px; height:4px; border-radius:4px; background:#D9DDE5; transform:translateX(-50%);}
+.crypto-terms-detail-ly .terms-title-group {min-width:0;}
+.crypto-terms-detail-ly .terms-eyebrow {margin-bottom:3px; color:#526FD6; font-size:12px; line-height:18px; font-weight:700; letter-spacing:.02em;}
+.crypto-terms-detail-ly .lpop-header .lpop-tit {display:-webkit-box; padding:0; overflow:hidden; color:var(--font-neutral-1); font-size:20px; line-height:28px; font-weight:700; white-space:normal; -webkit-box-orient:vertical; -webkit-line-clamp:2;}
+.crypto-terms-detail-ly .lpop-header .btn-close {top:22px; right:12px;}
+.crypto-terms-detail-ly .lpop-cont {min-height:0; padding:0; overflow-y:auto; border-radius:0; background:var(--background-color-1); overscroll-behavior:contain;}
+.crypto-terms-detail-ly .crypto-terms-body {padding:20px 24px 36px; color:var(--font-neutral-4);}
+.crypto-terms-detail-ly .terms-summary {display:flex; gap:12px; padding:16px; border:1px solid #E3E9FA; border-radius:16px; background:#F5F7FF;}
+.crypto-terms-detail-ly .terms-summary-icon {display:flex; align-items:center; justify-content:center; flex:0 0 32px; width:32px; height:32px; border-radius:10px; background:#E3E9FF; color:#526FD6; font-size:16px; font-weight:800;}
+.crypto-terms-detail-ly .terms-summary-icon::before {content:'✓';}
+.crypto-terms-detail-ly .terms-summary-content {min-width:0;}
+.crypto-terms-detail-ly .terms-summary-label {margin-bottom:4px; color:var(--font-neutral-2); font-size:14px; line-height:20px; font-weight:700;}
+.crypto-terms-detail-ly .terms-intro {color:var(--font-neutral-5); font-size:14px; line-height:21px;}
+.crypto-terms-detail-ly .terms-meta {display:flex; flex-wrap:wrap; gap:6px 14px; padding:12px 4px 18px; border-bottom:1px solid var(--line);}
+.crypto-terms-detail-ly .terms-meta span {position:relative; color:var(--font-neutral-6); font-size:12px; line-height:18px;}
+.crypto-terms-detail-ly .terms-meta span + span::before {content:''; position:absolute; top:6px; left:-8px; width:2px; height:2px; border-radius:50%; background:#B2B7C2;}
+.crypto-terms-detail-ly .terms-article-section {padding:24px 4px 0;}
+.crypto-terms-detail-ly .terms-article-section + .terms-article-section {margin-top:22px; border-top:1px solid #EEF0F4;}
+.crypto-terms-detail-ly .crypto-terms-body h2 {margin-bottom:8px; color:var(--font-neutral-2); font-size:16px; line-height:23px; font-weight:700;}
+.crypto-terms-detail-ly .crypto-terms-body section p {color:var(--font-neutral-5); font-size:14px; line-height:22px;}
+.crypto-terms-detail-ly .lpop-foot {flex-shrink:0; padding:12px 20px calc(20px + env(safe-area-inset-bottom)); border-top:1px solid #EEF0F4; background:var(--background-color-1);}
+.crypto-terms-detail-ly .lpop-foot::before {content:none;}
+
 
 /* 이용내역 */
 .crypto-history-body {padding-bottom: 82px;}
@@ -276,6 +303,10 @@ body.bg--gray .crpt-verify .bottom-wrap::before {background: var(--button-second
 .history-detail .list-item .tim-box .num-unit span {display: inline-block; vertical-align: top; color: var(--font-neutral-7); font-size: 15px; line-height: 22px;}
 .history-detail .list-item .tim-box .num-unit .num,
 .history-detail .list-item .tim-box .num-unit .unit {margin-left: 2px;}
+.history-detail .history-empty {padding:72px 20px 56px; text-align:center;}
+.history-detail .history-empty::before {content:''; display:block; width:72px; height:72px; margin:0 auto 16px; background:url(../../../assets/images/comm/img-2d-emptytime.png) no-repeat center/100%;}
+.history-detail .history-empty strong {display:block; color:var(--font-neutral-3); font-size:17px; line-height:24px;}
+.history-detail .history-empty p {margin-top:6px; color:var(--font-neutral-7); font-size:14px; line-height:20px;}
 
 /* 이용내역 상세보기 레이어 */
 

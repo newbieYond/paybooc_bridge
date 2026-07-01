@@ -156,16 +156,16 @@
                         <p class="tit-txt">Your wallet balance will be used automatically when you pay.</p>
                         <ul class="terms-list">
                             <li>
-                                <button class="terms-btn">Terms of Services</button>
+                                <button type="button" class="terms-btn" data-term="service">Terms of Services</button>
                             </li>
                             <li>
-                                <button class="terms-btn">Privacy Policy</button>
+                                <button type="button" class="terms-btn" data-term="privacy">Privacy Policy</button>
                             </li>
                             <li>
-                                <button class="terms-btn">E-Financial Transaction Terms</button>
+                                <button type="button" class="terms-btn" data-term="e-finance">E-Financial Transaction Terms</button>
                             </li>
                             <li>
-                                <button class="terms-btn">Terms of Payment and Withdrawal</button>
+                                <button type="button" class="terms-btn" data-term="payment">Terms of Payment and Withdrawal</button>
                             </li>
                         </ul>
                     </div>
@@ -212,16 +212,150 @@
     </div>
     <!-- 서비스 안내_약관동의 레이어 [e] -->
 
+    <!-- 결제서비스 약관 상세 레이어 [s] -->
+    <div class="lpop--wrap2 crypto-terms-detail-ly wide-type" id="crypto-terms-detail-ly">
+        <div class="lpop-inner">
+            <section class="select-lpop crypto-terms-sheet">
+                <header class="lpop-header">
+                    <span class="terms-sheet-handle" aria-hidden="true"></span>
+                    <div class="terms-title-group">
+                        <p class="terms-eyebrow">Paybooc Crypto Pay</p>
+                        <h1 class="lpop-tit" id="crypto-terms-title">Terms</h1>
+                    </div>
+                    <button type="button" class="btn-close">Close</button>
+                </header>
+                <div class="lpop-cont">
+                    <article class="crypto-terms-body" id="crypto-terms-body"></article>
+                </div>
+                <div class="lpop-foot">
+                    <button type="button" class="btn-confirm terms-detail-close">Back to agreement</button>
+                </div>
+            </section>
+        </div>
+    </div>
+    <!-- 결제서비스 약관 상세 레이어 [e] -->
+
 
     <script>
-
         $(function () {
+            const cryptoTerms = {
+                service: {
+                    title: 'Terms of Services',
+                    intro: 'These Terms govern your use of Paybooc Crypto Pay for payments made to participating merchants in Korea.',
+                    sections: [
+                        ['1. Service Eligibility', 'You must be legally capable of entering into transactions and provide accurate information when creating and using your wallet. You are responsible for protecting access to your device and wallet.'],
+                        ['2. Payment Service', 'When you approve a payment, you authorize the service to submit the transaction through the selected blockchain network and provide settlement information to the merchant. A submitted blockchain transaction may not be reversible.'],
+                        ['3. Fees and Exchange Rates', 'Network fees, service fees, and the applicable crypto-to-KRW exchange rate will be displayed before confirmation. The final amount may vary until the transaction is submitted.'],
+                        ['4. Acceptable Use', 'You may not use the service for unlawful purchases, fraud, money laundering, sanctions evasion, or transactions that infringe the rights of others.'],
+                        ['5. Service Availability', 'The service may be delayed or suspended for maintenance, security reviews, network congestion, legal requirements, or circumstances beyond our reasonable control.']
+                    ]
+                },
+                privacy: {
+                    title: 'Privacy Policy',
+                    intro: 'This Policy explains how information is handled when you use Paybooc Crypto Pay.',
+                    sections: [
+                        ['1. Information We Collect', 'We may collect identification details, contact information, device and access logs, wallet addresses, transaction records, and customer support communications. Private keys and wallet recovery phrases are not collected.'],
+                        ['2. How We Use Information', 'Information is used to provide payments, verify users, prevent fraud, comply with financial regulations, resolve disputes, and improve service reliability.'],
+                        ['3. Sharing and Processing', 'Information may be shared with payment partners, merchants, identity-verification providers, infrastructure vendors, and public authorities when required to provide the service or comply with law.'],
+                        ['4. Retention and Security', 'Records are retained only for the period required by service, dispute, and legal obligations. Administrative, technical, and physical safeguards are used to protect retained information.'],
+                        ['5. Your Choices', 'You may request access, correction, or deletion where permitted by applicable law. Certain financial transaction records must be retained even after service termination.']
+                    ]
+                },
+                'e-finance': {
+                    title: 'E-Financial Transaction Terms',
+                    intro: 'These Terms apply to electronic instructions and records created through Paybooc Crypto Pay.',
+                    sections: [
+                        ['1. Electronic Instructions', 'A payment or withdrawal confirmed through your authenticated device is treated as your electronic instruction. Review the recipient, network, asset, and amount before confirming.'],
+                        ['2. Authentication', 'Device authentication, passcodes, biometrics, and other security methods may be used to verify instructions. You must notify us promptly if unauthorized access is suspected.'],
+                        ['3. Transaction Records', 'Electronic records may include timestamps, wallet addresses, transaction hashes, amounts, fees, exchange rates, and processing status. Records will be made available as required by applicable law.'],
+                        ['4. Error Correction', 'If you believe a record is incorrect, contact customer support with the transaction details. We will investigate controllable service errors, but cannot alter a transaction already finalized on a blockchain.'],
+                        ['5. Liability', 'Liability for unauthorized or incorrectly processed transactions will be determined under applicable electronic financial transaction laws and these Terms.']
+                    ]
+                },
+                payment: {
+                    title: 'Terms of Payment and Withdrawal',
+                    intro: 'These Terms describe how crypto payments, refunds, and withdrawals are processed.',
+                    sections: [
+                        ['1. Payment Authorization', 'Your wallet balance is used only after you review and confirm the payment. The merchant receives confirmation after the required network and service checks are completed.'],
+                        ['2. Withdrawal Requests', 'Withdrawals are sent to the wallet address and network you select. You are responsible for verifying compatibility and accuracy before submission.'],
+                        ['3. Limits and Fees', 'Per-transaction, daily, or monthly limits may apply. Network fees and service fees are shown before confirmation and may change based on network conditions.'],
+                        ['4. Processing Times', 'Payments and withdrawals may remain pending while blockchain confirmations, security screening, or partner processing is completed. Estimated times are not guaranteed.'],
+                        ['5. Refunds and Cancellations', 'Completed blockchain transfers generally cannot be canceled. Merchant refunds are subject to the merchant policy and may be returned in crypto or an equivalent amount calculated at the applicable refund rate.']
+                    ]
+                }
+            };
 
+            function renderCryptoTerms(termKey) {
+                const term = cryptoTerms[termKey];
+                const body = document.getElementById('crypto-terms-body');
 
+                if (!term || !body) {
+                    return;
+                }
 
+                document.getElementById('crypto-terms-title').textContent = term.title;
+                body.replaceChildren();
+
+                const summary = document.createElement('div');
+                const summaryIcon = document.createElement('span');
+                const summaryContent = document.createElement('div');
+                const summaryLabel = document.createElement('p');
+                const intro = document.createElement('p');
+                const meta = document.createElement('div');
+
+                summary.className = 'terms-summary';
+                summaryIcon.className = 'terms-summary-icon';
+                summaryIcon.setAttribute('aria-hidden', 'true');
+                summaryContent.className = 'terms-summary-content';
+                summaryLabel.className = 'terms-summary-label';
+                summaryLabel.textContent = 'Please review before continuing';
+                intro.className = 'terms-intro';
+                intro.textContent = term.intro;
+                meta.className = 'terms-meta';
+
+                ['Effective July 1, 2026', 'Version 1.0'].forEach(function (text) {
+                    const item = document.createElement('span');
+                    item.textContent = text;
+                    meta.appendChild(item);
+                });
+
+                summaryContent.appendChild(summaryLabel);
+                summaryContent.appendChild(intro);
+                summary.appendChild(summaryIcon);
+                summary.appendChild(summaryContent);
+                body.appendChild(summary);
+                body.appendChild(meta);
+
+                term.sections.forEach(function (section) {
+                    const sectionElement = document.createElement('section');
+                    const heading = document.createElement('h2');
+                    const paragraph = document.createElement('p');
+
+                    sectionElement.className = 'terms-article-section';
+                    heading.textContent = section[0];
+                    paragraph.textContent = section[1];
+                    sectionElement.appendChild(heading);
+                    sectionElement.appendChild(paragraph);
+                    body.appendChild(sectionElement);
+                });
+            }
+
+            document.querySelectorAll('.terms-btn[data-term]').forEach(function (button) {
+                BsCtl('.crypto-terms-detail-ly', {
+                    callBtn: button,
+                    loadAfter: function () {
+                        renderCryptoTerms(button.dataset.term);
+                    },
+                    closeCallback: function () {
+                        $('body').addClass('stop-scroll');
+                    }
+                });
+            });
+
+            $('.terms-detail-close').on('click', function () {
+                $('.crypto-terms-detail-ly .lpop-header .btn-close').trigger('click');
+            });
         });
-
-
     </script>
 </body>
 
