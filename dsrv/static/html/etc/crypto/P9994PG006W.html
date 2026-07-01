@@ -78,23 +78,23 @@
 		</div>
 	</div>
 
-	<!-- 분석용 캔버스 (비표시) -->
-	<canvas id="lvCanvas" style="display:none;"></canvas>
 	<!-- 온디바이스 디버그 readout -->
 	<div class="lv-debug" id="lvDebug"></div>
 
-	<script>
-		/* ===== Liveness 얼굴 인증 (PoC, 무의존) =====
-		 * dsrv-liveness.html 의 휴리스틱을 개선해 이식.
-		 * 핵심 개선:
-		 *  1) 표시영역=분석영역 정렬: video를 object-fit:cover 로 원을 꽉 채우고,
-		 *     캔버스도 동일하게 "원에 매핑되는 중앙 정사각형"만 잘라 분석 → 검은 여백 오염 제거.
-		 *  2) 거울 방향 보정: 화면은 scaleX(-1) 거울, drawImage는 원본을 샘플하므로
-		 *     캔버스도 좌우 반전해 샘플 → "화면에서 보이는 방향 = 지시 방향" 일치.
-		 *  3) 임계값 완화 + 평활화(EMA): 더 쉽게, 덜 떨리게 인증.
-		 *  4) 단계 단축: 정면 → 좌 → 우 (1턴은 anti-spoof 최소 보장).
-		 * ⚠️ 피부색(YCbCr) 휴리스틱이라 조명/피부톤/피부색 배경에 영향받음. PoC 수준.
+	<script type="module">
+		/* ===== Liveness 얼굴 인증 (PoC) =====
+		 * MediaPipe FaceLandmarker(@mediapipe/tasks-vision, CDN)로 실제 head pose(yaw)를 계산해
+		 * 정면 → 좌 → 우 회전을 판정한다.
+		 * 이전 버전(피부색 YCbCr centroid 휴리스틱)은 얼굴이 화면을 꽉 채운 상태에서 "회전"해도
+		 * 피부 블롭의 중심(centroid)이 거의 이동하지 않아(관측값: front/left/right cx 모두 0.50~0.51,
+		 * 임계값 0.035 미만) 좌우 회전을 구분하지 못하는 근본적 한계가 있었다.
+		 * facialTransformationMatrix에서 yaw(좌우 회전각)를 직접 추출하면 이 문제가 없다.
 		 */
+		import {
+			FilesetResolver,
+			FaceLandmarker
+		} from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
+
 		var LV_GUIDE = {
 			0: '../../../assets/images/etc/crypto/face-guide-front.png',
 			1: '../../../assets/images/etc/crypto/face-guide-left.png',
@@ -102,29 +102,49 @@
 		};
 		var lvState = null;
 		var LV_DEBUG = /[?&]debug=1/.test(location.search);
+		var faceLandmarker = null;
 
 		function lvInitState() {
 			return {
 				stage: 0,          // 0=정면, 1=좌, 2=우
-				baseX: null,       // 정면에서 잡은 기준 centroid X (0~1)
+				baseYaw: null,     // 정면에서 잡은 기준 yaw(deg)
 				holdCount: 0,      // 조건 연속 충족 프레임 수
-				emaRatio: 0,       // 피부비율 평활화
-				emaX: 0.5,         // centroid 평활화
+				emaYaw: null,      // yaw 평활화
 				finished: false,
-				timer: null
+				rafId: null
 			};
 		}
 
-		function startLiveness() {
+		async function startLiveness() {
 			lvState = lvInitState();
 			if (LV_DEBUG) document.getElementById('lvDebug').classList.add('on');
 			lvSetGuide(0);
-			lvSetText('Position your face<br>in the circle');
+			lvSetText('Loading face model...');
 
 			if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
 				lvSetText('Camera is not supported<br>on this device');
 				return;
 			}
+
+			try {
+				var vision = await FilesetResolver.forVisionTasks(
+					'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm'
+				);
+				faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
+					baseOptions: {
+						modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
+						delegate: 'GPU'
+					},
+					outputFacialTransformationMatrixes: true,
+					runningMode: 'VIDEO',
+					numFaces: 1
+				});
+			} catch (err) {
+				lvSetText('Failed to load<br>face detection model');
+				return;
+			}
+
+			lvSetText('Position your face<br>in the circle');
 			navigator.mediaDevices.getUserMedia({
 				video: { facingMode: { ideal: 'user' }, width: { ideal: 720 }, height: { ideal: 1280 } },
 				audio: false
@@ -132,7 +152,7 @@
 				var v = document.getElementById('lvVideo');
 				v.srcObject = stream;
 				v.play();
-				lvState.timer = setInterval(analyzeLvFrame, 120);
+				lvState.rafId = requestAnimationFrame(analyzeLvFrame);
 			}).catch(function (err) {
 				lvSetText('Camera is unavailable<br>(' + (err && err.name || 'error') + ')');
 			});
@@ -152,103 +172,79 @@
 			}
 		}
 
-		// 프레임 분석: 원에 매핑되는 중앙 정사각형만 좌우반전 샘플 → 피부비율 + centroidX
-		function analyzeLvFrame() {
+		// facialTransformationMatrix(4x4, column-major) → yaw(deg) 추출
+		// 화면은 scaleX(-1) 거울이므로, 화면상 방향과 맞추기 위해 부호를 반전한다.
+		function matrixToYawDeg(m) {
+			// row-major 회전요소: m[0]=R00, m[2]=R02(=-sin(yaw)), m[10]=R22
+			var yawRad = Math.atan2(-m[2], m[10]);
+			return -(yawRad * 180 / Math.PI); // 거울 보정을 위한 부호 반전
+		}
+
+		function analyzeLvFrame(now) {
 			var v = document.getElementById('lvVideo');
-			if (lvState.finished || !v.videoWidth) return;
-			var canvas = document.getElementById('lvCanvas');
-			var ctx = canvas.getContext('2d');
-			var W = 96, H = 96;
-			canvas.width = W; canvas.height = H;
-
-			// .spot 은 정사각형 원형 마스크 + video는 cover.
-			// cover 기준 화면에 실제 보이는 정사각형(짧은 변)을 그대로 잘라 분석 → 표시=분석 정렬.
-			var vw = v.videoWidth, vh = v.videoHeight;
-			var side = Math.min(vw, vh);
-			var sx = (vw - side) / 2, sy = (vh - side) / 2;
-
-			// 화면 거울(scaleX(-1))과 일치시키기 위해 캔버스도 좌우 반전 샘플
-			ctx.save();
-			ctx.translate(W, 0);
-			ctx.scale(-1, 1);
-			ctx.drawImage(v, sx, sy, side, side, 0, 0, W, H);
-			ctx.restore();
-
-			var img = ctx.getImageData(0, 0, W, H).data;
-
-			// 중앙 원형 가중: 원 밖(코너) 픽셀은 제외해 배경 오염 최소화
-			var cxh = W / 2, cyh = H / 2, rad = W / 2;
-			var skin = 0, total = 0, sumX = 0;
-			for (var y = 0; y < H; y++) {
-				for (var x = 0; x < W; x++) {
-					var dx = x - cxh, dy = y - cyh;
-					if (dx * dx + dy * dy > rad * rad) continue; // 원 밖 무시
-					total++;
-					var i = (y * W + x) * 4;
-					var r = img[i], g = img[i + 1], b = img[i + 2];
-					var cb = 128 - 0.168736 * r - 0.331264 * g + 0.5 * b;
-					var cr = 128 + 0.5 * r - 0.418688 * g - 0.081312 * b;
-					// 약간 넓힌 피부 범위 (더 쉽게 인식)
-					if (cb >= 60 && cb <= 150 && cr >= 125 && cr <= 185) {
-						skin++; sumX += x;
-					}
-				}
+			if (!lvState || lvState.finished) return;
+			if (!v.videoWidth || !faceLandmarker) {
+				lvState.rafId = requestAnimationFrame(analyzeLvFrame);
+				return;
 			}
-			var ratio = total > 0 ? skin / total : 0;
-			var centroidX = skin > 0 ? (sumX / skin) / W : 0.5;
 
-			// 평활화(EMA)로 떨림 완화
-			lvState.emaRatio = lvState.emaRatio * 0.5 + ratio * 0.5;
-			lvState.emaX = lvState.emaX * 0.3 + centroidX * 0.7;
+			var result = faceLandmarker.detectForVideo(v, now);
+			var hasFace = result.faceLandmarks && result.faceLandmarks.length > 0
+				&& result.facialTransformationMatrixes && result.facialTransformationMatrixes.length > 0;
+
+			if (!hasFace) {
+				lvState.holdCount = 0;
+				if (lvState.stage === 0) lvSetText('Position your face<br>in the circle');
+				if (LV_DEBUG) {
+					document.getElementById('lvDebug').textContent =
+						'stage : ' + lvState.stage + '\nface  : not detected';
+				}
+				lvState.rafId = requestAnimationFrame(analyzeLvFrame);
+				return;
+			}
+
+			var yaw = matrixToYawDeg(result.facialTransformationMatrixes[0].data);
+			lvState.emaYaw = (lvState.emaYaw == null) ? yaw : (lvState.emaYaw * 0.4 + yaw * 0.6);
 
 			if (LV_DEBUG) {
 				document.getElementById('lvDebug').textContent =
 					'stage : ' + lvState.stage + '\n' +
-					'ratio : ' + lvState.emaRatio.toFixed(3) + '\n' +
-					'cx    : ' + lvState.emaX.toFixed(3) + '\n' +
-					'baseX : ' + (lvState.baseX == null ? '-' : lvState.baseX.toFixed(3)) + '\n' +
+					'yaw   : ' + lvState.emaYaw.toFixed(1) + 'deg\n' +
+					'base  : ' + (lvState.baseYaw == null ? '-' : lvState.baseYaw.toFixed(1) + 'deg') + '\n' +
 					'hold  : ' + lvState.holdCount;
 			}
 
-			handleLvStage(lvState.emaRatio, lvState.emaX);
+			handleLvStage(lvState.emaYaw);
+			lvState.rafId = requestAnimationFrame(analyzeLvFrame);
 		}
 
-		// 스테이지 게이트: 정면 → 좌 → 우 (완화된 임계값)
-		function handleLvStage(ratio, centroidX) {
-			// 정면은 얼굴 정면이라 피부면적이 크고, 좌/우 턴 단계는 면적이 줄어듦.
-			// → 턴 단계에서 presence 게이트를 낮춰 "턴 동작이 presence를 떨어뜨려 막는" 문제 방지.
-			var FACE_MIN = (lvState.stage === 0) ? 0.08 : 0.03;
-			var MOVE_TH = 0.035;   // 횡이동 임계 (완화)
-			var HOLD_NEED = 1;     // 연속 충족 프레임 (완화: 약 0.12초)
-
-			if (ratio < FACE_MIN) {
-				lvState.holdCount = 0;
-				if (lvState.stage === 0) lvSetText('Position your face<br>in the circle');
-				return;
-			}
+		// 스테이지 게이트: 정면 → 좌 → 우
+		function handleLvStage(yaw) {
+			var FRONT_TH = 10;   // 정면 판정: |yaw| < 10deg
+			var TURN_TH = 15;    // 좌/우 판정: 기준각 대비 15deg 이상 회전
+			var HOLD_NEED = 3;   // 연속 충족 프레임 수(떨림 방지)
 
 			if (lvState.stage === 0) {
 				lvSetText('Position your face<br>in the circle');
-				// 정면: centroid가 중앙 부근(0.28~0.72)
-				if (centroidX > 0.28 && centroidX < 0.72) {
+				if (Math.abs(yaw) < FRONT_TH) {
 					lvState.holdCount++;
 					if (lvState.holdCount >= HOLD_NEED) {
-						lvState.baseX = centroidX;
+						lvState.baseYaw = yaw;
 						lvAdvanceStage();
 					}
 				} else { lvState.holdCount = 0; }
 
 			} else if (lvState.stage === 1) {
 				lvSetText('Turn your head<br>to the left');
-				// 화면=거울=캔버스 반전 → 화면상 왼쪽 = centroid 감소
-				if (centroidX < lvState.baseX - MOVE_TH) {
+				// 화면=거울 보정 후: 왼쪽으로 돌리면 yaw가 음의 방향으로 커짐
+				if (yaw < lvState.baseYaw - TURN_TH) {
 					lvState.holdCount++;
 					if (lvState.holdCount >= HOLD_NEED) lvAdvanceStage();
 				} else { lvState.holdCount = 0; }
 
 			} else if (lvState.stage === 2) {
 				lvSetText('Turn your head<br>to the right');
-				if (centroidX > lvState.baseX + MOVE_TH) {
+				if (yaw > lvState.baseYaw + TURN_TH) {
 					lvState.holdCount++;
 					if (lvState.holdCount >= HOLD_NEED) lvAdvanceStage();
 				} else { lvState.holdCount = 0; }
@@ -273,7 +269,7 @@
 		function completeLiveness() {
 			if (lvState.finished) return;
 			lvState.finished = true;
-			clearInterval(lvState.timer);
+			if (lvState.rafId) cancelAnimationFrame(lvState.rafId);
 			if (typeof toastPopup === 'function') toastPopup('Verification complete');
 			lvSetText('Verification<br>complete');
 			setTimeout(function () {
@@ -292,7 +288,7 @@
 
 		// 화면 이탈 시 카메라/타이머 정리 (.btn-back 은 crypto.js 전역 핸들러가 처리)
 		window.addEventListener('pagehide', function () {
-			if (lvState) clearInterval(lvState.timer);
+			if (lvState && lvState.rafId) cancelAnimationFrame(lvState.rafId);
 			stopLvCamera();
 		});
 
