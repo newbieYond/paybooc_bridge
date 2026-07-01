@@ -93,7 +93,7 @@
 		import {
 			FilesetResolver,
 			FaceLandmarker
-		} from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
+		} from '../../../assets/scripts/libs/mediapipe/vision_bundle.mjs';
 
 		var LV_GUIDE = {
 			0: '../../../assets/images/etc/crypto/face-guide-front.png',
@@ -128,11 +128,11 @@
 
 			try {
 				var vision = await FilesetResolver.forVisionTasks(
-					'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm'
+					'../../../assets/scripts/libs/mediapipe/wasm'
 				);
 				faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
 					baseOptions: {
-						modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
+						modelAssetPath: '../../../assets/models/mediapipe/face_landmarker.task',
 						delegate: 'CPU'
 					},
 					outputFacialTransformationMatrixes: true,
