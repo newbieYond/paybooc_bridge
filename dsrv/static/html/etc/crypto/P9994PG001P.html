@@ -295,6 +295,7 @@
 
                 document.getElementById('crypto-terms-title').textContent = term.title;
                 body.replaceChildren();
+                body.closest('.lpop-cont').scrollTop = 0;
 
                 const summary = document.createElement('div');
                 const summaryIcon = document.createElement('span');
