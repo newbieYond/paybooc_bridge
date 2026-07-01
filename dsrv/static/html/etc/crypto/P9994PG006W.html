@@ -133,7 +133,7 @@
 				faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
 					baseOptions: {
 						modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
-						delegate: 'GPU'
+						delegate: 'CPU'
 					},
 					outputFacialTransformationMatrixes: true,
 					runningMode: 'VIDEO',
@@ -180,6 +180,9 @@
 			return -(yawRad * 180 / Math.PI); // 거울 보정을 위한 부호 반전
 		}
 
+		var LV_ANALYZE_INTERVAL_MS = 150; // 모바일 CPU delegate 부하 완화용 스로틀
+		var lvLastAnalyzeTime = 0;
+
 		function analyzeLvFrame(now) {
 			var v = document.getElementById('lvVideo');
 			if (!lvState || lvState.finished) return;
@@ -187,6 +190,11 @@
 				lvState.rafId = requestAnimationFrame(analyzeLvFrame);
 				return;
 			}
+			if (now - lvLastAnalyzeTime < LV_ANALYZE_INTERVAL_MS) {
+				lvState.rafId = requestAnimationFrame(analyzeLvFrame);
+				return;
+			}
+			lvLastAnalyzeTime = now;
 
 			var result = faceLandmarker.detectForVideo(v, now);
 			var hasFace = result.faceLandmarks && result.faceLandmarks.length > 0
