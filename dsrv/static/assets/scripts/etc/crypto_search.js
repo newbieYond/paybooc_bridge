@@ -22,6 +22,8 @@ let triggerBtn;
 function showCountries(el){
 	searchWrap.style.display = 'flex';
 	triggerBtn = el;
+	input.value = '';
+	lastQ = '';
 	minimap.classList.remove('hidden');
     renderFull();
 }
