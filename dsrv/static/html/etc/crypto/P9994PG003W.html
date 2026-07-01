@@ -71,7 +71,7 @@
 
 	<!-- 인식되면 .scanning-process 보이도록 변경 해 주세요 -->
 	<div class="scanning-process" style="display: none;">
-		<lottie-player src="../../../assets/images/etc/crypto/icon_main_flow.json" background="transaprent" loop speed="1" autoplay></lottie-player>
+		<lottie-player src="../../../assets/images/etc/crypto/process.json" background="transaprent" loop speed="1" autoplay></lottie-player>
 		<p class="txt">Scanning passport</p>
 	</div>
 
@@ -457,6 +457,16 @@
 				.replace(/B/g, '8');
 		}
 
+		function normalizeMrzLetters(value) {
+			return value
+				.replace(/0/g, 'O')
+				.replace(/[1L]/g, 'I')
+				.replace(/2/g, 'Z')
+				.replace(/5/g, 'S')
+				.replace(/6/g, 'G')
+				.replace(/8/g, 'B');
+		}
+
 		function isValidMrzDate(value) {
 			if (!/^\d{6}$/.test(value)) {
 				return false;
@@ -575,10 +585,18 @@
 				return null;
 			}
 
+			const issuer = normalizeMrzLetters(firstLine.slice(2, 5));
 			const nameParts = firstLine.slice(5).split('<<');
-			const surname = (nameParts.shift() || '').replace(/</g, ' ').trim();
-			const givenNames = nameParts.join(' ').replace(/</g, ' ').replace(/\s+/g, ' ').trim();
+			const surname = normalizeMrzLetters(nameParts.shift() || '').replace(/</g, ' ').trim();
+			const givenNames = normalizeMrzLetters(nameParts.join(' ')).replace(/</g, ' ').replace(/\s+/g, ' ').trim();
 			const name = (surname + ' ' + givenNames).trim();
+
+			// PoC 완화 판정: 첫 번째 MRZ 줄의 발급국 및 성명 영역이 충분히 읽히면 성공 후보로 본다.
+			if (!/^[A-Z]{3}$/.test(issuer)
+				|| !/^[A-Z]{2,}$/.test(surname)) {
+				return null;
+			}
+
 			const candidates = lines.slice();
 			const flattenedMrzStart = flattened.indexOf('P<');
 
@@ -586,10 +604,14 @@
 				candidates.push(flattened.slice(flattenedMrzStart + 44));
 			}
 
-			// 체크숫자 위치가 한두 칸 어긋난 PoC 이미지도 주요 필드 배열로 판별한다.
+			// 두 번째 줄은 성공 조건이 아니며, 읽힌 값만 다음 화면에 전달한다.
 			const digit = '[0-9OILZSBG]';
 			const structure = new RegExp('([A-Z0-9<]{9,12})([A-Z]{3})(' + digit + '{6})'
 				+ digit + '?([MFUX<])(' + digit + '{6})' + digit + '?');
+			let passportNumber = '';
+			let birthDate = '';
+			let sex = '';
+			let expiryDate = '';
 
 			for (let index = 0; index < candidates.length; index += 1) {
 				const match = candidates[index].match(structure);
@@ -598,29 +620,25 @@
 					continue;
 				}
 
-				const passportNumber = match[1].slice(0, 9).replace(/</g, '');
-				const birthDate = normalizeMrzDigits(match[3]);
-				const sex = match[4] === '<' ? 'X' : match[4];
-				const expiryDate = normalizeMrzDigits(match[5]);
+				const parsedPassportNumber = match[1].slice(0, 9).replace(/</g, '');
+				const parsedBirthDate = normalizeMrzDigits(match[3]);
+				const parsedSex = match[4] === '<' ? 'X' : match[4];
+				const parsedExpiryDate = normalizeMrzDigits(match[5]);
 
-				if (!/^[A-Z0-9]{5,9}$/.test(passportNumber)
-					|| !/^[A-Z]+(?: [A-Z]+)*$/.test(name)
-					|| !/^[MFUX]$/.test(sex)
-					|| !isValidMrzDate(birthDate)
-					|| !isValidMrzDate(expiryDate)) {
-					continue;
-				}
-
-				return {
-					passportNumber: passportNumber,
-					name: name,
-					sex: sex,
-					birthDate: birthDate,
-					expiryDate: expiryDate
-				};
+				passportNumber = parsedPassportNumber;
+				birthDate = parsedBirthDate;
+				sex = /^[MFUX]$/.test(parsedSex) ? parsedSex : '';
+				expiryDate = parsedExpiryDate;
+				break;
 			}
 
-			return null;
+			return {
+				passportNumber: passportNumber,
+				name: name,
+				sex: sex,
+				birthDate: birthDate,
+				expiryDate: expiryDate
+			};
 		}
 
 		function stopPassportScan() {
