@@ -82,6 +82,12 @@
 			out: 'Place your passport inside the red box',
 			in: 'Scanning passport'
 		};
+		// PoC 설정: true이면 MRZ 체크숫자가 틀려도 주요 필드와 형식이 확인되면 허용한다.
+		// 운영 적용 시 반드시 false로 변경해야 한다.
+		const passportScanConfig = {
+			allowRelaxedMrz: true,
+			requiredMatchingReads: 2
+		};
 		const passportScanState = {
 			analyzeTimer: null,
 			stableStartAt: 0,
@@ -90,7 +96,10 @@
 			ocrRunning: false,
 			retryAfter: 0,
 			worker: null,
-			workerPromise: null
+			workerPromise: null,
+			validatedCandidate: null,
+			validatedCount: 0,
+			validatedPassport: null
 		};
 		let passportRedirectTimer = null;
 
@@ -127,7 +136,9 @@
 		function completePassportScan(passport) {
 			clearTimeout(passportRedirectTimer);
 
-			if (passportScanState.completed || !passport) {
+			if (passportScanState.completed || !passport
+				|| passport !== passportScanState.validatedPassport
+				|| passportScanState.validatedCount < passportScanConfig.requiredMatchingReads) {
 				return;
 			}
 
@@ -358,15 +369,48 @@
 					throw new Error('A valid passport MRZ was not recognized');
 				}
 
+				const fingerprint = getPassportFingerprint(passport);
+
+				if (passportScanState.validatedCandidate === fingerprint) {
+					passportScanState.validatedCount += 1;
+				} else {
+					passportScanState.validatedCandidate = fingerprint;
+					passportScanState.validatedCount = 1;
+				}
+
+				if (passportScanState.validatedCount < passportScanConfig.requiredMatchingReads) {
+					passportScanState.ocrRunning = false;
+					passportScanState.stableStartAt = 0;
+					passportScanState.retryAfter = Date.now() + 800;
+					hidePassportScanningProcess();
+					setPassportScanStatus('in');
+					setPassportScanMessage('Passport detected. Hold steady for verification.');
+					return;
+				}
+
+				passportScanState.validatedPassport = passport;
 				completePassportScan(passport);
 			}).catch(function () {
 				passportScanState.ocrRunning = false;
 				passportScanState.stableStartAt = 0;
 				passportScanState.retryAfter = Date.now() + 1500;
+				passportScanState.validatedCandidate = null;
+				passportScanState.validatedCount = 0;
+				passportScanState.validatedPassport = null;
 				hidePassportScanningProcess();
 				setPassportScanStatus('not');
 				setPassportScanMessage('Passport could not be recognized. Please try again.');
 			});
+		}
+
+		function getPassportFingerprint(passport) {
+			return [
+				passport.passportNumber,
+				passport.name,
+				passport.sex,
+				passport.birthDate,
+				passport.expiryDate
+			].join('|');
 		}
 
 		function normalizeMrzLine(line) {
@@ -426,6 +470,16 @@
 		}
 
 		function parsePassportMrz(rawText) {
+			const strictPassport = parsePassportMrzStrict(rawText);
+
+			if (strictPassport || !passportScanConfig.allowRelaxedMrz) {
+				return strictPassport;
+			}
+
+			return parsePassportMrzRelaxed(rawText);
+		}
+
+		function parsePassportMrzStrict(rawText) {
 			const lines = String(rawText || '').split(/\r?\n/).map(normalizeMrzLine).filter(Boolean);
 			const flattened = normalizeMrzLine(rawText);
 			let flattenedStart = flattened.indexOf('P<');
@@ -495,6 +549,80 @@
 			return null;
 		}
 
+		function parsePassportMrzRelaxed(rawText) {
+			const lines = String(rawText || '').split(/\r?\n/).map(normalizeMrzLine).filter(Boolean);
+			const flattened = normalizeMrzLine(rawText);
+			let firstLine = '';
+
+			for (let index = 0; index < lines.length; index += 1) {
+				const start = lines[index].indexOf('P<');
+
+				if (start >= 0 && lines[index].slice(start).indexOf('<<') >= 5) {
+					firstLine = lines[index].slice(start, start + 44);
+					break;
+				}
+			}
+
+			if (!firstLine) {
+				const start = flattened.indexOf('P<');
+
+				if (start >= 0) {
+					firstLine = flattened.slice(start, start + 44);
+				}
+			}
+
+			if (!firstLine || firstLine.indexOf('<<') < 5) {
+				return null;
+			}
+
+			const nameParts = firstLine.slice(5).split('<<');
+			const surname = (nameParts.shift() || '').replace(/</g, ' ').trim();
+			const givenNames = nameParts.join(' ').replace(/</g, ' ').replace(/\s+/g, ' ').trim();
+			const name = (surname + ' ' + givenNames).trim();
+			const candidates = lines.slice();
+			const flattenedMrzStart = flattened.indexOf('P<');
+
+			if (flattenedMrzStart >= 0 && flattened.length > flattenedMrzStart + 44) {
+				candidates.push(flattened.slice(flattenedMrzStart + 44));
+			}
+
+			// 체크숫자 위치가 한두 칸 어긋난 PoC 이미지도 주요 필드 배열로 판별한다.
+			const digit = '[0-9OILZSBG]';
+			const structure = new RegExp('([A-Z0-9<]{9,12})([A-Z]{3})(' + digit + '{6})'
+				+ digit + '?([MFUX<])(' + digit + '{6})' + digit + '?');
+
+			for (let index = 0; index < candidates.length; index += 1) {
+				const match = candidates[index].match(structure);
+
+				if (!match) {
+					continue;
+				}
+
+				const passportNumber = match[1].slice(0, 9).replace(/</g, '');
+				const birthDate = normalizeMrzDigits(match[3]);
+				const sex = match[4] === '<' ? 'X' : match[4];
+				const expiryDate = normalizeMrzDigits(match[5]);
+
+				if (!/^[A-Z0-9]{5,9}$/.test(passportNumber)
+					|| !/^[A-Z]+(?: [A-Z]+)*$/.test(name)
+					|| !/^[MFUX]$/.test(sex)
+					|| !isValidMrzDate(birthDate)
+					|| !isValidMrzDate(expiryDate)) {
+					continue;
+				}
+
+				return {
+					passportNumber: passportNumber,
+					name: name,
+					sex: sex,
+					birthDate: birthDate,
+					expiryDate: expiryDate
+				};
+			}
+
+			return null;
+		}
+
 		function stopPassportScan() {
 			clearInterval(passportScanState.analyzeTimer);
 			passportScanState.analyzeTimer = null;
@@ -514,7 +642,6 @@
 		}
 
 		window.setPassportScanStatus = setPassportScanStatus;
-		window.completePassportScan = completePassportScan;
 		window.stopPassportScan = stopPassportScan;
 
 		document.querySelector('.live-img').style.left = '50%';
