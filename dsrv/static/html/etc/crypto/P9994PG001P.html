@@ -34,6 +34,7 @@
         <header class="renew21--header">
             <a href="javascript:void(0)" class="btn-back" onclick="onBackHistory();">뒤로가기</a>
             <h1 class="tit"></h1>
+            <button type="button" class="btn-skip" onclick="onSkip();">SkipALL</button>
         </header>
         <div class="crypto-contents">
             <section class="container-01">
@@ -237,6 +238,26 @@
 
 
     <script>
+        function onSkip() {
+            scheme.callNativeBridge('dsrvRegisterWallet', {}, onRegisterWalletResult, 'Y', 'Y', 'Navi');
+        }
+
+        function onRegisterWalletResult(result) {
+            if (result.resultCode === 'success') {
+                alert('지갑 가입이 완료되었습니다.');
+            } else {
+                let message = '';
+
+                try {
+                    message = JSON.parse(result.params).message || '';
+                } catch (e) {}
+
+                alert('지갑 가입에 실패했습니다.\n' + message);
+            }
+
+            scheme.callNativeBridge('closeWebView', {}, null, null, null, 'Navi');
+        }
+
         $(function () {
             const cryptoTerms = {
                 service: {
