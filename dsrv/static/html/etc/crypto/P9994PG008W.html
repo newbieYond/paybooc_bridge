@@ -559,247 +559,233 @@
 			};
 		}
 
-		// PoC transaction fixtures. Replace this array with the API response in production.
-		// Ordered newest-first to match on-screen sort; each item's balance is the running
-		// wallet balance immediately after that row (Canceled/Failed/Pending carry the prior balance forward).
-		const historyCases = [
-			{
-				date: '26.06.30',
-				items: [
-					{
-						type: 'pay', label: 'Pay', icon: 'pay', status: 'Failed', errorType: 'network',
-						amount: '- 45.20', balance: '3,734.21', time: '15:22', counterparty: 'To : Seoul Taxi',
-						target: '.crypto-history-ly--error',
-						from: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21',
-						to: '0x6DE10A9231CB114D28047B9DCC710ED91E400A75', network: 'Base (Mainnet)', hash: ''
-					},
-					{
-						type: 'send', label: 'Send', icon: 'send', status: 'Failed', errorType: 'rejected',
-						amount: '- 500.00', balance: '3,734.21', time: '11:08', counterparty: 'To : 0x31DF92...8C01B4',
-						target: '.crypto-history-ly--error',
-						from: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21',
-						to: '0x31DF92C64A839E72B5F1966A220DB347AA8C01B4', network: 'Base (Mainnet)', hash: ''
-					}
-				]
-			},
-			{
-				date: '26.06.28',
-				items: [
-					{
-						type: 'receive', label: 'Receive', icon: 'receive', status: 'Completed',
-						amount: '+ 120.00', balance: '3,734.21', time: '19:18', counterparty: 'From : Travel Wallet',
-						target: '.crypto-history-ly--receive',
-						from: '0x9F2A77C1E620FA435D68A1DC8720B6602A351C91',
-						to: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21', network: 'Base (Mainnet)', hash: '0xECE12606281918D19A02'
-					}
-				]
-			},
-			{
-				date: '26.06.20',
-				items: [
-					{
-						type: 'pay', label: 'Pay', icon: 'pay', status: 'Completed',
-						amount: '- 62.30', balance: '3,614.21', time: '17:26', counterparty: 'To : Han River Chicken',
-						target: '.crypto-history-ly--pay',
-						from: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21',
-						to: '0x8A103E7A22D10736504D8B3B912F884C1B6074AE', network: 'Base (Mainnet)', hash: '0xFA92606201726A3C7719'
-					},
-					{
-						type: 'pay', label: 'Pay', icon: 'pay', status: 'Canceled',
-						amount: '- 28.50', balance: '3,676.51', time: '10:04', counterparty: 'To : Museum Gift Shop',
-						target: '.crypto-history-ly--cancel',
-						from: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21',
-						to: '0x491D0216A941E5CF72FCA2D1169B7C4A884D2110', network: 'Base (Mainnet)', hash: '0xCA11CE12606201004F19'
-					}
-				]
-			},
-			{
-				date: '26.06.05',
-				items: [
-					{
-						type: 'send', label: 'Send', icon: 'send', status: 'Completed',
-						amount: '- 250.00', balance: '3,676.51', time: '12:10', counterparty: 'To : 0xE3105A...91D2F0',
-						target: '.crypto-history-ly--send',
-						from: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21',
-						to: '0xE3105A84C9D6A28715C42289B6143EC09291D2F0', network: 'Base (Mainnet)', hash: '0x5EAD2606051210CA48B2D'
-					},
-					{
-						type: 'send', label: 'Send fee', icon: 'send', status: 'Completed',
-						amount: '- 0.80', balance: '3,926.51', time: '12:09', counterparty: 'Network fee',
-						target: '.crypto-history-ly--sendfee',
-						from: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21',
-						to: 'Base Network Validator', network: 'Base (Mainnet)', hash: ''
-					}
-				]
-			},
-			{
-				date: '26.05.29',
-				items: [
-					{
-						type: 'pay', label: 'Pay', icon: 'pay', status: 'Failed', errorType: 'network',
-						amount: '- 96.10', balance: '3,927.31', time: '21:03', counterparty: 'To : Night Market',
-						target: '.crypto-history-ly--error',
-						from: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21',
-						to: '0x61035EBD29724B54A94F0047C0C5E41028B66129', network: 'Base (Mainnet)', hash: ''
-					}
-				]
-			},
-			{
-				date: '26.05.15',
-				items: [
-					{
-						type: 'receive', label: 'Receive', icon: 'receive', status: 'Completed',
-						amount: '+ 350.00', balance: '3,927.31', time: '18:45', counterparty: 'From : Exchange Wallet',
-						target: '.crypto-history-ly--receive',
-						from: '0xD71C20A44B9942F6B0D8F38C88E43071A56C923E',
-						to: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21', network: 'Base (Mainnet)', hash: '0xECE12606301845A8D902'
-					},
-					{
-						type: 'pay', label: 'Pay', icon: 'pay', status: 'Completed',
-						amount: '- 18.75', balance: '3,577.31', time: '09:12', counterparty: 'To : Convenience Store',
-						target: '.crypto-history-ly--pay',
-						from: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21',
-						to: '0xEF71084B0A6158C73EE1596C26D82000121A62C9', network: 'Base (Mainnet)', hash: '0xFA92605150912C77F31D'
-					}
-				]
-			},
-			{
-				date: '26.05.10',
-				items: [
-					{
-						type: 'receive', label: 'Receive', icon: 'receive', status: 'Completed',
-						amount: '+ 700.00', balance: '3,596.06', time: '08:34', counterparty: 'From : Personal Wallet',
-						target: '.crypto-history-ly--receive',
-						from: '0x4401B7C8512A048066DCB69E7FCF80BC1E229881',
-						to: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21', network: 'Base (Mainnet)', hash: '0xECE12605100834AC1971'
-					}
-				]
-			},
-			{
-				date: '26.04.22',
-				items: [
-					{
-						type: 'send', label: 'Send', icon: 'send', status: 'Failed', errorType: 'rejected',
-						amount: '- 1,000.00', balance: '2,896.06', time: '16:48', counterparty: 'To : 0x8B11C2...2EA970',
-						target: '.crypto-history-ly--error',
-						from: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21',
-						to: '0x8B11C2940087D31E0A1C28F0D6710CC4402EA970', network: 'Base (Mainnet)', hash: ''
-					}
-				]
-			},
-			{
-				date: '26.03.18',
-				items: [
-					{
-						type: 'pay', label: 'Pay', icon: 'pay', status: 'Completed',
-						amount: '- 32.90', balance: '2,896.06', time: '13:17', counterparty: 'To : Busan Seafood',
-						target: '.crypto-history-ly--pay',
-						from: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21',
-						to: '0x2B8D98A19937408B53B331CA1197413DD4A8BE25', network: 'Base (Mainnet)', hash: '0xFA92603181317E2971D3'
-					}
-				]
-			},
-			{
-				date: '26.02.14',
-				items: [
-					{
-						type: 'receive', label: 'Receive', icon: 'receive', status: 'Completed',
-						amount: '+ 90.00', balance: '2,928.96', time: '10:51', counterparty: 'From : Friend Wallet',
-						target: '.crypto-history-ly--receive',
-						from: '0x16A48D12397E0C0194C712397F68B1DC9235E0A4',
-						to: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21', network: 'Base (Mainnet)', hash: '0xECE12602141051FA2268'
-					}
-				]
-			},
-			{
-				date: '26.02.03',
-				items: [
-					{
-						type: 'send', label: 'Send', icon: 'send', status: 'Pending', errorType: 'pending',
-						amount: '- 200.00', balance: '2,838.96', time: '20:00', counterparty: 'To : 0x542FDSF...9F42A1',
-						target: '.crypto-history-ly--error',
-						from: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21',
-						to: '0x542FDSF322839F322839F322839F322839F42A1', network: 'Base (Mainnet)', hash: ''
-					}
-				]
-			},
-			{
-				date: '26.02.02',
-				items: [
-					{
-						type: 'pay', label: 'Pay', icon: 'pay', status: 'Canceled',
-						amount: '- 200.00', balance: '2,838.96', time: '16:20', counterparty: 'To : Coffee House Seoul',
-						target: '.crypto-history-ly--cancel',
-						from: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21',
-						to: '0x7C31A449B82E4511D37A904C1B05E8D990AA21C4', network: 'Base (Mainnet)', hash: '0xCA11CE12602021620A87'
-					},
-					{
-						type: 'pay', label: 'Pay', icon: 'pay', status: 'Completed',
-						amount: '- 79.44', balance: '2,838.96', time: '11:35', counterparty: 'To : K-Market Myeongdong',
-						target: '.crypto-history-ly--pay',
-						from: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21',
-						to: '0x93C0F7E42284CC652D91C13A31BCA70E1170F96D', network: 'Base (Mainnet)', hash: '0xFA92602021135F8A1C04'
-					}
-				]
-			},
-			{
-				date: '26.02.01',
-				items: [
-					{
-						type: 'receive', label: 'Receive', icon: 'receive', status: 'Completed',
-						amount: '+ 200.00', balance: '2,918.40', time: '18:05', counterparty: 'From : Personal Wallet',
-						target: '.crypto-history-ly--receive',
-						from: '0xB72D63184E2A9F540D18C3A6FC11E88031AD772B',
-						to: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21', network: 'Base (Mainnet)', hash: '0xECE12602011805B71A40'
-					},
-					{
-						type: 'send', label: 'Send', icon: 'send', status: 'Completed',
-						amount: '- 200.00', balance: '2,718.40', time: '13:40', counterparty: 'To : 0x4FB20C...2D06C8',
-						target: '.crypto-history-ly--send',
-						from: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21',
-						to: '0x4FB20C891341F6680EE559006290EDDBE42D06C8', network: 'Base (Mainnet)', hash: '0x5EAD2602011340C992B6'
-					},
-					{
-						type: 'send', label: 'Send fee', icon: 'send', status: 'Completed',
-						amount: '- 1.00', balance: '2,918.40', time: '13:39', counterparty: 'Network fee',
-						target: '.crypto-history-ly--sendfee',
-						from: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21',
-						to: 'Base Network Validator', network: 'Base (Mainnet)', hash: ''
-					}
-				]
-			},
-			{
-				date: '25.12.24',
-				items: [
-					{
-						type: 'pay', label: 'Pay', icon: 'pay', status: 'Canceled',
-						amount: '- 140.00', balance: '2,919.40', time: '20:36', counterparty: 'To : Holiday Restaurant',
-						target: '.crypto-history-ly--cancel',
-						from: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21',
-						to: '0x7C9D0187A8601F8A2E06F727AE234491861E8802', network: 'Base (Mainnet)', hash: '0xCA11CE12512242036B82'
-					}
-				]
-			},
-			{
-				date: '25.10.03',
-				items: [
-					{
-						type: 'send', label: 'Send', icon: 'send', status: 'Completed',
-						amount: '- 80.00', balance: '2,919.40', time: '14:12', counterparty: 'To : 0x72A10C...66D921',
-						target: '.crypto-history-ly--send',
-						from: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21',
-						to: '0x72A10C8809D741B2D1E998AB5300174E2866D921', network: 'Base (Mainnet)', hash: '0x5EAD2510031412FB70C1A'
-					},
-					{
-						type: 'send', label: 'Send fee', icon: 'send', status: 'Completed',
-						amount: '- 0.60', balance: '2,999.40', time: '14:11', counterparty: 'Network fee',
-						target: '.crypto-history-ly--sendfee',
-						from: '0xA91C7E4B12D98F620B183A4D6C8E52F11A3B8F21',
-						to: 'Base Network Validator', network: 'Base (Mainnet)', hash: ''
-					}
-				]
-			}
+		// 거래내역 표시 설정
+		const TOKEN_SYMBOL = 'USDC';
+		const TOKEN_DECIMALS = 6;                                   // value(base units) → 표시금액 변환 기준
+		const KRW_SYMBOL = 'KRW';
+		const KRW_RATE = 1433.12;                                   // 고정 환율 (1 USDC = 1,433.12 KRW)
+		const KRW_RATE_SCALED = '143312';                           // KRW_RATE × 10^KRW_RATE_SCALE (정수 연산용)
+		const KRW_RATE_SCALE = 2;
+		const CHAIN_NAMES = {                                       // chainId → 네트워크 표기(미정의 시 chainId 그대로)
+			'1': 'Ethereum (Mainnet)',
+			'8453': 'Base (Mainnet)',
+			'84532': 'Base (Sepolia)'
+		};
+
+		// dsrvGetTransactionHistory 응답으로 채워지는 날짜별 그룹 목록
+		let historyCases = [];
+
+		/**
+		 * 브릿지 호출 불가(앱 밖 브라우저·미구현·예외) 시 사용하는 PoC 목업.
+		 * 실제 응답과 같은 형태(base units value + ISO createdAt)로 두어
+		 * buildHistoryCases 의 변환 경로를 그대로 통과시킨다 — 렌더 경로는 하나만 유지한다.
+		 * method=Transfer/Contract_call, status=Success/Processing/Cancelled/Failed, direction=Send/Receive.
+		 */
+		const MOCK_HISTORY_ITEMS = [
+			{ transactionId: 'mock-01', chainId: '8453', method: 'Contract_call', status: 'Failed',     direction: 'Send',    value: '45200000',   createdAt: '2026-06-30T15:22:00' },
+			{ transactionId: 'mock-02', chainId: '8453', method: 'Transfer',      status: 'Failed',     direction: 'Send',    value: '500000000',  createdAt: '2026-06-30T11:08:00' },
+			{ transactionId: 'mock-03', chainId: '8453', method: 'Transfer',      status: 'Success',    direction: 'Receive', value: '120000000',  createdAt: '2026-06-28T19:18:00' },
+			{ transactionId: 'mock-04', chainId: '8453', method: 'Contract_call', status: 'Success',    direction: 'Send',    value: '62300000',   createdAt: '2026-06-20T17:26:00' },
+			{ transactionId: 'mock-05', chainId: '8453', method: 'Contract_call', status: 'Cancelled',  direction: 'Send',    value: '28500000',   createdAt: '2026-06-20T10:04:00' },
+			{ transactionId: 'mock-06', chainId: '8453', method: 'Transfer',      status: 'Success',    direction: 'Send',    value: '250000000',  createdAt: '2026-06-05T12:10:00' },
+			{ transactionId: 'mock-07', chainId: '8453', method: 'Transfer',      status: 'Success',    direction: 'Send',    value: '800000',     createdAt: '2026-06-05T12:09:00' },
+			{ transactionId: 'mock-08', chainId: '8453', method: 'Contract_call', status: 'Failed',     direction: 'Send',    value: '96100000',   createdAt: '2026-05-29T21:03:00' },
+			{ transactionId: 'mock-09', chainId: '8453', method: 'Transfer',      status: 'Success',    direction: 'Receive', value: '350000000',  createdAt: '2026-05-15T18:45:00' },
+			{ transactionId: 'mock-10', chainId: '8453', method: 'Contract_call', status: 'Success',    direction: 'Send',    value: '18750000',   createdAt: '2026-05-15T09:12:00' },
+			{ transactionId: 'mock-11', chainId: '8453', method: 'Transfer',      status: 'Success',    direction: 'Receive', value: '700000000',  createdAt: '2026-05-10T08:34:00' },
+			{ transactionId: 'mock-12', chainId: '8453', method: 'Transfer',      status: 'Failed',     direction: 'Send',    value: '1000000000', createdAt: '2026-04-22T16:48:00' },
+			{ transactionId: 'mock-13', chainId: '8453', method: 'Contract_call', status: 'Success',    direction: 'Send',    value: '32900000',   createdAt: '2026-03-18T13:17:00' },
+			{ transactionId: 'mock-14', chainId: '8453', method: 'Transfer',      status: 'Success',    direction: 'Receive', value: '90000000',   createdAt: '2026-02-14T10:51:00' },
+			{ transactionId: 'mock-15', chainId: '8453', method: 'Transfer',      status: 'Processing', direction: 'Send',    value: '200000000',  createdAt: '2026-02-03T20:00:00' },
+			{ transactionId: 'mock-16', chainId: '8453', method: 'Contract_call', status: 'Cancelled',  direction: 'Send',    value: '200000000',  createdAt: '2026-02-02T16:20:00' },
+			{ transactionId: 'mock-17', chainId: '8453', method: 'Contract_call', status: 'Success',    direction: 'Send',    value: '79440000',   createdAt: '2026-02-02T11:35:00' },
+			{ transactionId: 'mock-18', chainId: '8453', method: 'Transfer',      status: 'Success',    direction: 'Receive', value: '200000000',  createdAt: '2026-02-01T18:05:00' },
+			{ transactionId: 'mock-19', chainId: '8453', method: 'Transfer',      status: 'Success',    direction: 'Send',    value: '200000000',  createdAt: '2026-02-01T13:40:00' },
+			{ transactionId: 'mock-20', chainId: '8453', method: 'Transfer',      status: 'Success',    direction: 'Send',    value: '1000000',    createdAt: '2026-02-01T13:39:00' },
+			{ transactionId: 'mock-21', chainId: '8453', method: 'Contract_call', status: 'Cancelled',  direction: 'Send',    value: '140000000',  createdAt: '2025-12-24T20:36:00' },
+			{ transactionId: 'mock-22', chainId: '8453', method: 'Transfer',      status: 'Success',    direction: 'Send',    value: '80000000',   createdAt: '2025-10-03T14:12:00' },
+			{ transactionId: 'mock-23', chainId: '8453', method: 'Transfer',      status: 'Success',    direction: 'Send',    value: '600000',     createdAt: '2025-10-03T14:11:00' }
 		];
+
+		/**
+		 * base units 문자열 → 소수 2자리 표시금액.
+		 * 부동소수 오차를 피하기 위해 문자열 연산으로 처리하며, 리스트/상세 레이어 모두 이 규칙만 사용한다.
+		 */
+		function formatTokenValue(rawValue) {
+			const raw = String(rawValue === null || rawValue === undefined ? '' : rawValue).trim();
+			const abs = raw.charAt(0) === '-' ? raw.slice(1) : raw;
+			let intPart = '';
+			let fracPart = '';
+
+			if (/^\d+$/.test(abs)) {
+				const padded = abs.padStart(TOKEN_DECIMALS + 1, '0');
+				intPart = padded.slice(0, padded.length - TOKEN_DECIMALS);
+				fracPart = padded.slice(padded.length - TOKEN_DECIMALS);
+			} else if (/^\d*\.\d+$/.test(abs)) {
+				const parts = abs.split('.');
+				intPart = parts[0] || '0';
+				fracPart = parts[1];
+			} else {
+				return '';
+			}
+
+			intPart = intPart.replace(/^0+(?=\d)/, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+			return intPart + '.' + (fracPart + '00').slice(0, 2);
+		}
+
+		/**
+		 * base units 문자열 → 원화 환산액(원 단위 반올림, 고정 환율).
+		 * 큰 금액에서도 오차가 없도록 정수(BigInt) 연산을 사용하고, 미지원 환경에서는 실수 연산으로 대체한다.
+		 */
+		function formatKrwValue(rawValue) {
+			const raw = String(rawValue === null || rawValue === undefined ? '' : rawValue).trim();
+			const abs = raw.charAt(0) === '-' ? raw.slice(1) : raw;
+
+			const byNumber = function (tokenAmount) {
+				return isFinite(tokenAmount) ? Math.round(tokenAmount * KRW_RATE).toLocaleString('en-US') : '';
+			};
+
+			// base units 정수가 아니면 이미 소수 표기된 금액으로 간주
+			if (!/^\d+$/.test(abs)) {
+				return /^\d*\.\d+$/.test(abs) ? byNumber(Number(abs)) : '';
+			}
+
+			if (typeof BigInt !== 'function') {
+				return byNumber(Number(abs) / Math.pow(10, TOKEN_DECIMALS));
+			}
+
+			const divisor = BigInt(10) ** BigInt(TOKEN_DECIMALS + KRW_RATE_SCALE);
+			const scaled = BigInt(abs) * BigInt(KRW_RATE_SCALED);
+			const won = (scaled + divisor / BigInt(2)) / divisor;   // 반올림
+
+			return won.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+		}
+
+		function toTitleCase(text) {
+			const value = String(text === null || text === undefined ? '' : text).trim();
+			return value ? value.charAt(0).toUpperCase() + value.slice(1).toLowerCase() : '';
+		}
+
+		// 잔액 변동이 확정되지 않은 상태(취소/실패/진행중) → .canceled 스타일
+		// 서버 status 도메인: Success / Processing / Cancelled (Failed 는 추가 예정)
+		function isInactiveStatus(status) {
+			return /cancel|fail|pending|process|reject/i.test(String(status || ''));
+		}
+
+		function isIncomingDirection(direction) {
+			const value = String(direction || '').toLowerCase();
+			return value.indexOf('receive') > -1
+				|| value.indexOf('deposit') > -1
+				|| ['in', 'inbound', 'incoming'].includes(value);
+		}
+
+		// 서버 method 도메인: Transfer(송금) / Contract_call(결제)
+		function getHistoryType(method, incoming) {
+			if (incoming) {
+				return 'receive';
+			}
+			const value = String(method || '').toLowerCase();
+			return (value.indexOf('pay') > -1 || value.indexOf('contract_call') > -1) ? 'pay' : 'send';
+		}
+
+		function getHistoryDetailTarget(type, method, status) {
+			const state = String(status || '').toLowerCase();
+
+			if (state.indexOf('cancel') > -1) {
+				return '.crypto-history-ly--cancel';
+			}
+			if (state.indexOf('fail') > -1 || state.indexOf('pending') > -1
+				|| state.indexOf('process') > -1 || state.indexOf('reject') > -1) {
+				return '.crypto-history-ly--error';
+			}
+			if (type === 'receive') {
+				return '.crypto-history-ly--receive';
+			}
+			if (type === 'pay') {
+				return '.crypto-history-ly--pay';
+			}
+			return String(method || '').toLowerCase().indexOf('fee') > -1
+				? '.crypto-history-ly--sendfee'
+				: '.crypto-history-ly--send';
+		}
+
+		// 상세 레이어의 Status 행 선택(0:지연, 1:통신오류, 2:서명거절) — 응답에는 지연/실패만 구분 가능
+		// Processing 은 진행중이므로 지연(pending) 행에 대응시킨다
+		function getHistoryErrorType(status) {
+			const state = String(status || '').toLowerCase();
+			return (state.indexOf('pending') > -1 || state.indexOf('process') > -1) ? 'pending' : 'network';
+		}
+
+		// ISO 8601 → 페이지 표기(YY.MM.DD / HH:mm)
+		function formatHistoryDateTime(createdAt) {
+			const parsed = new Date(createdAt);
+
+			if (!createdAt || isNaN(parsed.getTime())) {
+				return null;
+			}
+
+			const pad = function (value) {
+				return String(value).padStart(2, '0');
+			};
+
+			return {
+				date: pad(parsed.getFullYear() % 100) + '.' + pad(parsed.getMonth() + 1) + '.' + pad(parsed.getDate()),
+				time: pad(parsed.getHours()) + ':' + pad(parsed.getMinutes())
+			};
+		}
+
+		// 브릿지 items[] → 렌더링용 날짜 그룹 목록(응답 순서 = 최신순 유지)
+		function buildHistoryCases(items) {
+			const groups = [];
+			const groupIndex = {};
+			let skipped = 0;
+
+			(Array.isArray(items) ? items : []).forEach(function (item, index) {
+				if (!item) {
+					return;
+				}
+
+				const when = formatHistoryDateTime(item.createdAt);
+				const amountText = formatTokenValue(item.value);
+
+				// 날짜/금액을 해석할 수 없는 항목은 잘못된 값 대신 표시하지 않는다
+				if (!when || amountText === '') {
+					skipped += 1;
+					return;
+				}
+
+				const incoming = isIncomingDirection(item.direction);
+				const type = getHistoryType(item.method, incoming);
+				const target = getHistoryDetailTarget(type, item.method, item.status);
+				const status = toTitleCase(item.status);
+
+				if (!groupIndex[when.date]) {
+					groupIndex[when.date] = { date: when.date, items: [] };
+					groups.push(groupIndex[when.date]);
+				}
+
+				groupIndex[when.date].items.push({
+					id: String(item.transactionId || ('tx-' + index)),
+					type: type,
+					icon: type,
+					label: String(item.method || toTitleCase(item.direction) || type),
+					name: toTitleCase(item.direction),
+					krw: formatKrwValue(item.value),
+					status: status,
+					errorType: target === '.crypto-history-ly--error' ? getHistoryErrorType(item.status) : '',
+					amount: (incoming ? '+ ' : '- ') + amountText,
+					time: when.time,
+					target: target,
+					network: CHAIN_NAMES[String(item.chainId)] || String(item.chainId || '')
+				});
+			});
+
+			if (skipped) {
+				console.warn('[dsrvGetTransactionHistory] skipped ' + skipped + ' item(s) with unreadable createdAt/value');
+			}
+
+			return groups;
+		}
 
 		function renderHistoryCases() {
 			const container = document.getElementById('historyList');
@@ -836,22 +822,27 @@
 					link.dataset.type = item.type;
 					link.dataset.detailTarget = item.target;
 					link.dataset.errorType = item.errorType || '';
-					link.dataset.from = item.from;
-					link.dataset.to = item.to;
+					link.dataset.transactionId = item.id;
+					// 응답에 없는 필드는 빈값 → 상세 레이어에서 해당 행이 숨겨진다
+					link.dataset.from = '';
+					link.dataset.to = '';
 					link.dataset.network = item.network;
-					link.dataset.hash = item.hash;
-					link.setAttribute('aria-label', item.label + ' ' + item.status + ', ' + item.amount + ' USDC');
+					link.dataset.hash = '';
+					link.setAttribute('aria-label', item.label + ' ' + item.status + ', ' + item.amount + ' ' + TOKEN_SYMBOL);
+					// 잔액(Bal.)은 응답에 없으므로 우측 영역에 고정 환율 원화 환산액을 표시한다
 					link.innerHTML = '<div class="tag-box"><i class="ico"></i><span></span></div>'
-						+ '<div class="sop-box"><div class="name"></div><div class="num"><span></span><span class="unit">USDC</span></div></div>'
-						+ '<div class="tim-box"><div class="right"><div class="num-unit"><span>Bal.<span class="num"></span></span><span class="unit">USDC</span></div></div>'
+						+ '<div class="sop-box"><div class="name"></div><div class="num"><span></span><span class="unit"></span></div></div>'
+						+ '<div class="tim-box"><div class="right"><div class="num-unit"><span>≈<span class="num"></span></span><span class="unit"></span></div></div>'
 						+ '<div class="left"><div class="time-detail"><span class="time"></span><span class="detail"></span></div></div></div>';
 
 					link.querySelector('.tag-box .ico').classList.add('ico-' + item.icon);
 					link.querySelector('.tag-box span').textContent = item.label;
-					link.querySelector('.sop-box .name').textContent = item.counterparty;
+					link.querySelector('.sop-box .name').textContent = item.name;
 					link.querySelector('.sop-box .num > span:first-child').textContent = item.amount;
-					link.querySelector('.sop-box .num').classList.toggle('canceled', ['Canceled', 'Failed', 'Pending'].includes(item.status));
-					link.querySelector('.tim-box .num-unit .num').textContent = item.balance;
+					link.querySelector('.sop-box .num .unit').textContent = TOKEN_SYMBOL;
+					link.querySelector('.sop-box .num').classList.toggle('canceled', isInactiveStatus(item.status));
+					link.querySelector('.tim-box .num-unit .num').textContent = item.krw;
+					link.querySelector('.tim-box .num-unit .unit').textContent = KRW_SYMBOL;
 					link.querySelector('.time-detail .time').textContent = item.time;
 					link.querySelector('.time-detail .detail').textContent = item.status;
 					itemWrap.appendChild(link);
@@ -931,7 +922,7 @@
 			amountElement.textContent = amount;
 			unitElement.textContent = unit;
 			amountElement.appendChild(unitElement);
-			amountTitle.classList.toggle('canceled', ['canceled', 'failed', 'pending'].includes(status.toLowerCase()));
+			amountTitle.classList.toggle('canceled', isInactiveStatus(status));
 
 			setHistoryDetailValue(layer, 'Transaction Type', type);
 			if (item.dataset.detailTarget === '.crypto-history-ly--error') {
@@ -967,28 +958,33 @@
 			});
 		}
 
-		renderHistoryCases();
-		sortHistoryGroupsByDate();
-
-		const historyItems = document.querySelectorAll('.history-detail .list-item');
-		historyItems.forEach(function (item) {
-			if (!item.getAttribute('aria-label')) {
-				const label = item.querySelector('.tag-box span').textContent.trim();
-				const status = item.querySelector('.time-detail .detail').textContent.trim();
-				const amount = item.querySelector('.sop-box .num > span:first-child').textContent.trim();
-				item.setAttribute('aria-label', label + ' ' + status + ', ' + amount + ' USDC');
-			}
-			BsCtl(item.dataset.detailTarget, {
-				callBtn: item,
-				loadAfter: function () {
-					syncHistoryDetail(item);
+		// 렌더링될 때마다 새 엘리먼트에 상세 레이어를 다시 연결한다
+		function bindHistoryItems() {
+			document.querySelectorAll('.history-detail .list-item').forEach(function (item) {
+				if (!item.getAttribute('aria-label')) {
+					const label = item.querySelector('.tag-box span').textContent.trim();
+					const status = item.querySelector('.time-detail .detail').textContent.trim();
+					const amount = item.querySelector('.sop-box .num > span:first-child').textContent.trim();
+					item.setAttribute('aria-label', label + ' ' + status + ', ' + amount + ' ' + TOKEN_SYMBOL);
 				}
+				BsCtl(item.dataset.detailTarget, {
+					callBtn: item,
+					loadAfter: function () {
+						syncHistoryDetail(item);
+					}
+				});
 			});
-		});
+		}
+
+		function refreshHistoryView() {
+			renderHistoryCases();
+			sortHistoryGroupsByDate();
+			bindHistoryItems();
+			applyHistoryFilters();
+		}
 
 		// 탭
 		const tabs = document.querySelectorAll('.tab-btn');
-		const groups = document.querySelectorAll('.history-group');
 
 		function getHistoryGroupDate(group) {
 			const value = group.querySelector('.detail-date').textContent.trim();
@@ -996,14 +992,45 @@
 			return match ? '20' + match[1] + '-' + match[2] + '-' + match[3] : '';
 		}
 
+		// 데이터 자체가 없는 경우와 필터 결과가 없는 경우의 문구를 구분한다
+		function setHistoryEmptyMessage() {
+			const empty = document.getElementById('historyEmpty');
+
+			if (!empty) {
+				return;
+			}
+
+			const title = empty.querySelector('strong');
+			const desc = empty.querySelector('p');
+
+			if (historyCases.length) {
+				if (title) title.textContent = 'No transactions found';
+				if (desc) desc.textContent = 'Try another transaction type or date range.';
+			} else {
+				if (title) title.textContent = 'No transaction history yet';
+				if (desc) desc.textContent = 'Your transactions will appear here once you start using Paybooc Crypto Pay.';
+			}
+		}
+
+		/**
+		 * createdAt(UTC) → 로컬 날짜 변환으로 오늘 생성된 거래가 내일 날짜로 표기될 수 있다.
+		 * 종료일이 오늘 이후인 구간에서는 최신 거래가 필터로 잘려나가지 않도록 상한을 하루 늘린다.
+		 */
+		function getHistoryEndBound(endStr) {
+			const today = moment().format('YYYY-MM-DD');
+			return endStr >= today ? moment(endStr, 'YYYY-MM-DD').add(1, 'days').format('YYYY-MM-DD') : endStr;
+		}
+
 		function applyHistoryFilters() {
+			const groups = document.querySelectorAll('.history-group');
+			const endBound = getHistoryEndBound(activeHistoryEnd);
 			let total = 0;
 
 			groups.forEach(function (group) {
 				const groupDate = getHistoryGroupDate(group);
 				const dateMatches = Boolean(groupDate)
 					&& groupDate >= activeHistoryStart
-					&& groupDate <= activeHistoryEnd;
+					&& groupDate <= endBound;
 				const items = group.querySelectorAll('.list-item');
 				let visibleCount = 0;
 
@@ -1021,6 +1048,7 @@
 				group.style.display = visibleCount ? '' : 'none';
 			});
 
+			setHistoryEmptyMessage();
 			document.getElementById('historyTotal').textContent = total;
 			document.getElementById('historyEmpty').style.display = total ? 'none' : '';
 		}
@@ -1037,7 +1065,85 @@
 			});
 		});
 
-		applyHistoryFilters();
+		/**
+		 * dsrvGetTransactionHistory 콜백.
+		 * 실패·파싱오류·빈 응답은 에러 팝업 없이 목업으로 폴백하고 콘솔 경고만 남긴다.
+		 */
+		function onDsrvTxHistory(result) {
+			let items = null;
+
+			try {
+				if (result && result.resultCode === 'success') {
+					const data = typeof result.params === 'string' ? JSON.parse(result.params || '{}') : (result.params || {});
+					items = Array.isArray(data.items) ? data.items : null;
+				} else {
+					console.warn('[dsrvGetTransactionHistory] unexpected result', result);
+				}
+			} catch (e) {
+				console.warn('[dsrvGetTransactionHistory] params parse failed', e);
+			}
+
+			// 캐시 미조회(홈 진입 전)·실패 모두 빈 화면 대신 목업을 보여준다
+			if (!items || items.length === 0) {
+				applyMockHistory(items ? '응답 내역 없음' : '응답 파싱 실패');
+				return;
+			}
+
+			historyResolved = true;
+			clearTimeout(historyTimeoutId);
+			historyCases = buildHistoryCases(items);
+			refreshHistoryView();
+		}
+
+		// 브릿지(messageHandler: payboocBridge) 사용 가능 여부
+		function hasPayboocBridge() {
+			if (typeof com === 'undefined' || typeof scheme === 'undefined' || com.isInApp() === false) {
+				return false;
+			}
+			if (com.isAndroid()) {
+				return Boolean(window.payboocBridge);
+			}
+			return Boolean(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.payboocBridge);
+		}
+
+		// 브릿지 응답 대기 상한 — 초과 시 목업으로 폴백한다(무응답 대비)
+		const BRIDGE_RESPONSE_TIMEOUT_MS = 3000;
+		let historyResolved = false;
+		let historyTimeoutId = null;
+
+		/** 브릿지를 쓸 수 없거나 실패했을 때 목업으로 화면을 채운다. */
+		function applyMockHistory(reason) {
+			if (historyResolved) {
+				return;
+			}
+			historyResolved = true;
+			clearTimeout(historyTimeoutId);
+
+			console.warn('[dsrvGetTransactionHistory] 목업 데이터로 대체 — ' + reason);
+			historyCases = buildHistoryCases(MOCK_HISTORY_ITEMS);
+			refreshHistoryView();
+		}
+
+		function requestTransactionHistory() {
+			refreshHistoryView();   // 응답 전에는 빈 목록으로 두고, 확정되면 다시 그린다
+
+			if (!hasPayboocBridge()) {
+				applyMockHistory('브릿지 사용 불가');
+				return;
+			}
+
+			try {
+				scheme.callNativeBridge('dsrvGetTransactionHistory', {}, onDsrvTxHistory, 'Y', 'Y', 'Navi');
+				historyTimeoutId = setTimeout(function () {
+					applyMockHistory('응답 시간 초과(' + BRIDGE_RESPONSE_TIMEOUT_MS + 'ms)');
+				}, BRIDGE_RESPONSE_TIMEOUT_MS);
+			} catch (e) {
+				console.warn('[dsrvGetTransactionHistory] bridge call failed', e);
+				applyMockHistory('브릿지 호출 예외');
+			}
+		}
+
+		requestTransactionHistory();
 
 		// 상세보기 팝업 - Error 케이스 툴팁
 		$(function () {
