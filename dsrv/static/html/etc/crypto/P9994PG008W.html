@@ -1067,7 +1067,8 @@
 
 		/**
 		 * dsrvGetTransactionHistory 콜백.
-		 * 실패·파싱오류·빈 응답은 에러 팝업 없이 목업으로 폴백하고 콘솔 경고만 남긴다.
+		 * 브릿지 호출이 성립하지 않은 경우(실패 응답·파싱 오류)에만 목업으로 폴백한다.
+		 * 정상 응답이면 내역이 0건이어도 그대로 반영해 empty state 를 노출한다.
 		 */
 		function onDsrvTxHistory(result) {
 			let items = null;
@@ -1083,9 +1084,15 @@
 				console.warn('[dsrvGetTransactionHistory] params parse failed', e);
 			}
 
-			// 캐시 미조회(홈 진입 전)·실패 모두 빈 화면 대신 목업을 보여준다
-			if (!items || items.length === 0) {
-				applyMockHistory(items ? '응답 내역 없음' : '응답 파싱 실패');
+			// 호출 자체가 실패한 경우만 목업 — 빈 배열은 정상 응답이므로 그대로 둔다
+			if (!items) {
+				applyMockHistory('응답 실패 또는 파싱 불가');
+				return;
+			}
+
+			// 타임아웃으로 이미 목업을 노출했다면 늦게 온 응답으로 덮어쓰지 않는다
+			if (historyResolved) {
+				console.warn('[dsrvGetTransactionHistory] 목업 노출 후 도착한 응답 무시');
 				return;
 			}
 
@@ -1111,7 +1118,7 @@
 		let historyResolved = false;
 		let historyTimeoutId = null;
 
-		/** 브릿지를 쓸 수 없거나 실패했을 때 목업으로 화면을 채운다. */
+		/** 브릿지 호출이 성립하지 않았을 때만 목업으로 화면을 채운다(정상 응답의 빈 내역은 제외). */
 		function applyMockHistory(reason) {
 			if (historyResolved) {
 				return;
